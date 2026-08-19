@@ -1,0 +1,14 @@
+{
+  "name": "biru",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "manifest": "pnpm --filter @biru/shared manifest",
+    "build": "pnpm manifest && pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "dev:web": "pnpm --filter @biru/web dev",
+    "dev:api": "pnpm --filter @biru/api dev"
+  },
+  "packageManager": "pnpm@10.28.0"
+}

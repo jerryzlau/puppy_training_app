@@ -1,0 +1,13 @@
+{
+  "name": "The Biru Diaries",
+  "short_name": "Biru",
+  "description": "A scrapbook of one very small dog — diary + puppy school.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F7F1E3",
+  "theme_color": "#F7F1E3",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

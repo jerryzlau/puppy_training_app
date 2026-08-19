@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Biru's App — Mock B · Scrapbook Journal</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Kalam:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F1E3; --paper-d:#EFE5CF; --ink:#41382C; --ink-soft:#7d7160;
+    --red:#C0533E; --tape:#F2D06B; --green:#6F8F6A; --blue:#7590A8; --brown:#8B6F52;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{font-family:'Kalam',cursive;background:#5B4A3A url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" opacity="0.05"><circle cx="30" cy="30" r="1.5" fill="white"/></svg>');min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 16px 60px}
+  .hand{font-family:'Caveat',cursive}
+  .proto-head{text-align:center;margin-bottom:18px;color:#EFE5CF}
+  .proto-head h1{font-family:'Caveat',cursive;font-size:30px}
+  .proto-head p{font-size:12.5px;opacity:.8;margin-top:2px}
+  .proto-head .tag{display:inline-block;background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:3px 12px;border-radius:3px;margin-bottom:8px;letter-spacing:1px;font-family:'Kalam'}
+  .stage{display:flex;gap:26px;align-items:flex-start;flex-wrap:wrap;justify-content:center}
+  .phone{width:390px;height:800px;background:#2b2119;border-radius:48px;padding:10px;box-shadow:0 24px 60px rgba(0,0,0,.5);position:relative;flex-shrink:0}
+  .phone .notch{position:absolute;top:22px;left:50%;transform:translateX(-50%);width:118px;height:26px;background:#2b2119;border-radius:16px;z-index:50}
+  .screen-wrap{width:100%;height:100%;border-radius:40px;overflow:hidden;background:var(--paper);position:relative}
+  /* paper texture */
+  .screen-wrap::before{content:"";position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 27px,rgba(139,111,82,.08) 28px);pointer-events:none;z-index:1}
+  .screen{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden;z-index:2}
+  .screen.active{display:flex}
+  .scroll{flex:1;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+  .scroll::-webkit-scrollbar{display:none}
+  .status{height:52px;flex-shrink:0;display:flex;align-items:flex-end;justify-content:space-between;padding:0 26px 4px;font-size:13px;color:var(--ink)}
+  .mapcard{background:var(--paper);border-radius:6px;padding:16px 18px;width:250px;font-size:13.5px;color:var(--ink);box-shadow:0 8px 24px rgba(0,0,0,.35);transform:rotate(.5deg)}
+  .mapcard h3{font-family:'Caveat',cursive;font-size:22px;color:var(--red);margin-bottom:8px}
+  .mapcard button{display:block;width:100%;text-align:left;background:none;border:none;font:inherit;color:inherit;padding:6px 10px;border-radius:4px;cursor:pointer}
+  .mapcard button:hover{background:var(--paper-d)}
+  .mapcard button.on{background:var(--ink);color:var(--paper)}
+  .mapcard .sec{margin-top:8px;font-size:11px;letter-spacing:1.5px;color:var(--brown);padding-left:10px;text-transform:uppercase}
+  .clk{cursor:pointer;transition:transform .12s}
+  .clk:active{transform:scale(.97)}
+  /* scrapbook elements */
+  .tape{position:absolute;width:88px;height:26px;background:rgba(242,208,107,.85);top:-12px;left:50%;transform:translateX(-50%) rotate(-3deg);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+  .tape.l{left:18%;transform:rotate(-8deg)}
+  .tape.r{left:auto;right:-6%;transform:rotate(6deg)}
+  .polaroid{background:#fff;padding:10px 10px 34px;box-shadow:0 5px 14px rgba(65,56,44,.25);position:relative}
+  .polaroid .cap{position:absolute;bottom:6px;left:0;right:0;text-align:center;font-family:'Caveat',cursive;font-size:19px;color:#5c5142}
+  .photo{background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;font-size:46px}
+  .sticker{position:absolute;font-size:30px;filter:drop-shadow(1px 2px 2px rgba(0,0,0,.2));z-index:5}
+  .btn{display:block;width:100%;padding:14px;border:2.5px solid var(--ink);border-radius:8px;background:var(--red);color:#fff;font:inherit;font-size:17px;font-weight:700;cursor:pointer;box-shadow:3px 3px 0 var(--ink)}
+  .btn.ghost{background:var(--paper);color:var(--ink)}
+  .stamp{display:inline-block;border:2px solid var(--green);color:var(--green);font-size:11px;font-weight:700;padding:3px 9px;border-radius:4px;transform:rotate(-2deg);letter-spacing:1px;text-transform:uppercase}
+  input,textarea{font:inherit;width:100%;border:none;border-bottom:2px dashed var(--brown);padding:10px 4px;background:transparent;color:var(--ink);font-size:16px}
+  input:focus,textarea:focus{outline:none;border-color:var(--red)}
+  label{font-family:'Caveat',cursive;font-size:21px;color:var(--brown);display:block;margin:16px 0 2px}
+  .back{font-size:15px;font-weight:700;color:var(--red);cursor:pointer}
+  .tabbar{flex-shrink:0;background:var(--paper-d);border-top:2px dashed var(--brown);display:flex;padding:10px 8px 26px}
+  .tab{flex:1;text-align:center;font-size:11px;font-weight:700;color:#a3937c;cursor:pointer}
+  .tab .ic{font-size:21px;display:block;margin-bottom:1px;filter:grayscale(1);opacity:.5}
+  .tab.on{color:var(--ink)}
+  .tab.on .ic{filter:none;opacity:1}
+  .task{display:flex;gap:12px;align-items:flex-start;padding:12px 6px;border-bottom:1.5px dashed #D8CBB2;cursor:pointer}
+  .task .box{width:26px;height:26px;border:2.5px solid var(--ink);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--red);background:#fff;transform:rotate(-1deg)}
+  .task .t{font-size:15px;color:var(--ink);line-height:1.45}
+  .task.done .t{text-decoration:line-through;text-decoration-color:var(--red);text-decoration-thickness:2px;color:#9c8f7a}
+  .doodle{position:absolute;font-family:'Caveat',cursive;color:var(--brown);opacity:.5;pointer-events:none}
+  @media(max-width:900px){.mapcard{width:390px;order:2;transform:none}}
+</style>
+</head>
+<body>
+
+<div class="proto-head">
+  <div class="tag">MOCK B</div>
+  <h1>✂️ Scrapbook Journal — "The Biru Diaries"</h1>
+  <p>Clickable prototype · tap anything, or jump with the flow map</p>
+</div>
+
+<div class="stage">
+<div class="phone"><div class="notch"></div><div class="screen-wrap" id="app">
+
+<!-- LOGIN -->
+<div class="screen" id="s-login">
+  <div class="scroll" style="padding:0 30px;display:flex;flex-direction:column;justify-content:center">
+    <div class="doodle" style="top:70px;right:26px;font-size:22px;transform:rotate(8deg)">est. 2026 ♡</div>
+    <div class="polaroid" style="width:190px;margin:0 auto 24px;transform:rotate(-3deg)">
+      <div class="tape"></div>
+      <div class="photo" style="height:170px;background:linear-gradient(140deg,#E8D5A8,#C89B6B)">🐶</div>
+      <div class="cap">our Biru ♡</div>
+    </div>
+    <h2 class="hand" style="font-size:44px;text-align:center;color:var(--ink);line-height:1">The Biru Diaries</h2>
+    <p style="text-align:center;font-size:14px;color:var(--ink-soft);margin-top:6px">a scrapbook of one very small dog</p>
+    <label>email</label>
+    <input value="jerryzlau@gmail.com" readonly>
+    <label>password</label>
+    <input type="password" value="••••••••••" readonly>
+    <div style="height:26px"></div>
+    <button class="btn clk" onclick="go('s-diary')">Open the book ✂️</button>
+    <div style="height:12px"></div>
+    <button class="btn ghost clk" onclick="go('s-diary')">Start a new scrapbook</button>
+    <p style="text-align:center;font-size:13px;color:var(--ink-soft);margin-top:16px">invited by your partner? <b style="color:var(--red)">paste your invite code →</b></p>
+  </div>
+</div>
+
+<!-- DIARY FEED -->
+<div class="screen" id="s-diary">
+  <div class="status"><span>9:41</span><span>🔋</span></div>
+  <div style="padding:4px 22px 10px;display:flex;justify-content:space-between;align-items:center">
+    <div>
+      <h2 class="hand" style="font-size:34px;color:var(--ink)">The Biru Diaries</h2>
+      <span class="stamp">day 87 · vol. 1</span>
+    </div>
+    <div class="clk" onclick="go('s-settings')" style="width:42px;height:42px;border-radius:50%;background:#fff;border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;font-size:20px;transform:rotate(3deg)">🧑</div>
+  </div>
+  <div class="scroll" style="padding:6px 20px 120px">
+    <div class="clk" style="border:2px solid var(--ink);border-radius:8px;background:#fff;padding:12px 14px;display:flex;align-items:center;gap:12px;box-shadow:3px 3px 0 rgba(65,56,44,.2);margin-bottom:22px;transform:rotate(-.5deg)" onclick="go('s-course')">
+      <span style="font-size:26px">🎓</span>
+      <div style="flex:1"><b style="font-size:14px">Puppy school · week 7 of 12</b><div style="font-size:12px;color:var(--ink-soft)">next: "leave it" — level 2</div></div>
+      <span class="hand" style="font-size:22px;color:var(--red)">go →</span>
+    </div>
+
+    <!-- entry: polaroid style -->
+    <div class="clk" style="margin-bottom:30px;position:relative" onclick="go('s-entry')">
+      <div class="sticker" style="top:-14px;right:6px;transform:rotate(12deg)">⭐</div>
+      <div class="polaroid" style="transform:rotate(1.2deg)">
+        <div class="tape l"></div><div class="tape r"></div>
+        <div class="photo" style="height:200px;background:linear-gradient(140deg,#E8D5A8,#C89B6B)">🐶🌳</div>
+        <div class="cap">first off-leash zoomies!! · today</div>
+      </div>
+      <p style="font-size:14px;color:var(--ink);margin-top:10px;padding:0 6px;line-height:1.6">Biru went absolutely feral at the dog park. Full zoomies for 10 minutes, then passed out in the car…</p>
+      <div style="padding:0 6px;margin-top:4px"><span class="hand" style="font-size:19px;color:var(--brown)">— Jerry</span> <span class="stamp" style="margin-left:8px">recall win</span></div>
+    </div>
+
+    <div class="clk" style="margin-bottom:30px;position:relative" onclick="go('s-entry')">
+      <div class="sticker" style="top:-10px;left:2px;transform:rotate(-14deg)">🫧</div>
+      <div class="polaroid" style="transform:rotate(-1.5deg)">
+        <div class="tape"></div>
+        <div class="photo" style="height:170px;background:linear-gradient(140deg,#C5D8E8,#8FA9BE)">🛁🐶</div>
+        <div class="cap">bath time drama · yesterday</div>
+      </div>
+      <p style="font-size:14px;color:var(--ink);margin-top:10px;padding:0 6px;line-height:1.6">The betrayal in his eyes when the water turned on. Fluffed up like a cotton ball after.</p>
+      <div style="padding:0 6px;margin-top:4px"><span class="hand" style="font-size:19px;color:var(--brown)">— Mei</span></div>
+    </div>
+
+    <!-- note-only entry: torn paper note -->
+    <div class="clk" style="background:#FDF9EC;border:1.5px solid #E2D5B8;padding:16px 18px;transform:rotate(.8deg);box-shadow:0 4px 10px rgba(65,56,44,.15);margin-bottom:26px;position:relative" onclick="go('s-entry')">
+      <div class="tape" style="width:64px"></div>
+      <b class="hand" style="font-size:24px;color:var(--ink)">slept through the night 🎉</b>
+      <p style="font-size:14px;color:var(--ink);line-height:1.6;margin-top:4px">No 3am crying! Crate training finally paying off. Too sleepy for photos.</p>
+      <div style="margin-top:6px"><span class="hand" style="font-size:18px;color:var(--brown)">— Jerry · Aug 15</span> <span class="stamp" style="margin-left:6px">milestone</span></div>
+    </div>
+  </div>
+  <div class="clk" style="position:absolute;bottom:96px;right:20px;width:60px;height:60px;border-radius:50%;background:var(--red);border:2.5px solid var(--ink);color:#fff;font-size:28px;display:flex;align-items:center;justify-content:center;box-shadow:3px 3px 0 var(--ink);z-index:10" onclick="go('s-new')">✏️</div>
+  <div class="tabbar">
+    <div class="tab on"><span class="ic">📔</span>Diary</div>
+    <div class="tab clk" onclick="go('s-course')"><span class="ic">🎓</span>School</div>
+    <div class="tab clk" onclick="go('s-progress')"><span class="ic">🏅</span>Progress</div>
+    <div class="tab clk" onclick="go('s-settings')"><span class="ic">🏠</span>Family</div>
+  </div>
+</div>
+
+<!-- NEW ENTRY -->
+<div class="screen" id="s-new">
+  <div class="status"><span>9:41</span><span>🔋</span></div>
+  <div style="padding:4px 22px 8px;display:flex;justify-content:space-between;align-items:center">
+    <span class="back" onclick="go('s-diary')">‹ close</span>
+    <b class="hand" style="font-size:26px;color:var(--ink)">a new page</b>
+    <span class="back clk" onclick="go('s-diary')">paste in ✓</span>
+  </div>
+  <div class="scroll" style="padding:0 24px 40px">
+    <label>tue, aug 18 — day 87</label>
+    <div style="display:flex;gap:14px;margin:8px 0 4px">
+      <div class="polaroid clk" style="width:104px;transform:rotate(-2deg)"><div class="photo" style="height:84px;background:linear-gradient(140deg,#E8D5A8,#C89B6B);font-size:30px">🐶</div><div class="cap" style="font-size:14px">snuffle!</div></div>
+      <div class="clk" style="width:104px;height:118px;border:2.5px dashed var(--brown);border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--brown);transform:rotate(1.5deg)"><span style="font-size:26px">📷</span><span class="hand" style="font-size:18px">add photo</span></div>
+    </div>
+    <label>what happened today?</label>
+    <textarea rows="4" style="border:none;background:repeating-linear-gradient(0deg,transparent,transparent 30px,#D8CBB2 31px);line-height:31px;font-size:15px">Tried the new snuffle mat today. Took him 4 minutes to find every treat — little genius.</textarea>
+    <label>mood stickers</label>
+    <div style="display:flex;gap:12px;font-size:30px">
+      <span class="clk" style="filter:drop-shadow(2px 2px 2px rgba(0,0,0,.25))">😊</span><span class="clk" style="opacity:.45">😴</span><span class="clk" style="opacity:.45">😆</span><span class="clk" style="opacity:.45">😤</span><span class="clk" style="opacity:.45">⭐</span>
+    </div>
+    <label>pin to puppy school (optional)</label>
+    <div class="clk" style="border:1.5px solid var(--brown);border-radius:6px;background:#fff;padding:10px 14px;font-size:14px;transform:rotate(-.4deg)">🎓 week 7 · "leave it" — level 2 <span style="float:right;color:var(--brown)">›</span></div>
+    <div style="height:28px"></div>
+    <button class="btn clk" onclick="go('s-diary')">Paste into the book ✂️</button>
+  </div>
+</div>
+
+<!-- ENTRY DETAIL -->
+<div class="screen" id="s-entry">
+  <div class="status"><span>9:41</span><span>🔋</span></div>
+  <div style="padding:4px 22px 0"><span class="back" onclick="go('s-diary')">‹ back to the book</span></div>
+  <div class="scroll" style="padding:14px 24px 40px">
+    <div class="polaroid" style="transform:rotate(-1deg);margin-bottom:8px">
+      <div class="tape l"></div><div class="tape r"></div>
+      <div class="photo" style="height:250px;background:linear-gradient(140deg,#E8D5A8,#C89B6B);font-size:56px">🐶🌳</div>
+      <div class="cap">1 of 3 — swipe ›</div>
+    </div>
+    <div class="sticker" style="position:relative;float:right;top:-30px;right:4px;transform:rotate(14deg)">⭐</div>
+    <h2 class="hand" style="font-size:36px;color:var(--ink);line-height:1.05">first off-leash zoomies!</h2>
+    <div style="margin:6px 0 12px"><span class="hand" style="font-size:20px;color:var(--brown)">— Jerry · tue aug 18, 4:32pm</span></div>
+    <p style="font-size:15px;line-height:1.75;color:var(--ink)">Biru went absolutely feral at the dog park today. Full zoomies for 10 minutes straight — ears flat, butt tucked, the whole routine. A golden retriever tried to keep up and gave up.</p>
+    <p style="font-size:15px;line-height:1.75;color:var(--ink);margin-top:8px">Best part: he actually came back when I called. Twice! The recall practice is working.</p>
+    <div style="margin:14px 0"><span class="stamp">recall win</span> <span class="stamp" style="border-color:var(--red);color:var(--red)">silly day</span></div>
+    <div class="clk" style="border:1.5px solid var(--brown);border-radius:6px;background:#fff;padding:12px 14px;font-size:14px;transform:rotate(.4deg)" onclick="go('s-week')">🎓 pinned to: <b>week 6 · recall foundations</b> <span style="float:right;color:var(--red)">view →</span></div>
+    <div style="background:#FDF9EC;border:1.5px dashed #D8CBB2;padding:12px 16px;margin-top:16px;transform:rotate(-.6deg)">
+      <span class="hand" style="font-size:20px;color:var(--blue)">Mei wrote in the margin:</span>
+      <p style="font-size:14px;color:var(--ink)">hahaha I can't believe I missed this 😭</p>
+    </div>
+  </div>
+</div>
+
+<!-- COURSE -->
+<div class="screen" id="s-course">
+  <div class="status"><span>9:41</span><span>🔋</span></div>
+  <div style="padding:4px 22px 10px">
+    <h2 class="hand" style="font-size:34px;color:var(--ink)">Puppy School 🎓</h2>
+    <span class="stamp">12-week biewer curriculum</span>
+  </div>
+  <div class="scroll" style="padding:6px 20px 110px">
+    <div style="border:2px solid var(--ink);border-radius:8px;background:#fff;padding:14px 16px;box-shadow:3px 3px 0 rgba(65,56,44,.2);margin-bottom:20px;transform:rotate(-.5deg)">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <b style="font-size:15px">report card: 61% ✏️</b><span class="hand" style="font-size:22px;color:var(--red)">🔥 12-day streak!</span>
+      </div>
+      <div style="height:14px;border:1.5px solid var(--ink);border-radius:99px;margin-top:10px;background:var(--paper)"><div style="width:61%;height:100%;background:repeating-linear-gradient(45deg,var(--red),var(--red) 6px,#D46A55 6px,#D46A55 12px);border-radius:99px"></div></div>
+    </div>
+
+    <div class="hand" style="font-size:24px;color:var(--brown);margin-bottom:8px">month one · foundations</div>
+    <div style="border-bottom:1.5px dashed #D8CBB2;padding:12px 4px;display:flex;gap:12px;align-items:center;opacity:.7">
+      <span class="stamp">done!</span><div style="flex:1;font-size:14.5px"><b>weeks 1–4</b> — crate, potty, name, handling, friends</div>
+    </div>
+
+    <div class="hand" style="font-size:24px;color:var(--brown);margin:16px 0 8px">month two · core obedience</div>
+    <div style="border-bottom:1.5px dashed #D8CBB2;padding:12px 4px;display:flex;gap:12px;align-items:center;opacity:.7">
+      <span class="stamp">done!</span><div style="flex:1;font-size:14.5px"><b>week 5</b> — leash walking (tiny dog edition)</div>
+    </div>
+    <div style="border-bottom:1.5px dashed #D8CBB2;padding:12px 4px;display:flex;gap:12px;align-items:center;opacity:.7">
+      <span class="stamp">done!</span><div style="flex:1;font-size:14.5px"><b>week 6</b> — down, stay & recall</div>
+    </div>
+    <div class="clk" style="border:2px solid var(--red);border-radius:8px;background:#fff;padding:12px 14px;display:flex;gap:12px;align-items:center;margin:10px 0;box-shadow:3px 3px 0 rgba(192,83,62,.3);transform:rotate(.4deg)" onclick="go('s-week')">
+      <span style="font-size:24px">✏️</span>
+      <div style="flex:1;font-size:14.5px"><b>week 7 — "leave it" & impulse control</b><div style="font-size:12.5px;color:var(--red);font-weight:700">2 of 4 lessons · keep going →</div></div>
+    </div>
+    <div style="border-bottom:1.5px dashed #D8CBB2;padding:12px 4px;display:flex;gap:12px;align-items:center">
+      <span style="font-size:20px">🏠</span><div style="flex:1;font-size:14.5px"><b>week 8</b> — home alone (velcro dog training)</div>
+    </div>
+
+    <div class="hand" style="font-size:24px;color:var(--brown);margin:16px 0 8px">month three · the real world</div>
+    <div style="padding:12px 4px;display:flex;gap:12px;align-items:center;opacity:.5">
+      <span style="font-size:20px">🌆</span><div style="flex:1;font-size:14.5px"><b>weeks 9–12</b> — city walks, tricks, grooming care, graduation 🎓</div>
+    </div>
+  </div>
+  <div class="tabbar">
+    <div class="tab clk" onclick="go('s-diary')"><span class="ic">📔</span>Diary</div>
+    <div class="tab on"><span class="ic">🎓</span>School</div>
+    <div class="tab clk" onclick="go('s-progress')"><span class="ic">🏅</span>Progress</div>
+    <div class="tab clk" onclick="go('s-settings')"><span class="ic">🏠</span>Family</div>
+  </div>
+</div>
+
+<!-- WEEK/LESSON -->
+<div class="screen" id="s-week">
+  <div class="status"><span>9:41</span><span>🔋</span></div>
+  <div style="padding:4px 22px 0;display:flex;justify-content:space-between;align-items:center">
+    <span class="back" onclick="go('s-course')">‹ school</span><span class="stamp">week 7 · 2/4</span>
+  </div>
+  <div class="scroll" style="padding:10px 24px 40px">
+    <h2 class="hand" style="font-size:34px;color:var(--ink);line-height:1.05">"leave it" & impulse control</h2>
+    <p style="font-size:14px;color:var(--ink-soft);margin:8px 0 14px;line-height:1.6">Biewers are quick and curious — "leave it" can save your pup from dropped meds or chicken bones on walks.</p>
+    <div style="background:#fff;border:1.5px solid #E2D5B8;padding:16px 18px;box-shadow:0 4px 10px rgba(65,56,44,.12);transform:rotate(-.3deg);margin-bottom:18px;position:relative">
+      <div class="tape" style="width:64px"></div>
+      <b style="font-size:15px">📖 lesson 3 · "leave it" — level 2 <span class="hand" style="color:var(--brown);font-size:18px">(~10 min/day)</span></b>
+      <p style="font-size:14px;line-height:1.7;margin-top:8px">Treat on the floor under your hand. Say <b>"leave it"</b> once. The instant Biru looks away — even a glance — mark "yes!" and reward from your <i>other</i> hand. Never give the "left" treat: ignoring that thing has to pay better.</p>
+      <p style="font-size:13.5px;line-height:1.6;margin-top:8px;color:var(--red)">⚠️ biewer tip: sessions under 5 min, rice-grain treats. Tiny tummy!</p>
+    </div>
+    <div class="hand" style="font-size:24px;color:var(--brown);margin-bottom:2px">tick them off ✏️</div>
+    <div class="task done clk" onclick="tgl(this)"><div class="box">✗</div><div><div class="t">Biru ignores a treat in your closed fist for 3 seconds</div><div class="hand" style="font-size:16px;color:#a3937c">— Jerry, mon</div></div></div>
+    <div class="task done clk" onclick="tgl(this)"><div class="box">✗</div><div><div class="t">Biru looks away from a treat under your open hand</div><div class="hand" style="font-size:16px;color:#a3937c">— Mei, tue</div></div></div>
+    <div class="task clk" onclick="tgl(this)"><div class="box"></div><div class="t">Treat on the floor, uncovered — Biru holds back on one cue</div></div>
+    <div class="task clk" onclick="tgl(this)"><div class="box"></div><div class="t">Works with dropped kibble during dinner prep</div></div>
+    <div class="task clk" onclick="tgl(this)"><div class="box"></div><div class="t">Practiced in 2 different rooms</div></div>
+    <div id="celebrate" style="display:none;border:2.5px solid var(--green);background:#F2F6EF;padding:16px;text-align:center;margin-top:14px;transform:rotate(-.5deg)">
+      <span class="hand" style="font-size:28px;color:var(--green)">gold star! lesson complete ⭐</span>
+      <div style="font-size:13.5px;margin:4px 0 10px">scrapbook this win before you forget it!</div>
+      <button class="btn clk" style="background:var(--green);padding:11px" onclick="go('s-new')">add a page to the diary 📔</button>
+    </div>
+    <div style="height:16px"></div>
+    <button class="btn ghost clk" onclick="go('s-course')">next: impulse control at doorways →</button>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="screen" id="s-progress">
+  <div class="status"><span>9:41</span><span>🔋</span></div>
+  <div style="padding:4px 22px 10px"><h2 class="hand" style="font-size:34px;color:var(--ink)">Report Card 🏅</h2></div>
+  <div class="scroll" style="padding:6px 22px 110px">
+    <div style="background:#fff;border:2px solid var(--ink);border-radius:8px;padding:18px;box-shadow:3px 3px 0 rgba(65,56,44,.2);text-align:center;margin-bottom:18px;transform:rotate(-.4deg)">
+      <div class="hand" style="font-size:26px;color:var(--brown)">Biru's semester so far</div>
+      <div style="font-size:52px;font-weight:700;color:var(--red);font-family:'Caveat';margin:2px 0">61%</div>
+      <div style="display:flex;justify-content:space-around;margin-top:8px;font-size:13px">
+        <div><b style="font-size:20px">26</b><br>lessons</div>
+        <div><b style="font-size:20px">🔥 12</b><br>day streak</div>
+        <div><b style="font-size:20px">87</b><br>diary days</div>
+      </div>
+    </div>
+    <div class="hand" style="font-size:24px;color:var(--brown);margin-bottom:8px">merit badges</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px">
+      <span class="stamp">✓ crate champ</span><span class="stamp">✓ potty (mostly)</span><span class="stamp">✓ sits pretty</span><span class="stamp">✓ knows his name</span><span class="stamp">✓ leash walker</span>
+      <span class="stamp" style="border-color:#b8a98d;color:#b8a98d">⏳ leave it</span><span class="stamp" style="border-color:#b8a98d;color:#b8a98d">🔒 recall outdoors</span>
+    </div>
+    <div class="hand" style="font-size:24px;color:var(--brown);margin-bottom:8px">who's teacher's pet?</div>
+    <div style="background:#fff;border:1.5px solid #E2D5B8;padding:14px 16px;transform:rotate(.3deg)">
+      <div style="display:flex;align-items:center;gap:10px;font-size:14px">🧑 Jerry<div style="flex:1;height:12px;border:1.5px solid var(--ink);border-radius:99px"><div style="width:58%;height:100%;background:var(--red);border-radius:99px"></div></div><b>58%</b></div>
+      <div style="display:flex;align-items:center;gap:10px;font-size:14px;margin-top:10px">👩 Mei<div style="flex:1;height:12px;border:1.5px solid var(--ink);border-radius:99px"><div style="width:42%;height:100%;background:var(--blue);border-radius:99px"></div></div><b>42%</b></div>
+      <div class="hand" style="font-size:18px;color:var(--brown);margin-top:8px">it's not a competition. (it is.)</div>
+    </div>
+  </div>
+  <div class="tabbar">
+    <div class="tab clk" onclick="go('s-diary')"><span class="ic">📔</span>Diary</div>
+    <div class="tab clk" onclick="go('s-course')"><span class="ic">🎓</span>School</div>
+    <div class="tab on"><span class="ic">🏅</span>Progress</div>
+    <div class="tab clk" onclick="go('s-settings')"><span class="ic">🏠</span>Family</div>
+  </div>
+</div>
+
+<!-- SETTINGS/FAMILY -->
+<div class="screen" id="s-settings">
+  <div class="status"><span>9:41</span><span>🔋</span></div>
+  <div style="padding:4px 22px 10px"><h2 class="hand" style="font-size:34px;color:var(--ink)">Biru's Family 🏠</h2></div>
+  <div class="scroll" style="padding:6px 22px 110px">
+    <div class="polaroid" style="width:170px;margin:0 auto 18px;transform:rotate(2deg)">
+      <div class="tape"></div>
+      <div class="photo" style="height:140px;background:linear-gradient(140deg,#E8D5A8,#C89B6B)">🐶</div>
+      <div class="cap">Biru · biewer · 5 mo</div>
+    </div>
+    <div class="hand" style="font-size:24px;color:var(--brown);margin-bottom:6px">the pack</div>
+    <div style="border-bottom:1.5px dashed #D8CBB2;padding:12px 4px;display:flex;gap:12px;align-items:center;font-size:14.5px">🧑 <b>Jerry</b> · jerryzlau@gmail.com <span class="stamp" style="margin-left:auto">owner</span></div>
+    <div style="border-bottom:1.5px dashed #D8CBB2;padding:12px 4px;display:flex;gap:12px;align-items:center;font-size:14.5px">👩 <b>Mei</b> · joined jun 2 <span class="stamp" style="margin-left:auto;border-color:var(--blue);color:var(--blue)">member</span></div>
+    <div style="border:2.5px dashed var(--brown);border-radius:8px;padding:16px;margin-top:16px;background:#FDF9EC">
+      <b class="hand" style="font-size:24px;color:var(--ink)">✉️ invite someone to the book</b>
+      <p style="font-size:13px;color:var(--ink-soft);margin:4px 0 8px">they'll see every page & can tick off lessons with you</p>
+      <input placeholder="partner@email.com" style="margin-bottom:12px">
+      <button class="btn clk" style="padding:12px" onclick="this.textContent='invite mailed! ✓'">send invite</button>
+    </div>
+    <div style="height:18px"></div>
+    <div class="clk" style="padding:12px 4px;border-bottom:1.5px dashed #D8CBB2;font-size:14.5px">🔔 daily training reminder — 6:00pm</div>
+    <div class="clk" style="padding:12px 4px;border-bottom:1.5px dashed #D8CBB2;font-size:14.5px">📤 print the scrapbook (photo-book PDF)</div>
+    <div class="clk" style="padding:12px 4px;font-size:14.5px;color:var(--red);font-weight:700" onclick="go('s-login')">close the book (log out)</div>
+  </div>
+  <div class="tabbar">
+    <div class="tab clk" onclick="go('s-diary')"><span class="ic">📔</span>Diary</div>
+    <div class="tab clk" onclick="go('s-course')"><span class="ic">🎓</span>School</div>
+    <div class="tab clk" onclick="go('s-progress')"><span class="ic">🏅</span>Progress</div>
+    <div class="tab on"><span class="ic">🏠</span>Family</div>
+  </div>
+</div>
+
+</div></div>
+
+<div class="mapcard">
+  <h3>Flow map ✂️</h3>
+  <div class="sec">Auth</div>
+  <button data-s="s-login" onclick="go('s-login')">1 · Open the book (sign in)</button>
+  <div class="sec">Diary</div>
+  <button data-s="s-diary" onclick="go('s-diary')">2 · The scrapbook (home)</button>
+  <button data-s="s-new" onclick="go('s-new')">3 · A new page</button>
+  <button data-s="s-entry" onclick="go('s-entry')">4 · Page detail</button>
+  <div class="sec">Education</div>
+  <button data-s="s-course" onclick="go('s-course')">5 · Puppy school</button>
+  <button data-s="s-week" onclick="go('s-week')">6 · Lesson + tick-offs</button>
+  <button data-s="s-progress" onclick="go('s-progress')">7 · Report card</button>
+  <div class="sec">Household</div>
+  <button data-s="s-settings" onclick="go('s-settings')">8 · Family & invite</button>
+  <p style="margin-top:12px;font-size:12px;color:var(--ink-soft);line-height:1.5">Tip: on screen 6, tick all boxes to earn the gold star.</p>
+</div>
+</div>
+
+<script>
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.mapcard button').forEach(b=>b.classList.toggle('on',b.dataset.s===id));
+  document.querySelectorAll('#'+id+' .scroll').forEach(el=>el.scrollTop=0);
+}
+function tgl(el){
+  el.classList.toggle('done');
+  el.querySelector('.box').textContent = el.classList.contains('done') ? '✗' : '';
+  const all=[...document.querySelectorAll('#s-week .task')];
+  document.getElementById('celebrate').style.display = all.every(t=>t.classList.contains('done')) ? 'block' : 'none';
+}
+go('s-login');
+</script>
+</body>
+</html>

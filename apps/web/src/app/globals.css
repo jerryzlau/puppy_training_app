@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-paper text-ink font-body;
+  /* subtle ruled-paper texture */
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 27px,
+    rgba(139, 111, 82, 0.07) 28px
+  );
+}
+
+/* dashed underline inputs, scrapbook style */
+.input-line {
+  @apply w-full bg-transparent border-0 border-b-2 border-dashed border-wood px-1 py-2 text-base text-ink;
+}
+.input-line:focus {
+  @apply outline-none border-accent;
+}
+
+.ruled-textarea {
+  border: none;
+  background: repeating-linear-gradient(0deg, transparent, transparent 30px, #d8cbb2 31px);
+  line-height: 31px;
+  @apply w-full bg-transparent text-base text-ink px-1;
+}
+.ruled-textarea:focus {
+  @apply outline-none;
+}
+
+/* markdown lesson body */
+.lesson-body p {
+  @apply text-[15px] leading-7 mb-3;
+}
+.lesson-body strong {
+  @apply text-ink;
+}
+.lesson-body ul {
+  @apply list-disc pl-5 mb-3 text-[15px] leading-7;
+}
