@@ -8,3 +8,4 @@ dist/
 *.tsbuildinfo
 .turbo/
 coverage/
+biru-app.tar.gz

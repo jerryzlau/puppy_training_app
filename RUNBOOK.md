@@ -31,18 +31,21 @@ Smoke test: sign up → onboarding ("who's in this story?") → create a diary e
 
 ## 3. Railway (the API)
 
-1. [railway.app](https://railway.app) → New Project → **Deploy from GitHub repo** (push this repo to GitHub first) or `railway up` via CLI.
+1. [railway.app](https://railway.app) → New Project → **Deploy from GitHub repo** → `jerryzlau/puppy_training_app`.
 2. Service settings:
    - **Root directory:** `/` (monorepo — build from root)
    - **Build command:** `corepack enable && pnpm install --frozen-lockfile && pnpm --filter @biru/shared build && pnpm --filter @biru/api build`
    - **Start command:** `node apps/api/dist/index.js`
+   `@biru/shared` must be built before the API — its `dist/` is gitignored, so a fresh clone has no compiled output.
 3. **Variables:** `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, and `APP_ORIGIN=https://YOUR-APP.vercel.app` (add your Vercel domain after step 4; multiple origins comma-separated. `*.vercel.app` preview URLs are auto-allowed).
+   Don't set `PORT` — Railway injects it, and the API reads `process.env.PORT`.
+   `SUPABASE_JWKS_URL` is optional; it defaults to `$SUPABASE_URL/auth/v1/.well-known/jwks.json`.
 4. Networking → Generate domain. Check `https://<railway-domain>/healthz` returns `{"ok":true}`.
 
 ## 4. Vercel (the web app)
 
 1. [vercel.com](https://vercel.com) → Add New Project → import the repo.
-2. **Root directory:** `apps/web` (Vercel auto-detects Next.js; it handles the pnpm workspace).
+2. **Root directory:** `apps/web` (Vercel auto-detects Next.js; it handles the pnpm workspace). Leave the build command on the default — `apps/web`'s `build` script compiles `@biru/shared` first.
 3. **Environment variables:**
    - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
    - `NEXT_PUBLIC_API_URL` = your Railway domain (`https://…railway.app`)

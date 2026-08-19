@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "pnpm --filter @biru/shared build && next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "echo 'no web unit tests (logic lives in @biru/shared)'"
