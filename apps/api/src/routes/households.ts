@@ -1,5 +1,12 @@
 import type { FastifyInstance } from "fastify";
-import { CreateHouseholdSchema, UpdateHouseholdSchema, type HouseholdDto, type MemberDto } from "@biru/shared";
+import crypto from "node:crypto";
+import {
+  CreateHouseholdSchema,
+  UpdateHouseholdSchema,
+  SignPhotoSchema,
+  type HouseholdDto,
+  type MemberDto,
+} from "@biru/shared";
 import { authenticate, requireMember } from "../auth.js";
 import { db, PHOTO_BUCKET, SIGNED_URL_TTL } from "../supabase.js";
 
@@ -79,7 +86,6 @@ export function householdRoutes(app: FastifyInstance) {
   app.patch("/households/me", async (req, reply) => {
     const caller = await requireMember(req, reply);
     if (!caller) return;
-    if (caller.role !== "owner") return reply.code(403).send({ error: "owner only" });
     const parsed = UpdateHouseholdSchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: parsed.error.flatten() });
     const patch: Record<string, unknown> = {};
@@ -87,8 +93,38 @@ export function householdRoutes(app: FastifyInstance) {
     if (parsed.data.dogName !== undefined) patch.dog_name = parsed.data.dogName;
     if (parsed.data.dogBirthday !== undefined) patch.dog_birthday = parsed.data.dogBirthday;
     if (parsed.data.dogPhotoPath !== undefined) patch.dog_photo_path = parsed.data.dogPhotoPath;
+    // the dog's profile photo is a whole-family affair; everything else is owner-only
+    const onlyPhoto = Object.keys(patch).every((k) => k === "dog_photo_path");
+    if (!onlyPhoto && caller.role !== "owner")
+      return reply.code(403).send({ error: "owner only" });
+    // clean up the old profile photo when replacing it
+    if (patch.dog_photo_path !== undefined) {
+      const { data: current } = await db
+        .from("households")
+        .select("dog_photo_path")
+        .eq("id", caller.householdId)
+        .single();
+      if (current?.dog_photo_path && current.dog_photo_path !== patch.dog_photo_path) {
+        await db.storage.from(PHOTO_BUCKET).remove([current.dog_photo_path]);
+      }
+    }
     const { error } = await db.from("households").update(patch).eq("id", caller.householdId);
     if (error) return reply.code(500).send({ error: error.message });
     return reply.send(await householdDto(caller.householdId));
+  });
+
+  // Signed direct-to-storage upload slot for the dog's profile photo (any member).
+  app.post("/households/me/photo/sign", async (req, reply) => {
+    const caller = await requireMember(req, reply);
+    if (!caller) return;
+    const parsed = SignPhotoSchema.safeParse(req.body);
+    if (!parsed.success) return reply.code(400).send({ error: parsed.error.flatten() });
+    const ext = parsed.data.contentType.split("/")[1].replace("jpeg", "jpg");
+    const path = `${caller.householdId}/profile/${crypto.randomUUID()}.${ext}`;
+    const { data: signed, error } = await db.storage
+      .from(PHOTO_BUCKET)
+      .createSignedUploadUrl(path);
+    if (error || !signed) return reply.code(500).send({ error: error?.message ?? "sign failed" });
+    return reply.send({ path, uploadUrl: signed.signedUrl, token: signed.token });
   });
 }

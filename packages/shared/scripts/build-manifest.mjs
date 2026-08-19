@@ -23,6 +23,18 @@ const WEEK_META = {
   10: { theme: "city dog", month: 3 },
   11: { theme: "cooperative care", month: 3 },
   12: { theme: "graduation", month: 3 },
+  13: { theme: "the teenager arrives", month: 4 },
+  14: { theme: "recall — the sequel", month: 4 },
+  15: { theme: "leash manners 2.0", month: 4 },
+  16: { theme: "brain games", month: 4 },
+  17: { theme: "heel & fancy footwork", month: 5 },
+  18: { theme: "distance & duration", month: 5 },
+  19: { theme: "the trick portfolio", month: 5 },
+  20: { theme: "spa mastery", month: 5 },
+  21: { theme: "adventure dog", month: 6 },
+  22: { theme: "travel & sleepovers", month: 6 },
+  23: { theme: "good citizen", month: 6 },
+  24: { theme: "graduation ii — with honors", month: 6 },
 };
 
 if (!fs.existsSync(contentDir)) {
@@ -97,7 +109,9 @@ for (const dir of weekDirs) {
 
 weeks.sort((a, b) => a.week - b.week);
 
-if (weeks.length !== 12) errors.push(`expected 12 weeks, found ${weeks.length}`);
+const EXPECTED_WEEKS = Object.keys(WEEK_META).length;
+if (weeks.length !== EXPECTED_WEEKS)
+  errors.push(`expected ${EXPECTED_WEEKS} weeks, found ${weeks.length}`);
 for (const w of weeks) {
   if (w.lessons.length !== 4) errors.push(`week ${w.week}: has ${w.lessons.length} lessons (need 4)`);
 }

@@ -8,6 +8,7 @@ import { COURSE_MANIFEST, lessonProgress } from "@biru/shared";
 import { useProgress } from "@/lib/progress";
 import { useSession } from "@/lib/session";
 import { Stamp, SketchButton, WashiTape } from "@/components/scrapbook";
+import { VoiceOver } from "@/components/VoiceOver";
 
 export default function LessonPage() {
   const { week, lesson } = useParams<{ week: string; lesson: string }>();
@@ -41,9 +42,11 @@ export default function LessonPage() {
         </Stamp>
       </div>
       <h1 className="font-hand text-4xl leading-tight">{l.title}</h1>
-      <div className="text-xs text-inkSoft mt-1 mb-4 capitalize">
+      <div className="text-xs text-inkSoft mt-1 capitalize">
         week {w.week} · {w.theme} · ~{l.minutesPerDay} min/day
       </div>
+
+      <VoiceOver title={l.title} body={l.body} tasks={l.tasks.map((t) => t.text)} />
 
       <div className="relative bg-white border border-[#E2D5B8] px-4 py-4 shadow-sketchSoft -rotate-[0.3deg] mb-6">
         <WashiTape className="w-16" />

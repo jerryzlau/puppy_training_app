@@ -24,7 +24,7 @@ export interface CourseWeek {
   week: number;
   /** e.g. "impulse control" */
   theme: string;
-  month: 1 | 2 | 3;
+  month: number;
   lessons: CourseLesson[];
 }
 
@@ -34,10 +34,13 @@ export interface CourseManifest {
   totalTasks: number;
 }
 
-export const MONTH_TITLES: Record<1 | 2 | 3, string> = {
+export const MONTH_TITLES: Record<number, string> = {
   1: "month one · foundations",
   2: "month two · core obedience",
   3: "month three · the real world",
+  4: "month four · surviving the teenager",
+  5: "month five · polish & performance",
+  6: "month six · the adventure dog",
 };
 
 // ---------- rollups ----------
@@ -162,6 +165,12 @@ export const SKILL_BADGES: SkillBadge[] = [
   { label: "city dog", lessons: ["week-10/cafe-settle"] },
   { label: "spa day pro", lessons: ["week-11/groomer-prep"] },
   { label: "graduate 🎓", lessons: ["week-12/graduation-day"] },
+  { label: "teen survivor", lessons: ["week-13/regression-is-normal", "week-14/recall-rebuild"] },
+  { label: "heel artist", lessons: ["week-17/heel-foundations", "week-17/heel-on-the-street"] },
+  { label: "trick star ✨", lessons: ["week-19/trick-weave", "week-19/trick-play-dead"] },
+  { label: "trail hound", lessons: ["week-21/first-real-hike"] },
+  { label: "canine good citizen", lessons: ["week-23/cgc-test-run"] },
+  { label: "graduate, with honors 🎓🎓", lessons: ["week-24/graduation-with-honors"] },
 ];
 
 export function earnedBadges(manifest: CourseManifest, checked: Set<string>): SkillBadge[] {

@@ -1151,8 +1151,1148 @@ export const COURSE_MANIFEST: CourseManifest = {
           ]
         }
       ]
+    },
+    {
+      "week": 13,
+      "theme": "the teenager arrives",
+      "month": 4,
+      "lessons": [
+        {
+          "slug": "week-13/regression-is-normal",
+          "week": 13,
+          "order": 1,
+          "title": "regression is normal (breathe)",
+          "minutesPerDay": 10,
+          "body": "Somewhere between month six and twelve, your perfect graduate will look you dead in the eye, hear \"come,\" and choose a leaf instead. Congratulations: adolescence. His brain is being remodeled, hormones are shouting, and trained behaviors genuinely get patchy. This is neurology, not rebellion — and it's temporary if you handle it right.\n\nThe playbook: lower your expectations, raise your pay. Cues he \"knows\" go back on the good-treat payroll. Reduce his chances to fail (long line back on in open spaces, more management at doors). And never punish the patchiness — teenage dogs who get punished for confusion come out the other side distrustful instead of just older.\n\n⚠️ **biewer tip:** biewer adolescence is usually more drama than destruction — expect selective deafness and Opinions rather than chewed sofas. Hold your standards gently and this phase is mostly funny in retrospect.",
+          "tasks": [
+            {
+              "id": "week-13/regression-is-normal/task-1",
+              "text": "Re-ran the week-12 skills assessment and noted (without despair) what got wobbly"
+            },
+            {
+              "id": "week-13/regression-is-normal/task-2",
+              "text": "Went back to paying jackpot rates for cues he 'already knows'"
+            },
+            {
+              "id": "week-13/regression-is-normal/task-3",
+              "text": "Zero punishment for teenage selective hearing this week — management instead"
+            }
+          ]
+        },
+        {
+          "slug": "week-13/boundaries-refresh",
+          "week": 13,
+          "order": 2,
+          "title": "boundaries refresh",
+          "minutesPerDay": 10,
+          "body": "Teenagers test fences — it's their job. The fix isn't new rules; it's re-running the old ones with fresh enthusiasm before they quietly erode. This week, pick the household routines that have gotten mushy and re-drill them like it's week 7 again: the doorway wait, the food-bowl sit, mat-during-dinner, the bedtime cue.\n\nCrucially, sync with your co-parent. Adolescent dogs are lawyers: if one human allows couch-launching and the other doesn't, he will litigate that loophole forever. Agree on the rules, then both enforce them with the same cheerful consistency.\n\nKeep sessions short and end on wins — a teenager's ego bruises easily and a frustrated Biru learns nothing.\n\n⚠️ **biewer tip:** small dogs get away with boundary creep because the consequences look tiny. A 5-pound door-dasher is still a door-dasher on a street with cars. Enforce like he weighs eighty pounds.",
+          "tasks": [
+            {
+              "id": "week-13/boundaries-refresh/task-1",
+              "text": "Doorway 'wait' and food-bowl manners re-drilled to crisp, 3 days running"
+            },
+            {
+              "id": "week-13/boundaries-refresh/task-2",
+              "text": "One rehearsed routine (bedtime crate, mat during dinner) re-tightened"
+            },
+            {
+              "id": "week-13/boundaries-refresh/task-3",
+              "text": "Everyone in the house re-agreed on the rules (no secret couch treaties)"
+            }
+          ]
+        },
+        {
+          "slug": "week-13/energy-outlets",
+          "week": 13,
+          "order": 3,
+          "title": "energy outlets for a tiny tornado",
+          "minutesPerDay": 15,
+          "body": "Adolescent energy is real even in four pounds of dog. An under-exercised teenager invents jobs: window patrol, sock redistribution, 5pm zoomie concerts. Beat him to it by scheduling outlets.\n\nPhysical: short fetch bursts, a flirt pole (kitten toy on a string works perfectly at his size — let him catch it regularly), safe zoomie sessions in enclosed space. Mental — the secret weapon: a ten-minute \"sniffari\" where he chooses the route and reads every message; sniffing tires a dog like gym cardio tires you.\n\nWatch the joints: no repetitive stair sprints, no marathon fetch, nothing off furniture. Toy-breed growth plates are still finishing.\n\n⚠️ **biewer tip:** ten minutes of nose-work equals an hour of walking for tiring out a biewer — on rainy days, scatter his dinner kibble in a towel roll and let him hunt it. Dinner becomes the workout.",
+          "tasks": [
+            {
+              "id": "week-13/energy-outlets/task-1",
+              "text": "Added one structured energy outlet per day (flirt pole, fetch bursts, sniff safari)"
+            },
+            {
+              "id": "week-13/energy-outlets/task-2",
+              "text": "Tried a 10-minute 'sniffari' walk where his nose sets the entire route"
+            },
+            {
+              "id": "week-13/energy-outlets/task-3",
+              "text": "Confirmed the golden rule: a mentally worked biewer is a calm biewer"
+            }
+          ]
+        },
+        {
+          "slug": "week-13/fear-period-two",
+          "week": 13,
+          "order": 4,
+          "title": "the second fear period",
+          "minutesPerDay": 10,
+          "body": "Mid-adolescence, many dogs hit a second fear period: things that were fine for months suddenly become suspicious. The trash can that moved. A man in a big coat. A statue. This is a normal developmental window, and your response decides whether the spook fades or sticks.\n\nThe recipe is the same as week 4, just with a bigger dog ego involved: create distance, pay generously for calm observation, and leave while it's going well. Never drag him toward the scary thing to \"show him it's fine\" — that's how one weird week becomes a lifelong grudge. And don't coddle-fuss either; be breezy. \"Oh, that bin? Classic bin.\" Treat, move on.\n\n⚠️ **biewer tip:** biewers take emotional cues off their humans intensely — your calm, bored reaction to the haunted object is genuinely half the treatment.",
+          "tasks": [
+            {
+              "id": "week-13/fear-period-two/task-1",
+              "text": "Spotted any new 'haunted objects' (a bin that's always been there, suddenly terrifying)"
+            },
+            {
+              "id": "week-13/fear-period-two/task-2",
+              "text": "Responded with distance + treats + zero pressure, never dragging him closer"
+            },
+            {
+              "id": "week-13/fear-period-two/task-3",
+              "text": "Kept a light log so you can watch each spook fade over days"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "week": 14,
+      "theme": "recall — the sequel",
+      "month": 4,
+      "lessons": [
+        {
+          "slug": "week-14/recall-rebuild",
+          "week": 14,
+          "order": 1,
+          "title": "recall rebuild",
+          "minutesPerDay": 15,
+          "body": "Teenage recall regression is so universal that trainers schedule for it. Your once-reliable \"come\" is now a suggestion he weighs against squirrels. Do not take it personally, and absolutely do not keep shouting a cue he's learned to ignore — every ignored rep weakens the word.\n\nInstead: rebuild like it's new. Long line back on in open spaces. Ten easy, close-range, jackpot-paid recalls a day. Only call when you'd bet money; go collect him instead of calling when you wouldn't. You're re-inflating the word's value with a hundred guaranteed wins.\n\nTwo honest weeks of this and the sequel usually outperforms the original — an adult recall built on a double foundation.\n\n⚠️ **biewer tip:** if the word \"come\" got badly worn out, rebrand — pick a fresh word (\"here!\"), charge it like the emergency word, and retire the old one. Dogs don't mind; words are cheap, associations are everything.",
+          "tasks": [
+            {
+              "id": "week-14/recall-rebuild/task-1",
+              "text": "Recall went back on the long line in open areas — no shame, just physics"
+            },
+            {
+              "id": "week-14/recall-rebuild/task-2",
+              "text": "Ten paid recalls a day at teenage jackpot rates (the good chicken is back)"
+            },
+            {
+              "id": "week-14/recall-rebuild/task-3",
+              "text": "Zero unpaid or ignorable recalls — every 'come' this week was a guaranteed win"
+            }
+          ]
+        },
+        {
+          "slug": "week-14/whistle-recall",
+          "week": 14,
+          "order": 2,
+          "title": "whistle recall",
+          "minutesPerDay": 10,
+          "body": "Add a whistle to your recall toolkit. Why: a whistle carries farther than your voice, sounds identical whether you're calm or panicking (dogs absolutely hear the fear in a shouted \"COME\"), and either human can blow it with the exact same result.\n\nCharging it is pure week-9 tech: two short pips, then immediately the best food in the house. No behavior required at first — the sound just predicts miracles. Ten reps over a few days, then test from another room, then outdoors on the long line.\n\nKeep the whistle on the leash hook so walks grab it automatically. Two pips = come. Nothing else, ever, and it stays magic.\n\n⚠️ **biewer tip:** use a soft-tone whistle or blow gently — biewer ears are sharp, and a stadium-strength blast at close range teaches avoidance, not recall.",
+          "tasks": [
+            {
+              "id": "week-14/whistle-recall/task-1",
+              "text": "Charged the whistle: two pips → chicken rains, 10 reps over 3 days"
+            },
+            {
+              "id": "week-14/whistle-recall/task-2",
+              "text": "First whistle recall from another room — instant thunderpaws"
+            },
+            {
+              "id": "week-14/whistle-recall/task-3",
+              "text": "Whistle worked outdoors on the long line at 20 feet"
+            }
+          ]
+        },
+        {
+          "slug": "week-14/recall-around-dogs",
+          "week": 14,
+          "order": 3,
+          "title": "recall around other dogs",
+          "minutesPerDay": 15,
+          "body": "The final boss of recall: other dogs. For a social butterfly biewer, another dog is the best thing on any horizon, which makes \"come away from the dog\" the hardest check you'll ever cash.\n\nWork the ladder: start at a distance where he can notice the other dog and still hear you — recall, jackpot, and here's the trick, *release him back*: \"go watch!\" Coming to you must not end dog-time, or he'll learn to dodge the recall precisely when it matters.\n\nThe graduation rep is a recall out of actual play with a friend's dog. Set it up deliberately: recall, triple-pay, release back to play, repeat. Three cycles and \"come\" stops meaning \"party's over\" forever.\n\n⚠️ **biewer tip:** practice with calm known dogs only — a recall attempt while he's being chased by an over-excited big dog isn't training, it's a rescue. Scoop first, train later.",
+          "tasks": [
+            {
+              "id": "week-14/recall-around-dogs/task-1",
+              "text": "Recalled off watching a distant dog (long line), paid triple, released back to watch"
+            },
+            {
+              "id": "week-14/recall-around-dogs/task-2",
+              "text": "Closed distance over the week: 40 ft → 25 ft → 10 ft from the distraction dog"
+            },
+            {
+              "id": "week-14/recall-around-dogs/task-3",
+              "text": "One successful recall mid-play with a known dog friend — the black belt"
+            }
+          ]
+        },
+        {
+          "slug": "week-14/proofing-the-emergency-word",
+          "week": 14,
+          "order": 4,
+          "title": "proofing the emergency word",
+          "minutesPerDay": 5,
+          "body": "The emergency word from week 9 has hopefully sat unused and gleaming. Adolescence is exactly when it might get reached for — so this week, service the fire extinguisher.\n\nRecharge: five reps of word → extraordinary payment, spread over the week. Then one cold test at a moment of mild distraction (sniffing the garden, watching the window). You want sub-two-second thunderpaws. If the response has dulled, no drama — run a full recharge week and test again.\n\nAudit the rules while you're at it: has anyone in the house been using it for ordinary recalls? The word works *because* it's rare and always pays like a lottery. Guard it.\n\n⚠️ **biewer tip:** teach your wife the word and the payment rule too — the emergency happens to whoever is holding the leash, and a biewer bolting toward traffic doesn't check whose human is calling.",
+          "tasks": [
+            {
+              "id": "week-14/proofing-the-emergency-word/task-1",
+              "text": "Monthly recharge done: emergency word → the forbidden cheese, 5 reps"
+            },
+            {
+              "id": "week-14/proofing-the-emergency-word/task-2",
+              "text": "One cold test in a mildly distracting moment — sub-2-second response"
+            },
+            {
+              "id": "week-14/proofing-the-emergency-word/task-3",
+              "text": "Confirmed the rules: never diluted, never unpaid, never used casually"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "week": 15,
+      "theme": "leash manners 2.0",
+      "month": 4,
+      "lessons": [
+        {
+          "slug": "week-15/pulling-relapse-fix",
+          "week": 15,
+          "order": 1,
+          "title": "the pulling relapse fix",
+          "minutesPerDay": 10,
+          "body": "Teenage legs are stronger, the world is more interesting, and suddenly your loose-leash artist is towing you to every lamppost. The cure is the same physics as week 5, applied with adult-grade consistency: tight leash stops the world, soft leash restarts it, the good real estate is at your ankle.\n\nWhat breaks leash training at this age isn't ignorance — it's exceptions. The one hurried morning where pulling worked has paid him for pulling on a variable schedule, which is the strongest schedule there is (it's how slot machines work). So this week: zero exceptions. Leave five minutes earlier, stop every single time, pay every check-in.\n\n⚠️ **biewer tip:** watch for the harness slipping sideways on a leggy adolescent — refit it this week. A twisted harness makes even polite walking feel awkward for him.",
+          "tasks": [
+            {
+              "id": "week-15/pulling-relapse-fix/task-1",
+              "text": "Re-ran 'tight leash = world stops' with total consistency for 3 walks"
+            },
+            {
+              "id": "week-15/pulling-relapse-fix/task-2",
+              "text": "Paid the left-ankle position so often he re-defaulted there"
+            },
+            {
+              "id": "week-15/pulling-relapse-fix/task-3",
+              "text": "Banned the 'just this once' drag-along — consistency is the whole cure"
+            }
+          ]
+        },
+        {
+          "slug": "week-15/busy-street-walks",
+          "week": 15,
+          "order": 2,
+          "title": "busy street walks",
+          "minutesPerDay": 15,
+          "body": "Time to level up from quiet blocks to real streets: rush-hour sidewalks, buses sighing, delivery bikes, humanity in bulk. The skills are all built — this week is about volume and reps.\n\nStructure the walk: he travels on your inside (building side, away from the curb — make this an unconscious habit), you stop at every curb and ask for a sit, and you pay check-ins generously because eye contact on a busy street is worth triple. If a moment overwhelms him — a jackhammer, a crowd — step into a doorway, let the wave pass, pay, continue.\n\nShort is fine. Fifteen good minutes on a hard street beats an hour of overwhelm.\n\n⚠️ **biewer tip:** on crowded sidewalks a biewer is invisible at shin height — a bright harness helps, but your real job is radar: watch feet, strollers, and rolling suitcases for him.",
+          "tasks": [
+            {
+              "id": "week-15/busy-street-walks/task-1",
+              "text": "One walk on a genuinely busy street at his pace, treats flowing at check-ins"
+            },
+            {
+              "id": "week-15/busy-street-walks/task-2",
+              "text": "He sat calmly at 3 curb stops while traffic passed"
+            },
+            {
+              "id": "week-15/busy-street-walks/task-3",
+              "text": "Kept him on the inside (building side) the whole route — new default habit"
+            }
+          ]
+        },
+        {
+          "slug": "week-15/passing-dogs-calmly",
+          "week": 15,
+          "order": 3,
+          "title": "passing dogs without a meltdown",
+          "minutesPerDay": 10,
+          "body": "On-leash dog passings are where small dogs develop their worst habit: the theatrical meltdown. It usually starts as excitement, gets rehearsed daily, and calcifies into reactivity. Prevent it now with the engagement game.\n\nThe pattern: dog appears in the distance → before Biru winds up, \"look at me\" → treat, treat, treat as the dog passes → done. He learns \"other dog on leash\" predicts a payday at your knee, not a lunge-fest. Distance is your dial: start wide (cross the street early, arc around) and shrink it over weeks.\n\nIf he does go off: no scolding — add distance, wait out the fizz, resume the game. Every calm pass is a brick; every rehearsed meltdown removes three.\n\n⚠️ **biewer tip:** the leash-tightening reflex is contagious — when you spot a dog and go tense, he reads it instantly. Breathe, keep the leash soft, and narrate cheerfully. You're both performing calm until it's real.",
+          "tasks": [
+            {
+              "id": "week-15/passing-dogs-calmly/task-1",
+              "text": "Used the 'see dog → look at me → treat' game on 5 dog-passings"
+            },
+            {
+              "id": "week-15/passing-dogs-calmly/task-2",
+              "text": "Crossed the street or arced early when a dodgy dog approached — proud, not embarrassed"
+            },
+            {
+              "id": "week-15/passing-dogs-calmly/task-3",
+              "text": "One head-on sidewalk pass with a calm dog, no vocals, treats at your seam"
+            }
+          ]
+        },
+        {
+          "slug": "week-15/night-walks",
+          "week": 15,
+          "order": 4,
+          "title": "night walks & visibility",
+          "minutesPerDay": 5,
+          "body": "Evening walks are lovely and, for a four-pound dark-and-white dog, genuinely risky: drivers don't see him, cyclists don't see him, and dusk is when the neighborhood's off-leash escapees roam. Gear up and drill it.\n\nKit: a small LED light clipped to the harness (not dangling near his legs), a reflective strip or tiny vest, and your own visibility too. Then walk the familiar route at dusk and treat the weirdness — shadows move differently, hedges rustle, the world smells nocturnal. A few paid reps and night-Biru is as breezy as day-Biru.\n\nKeep night routes familiar and lit; save adventures for daylight.\n\n⚠️ **biewer tip:** biewers run cold at night even in mild seasons — the evening-walk sweater goes on below 55°F (13°C). He will look ridiculous. He will be warm. Both things are true.",
+          "tasks": [
+            {
+              "id": "week-15/night-walks/task-1",
+              "text": "Fitted a clip light or LED collar band — visible from both directions"
+            },
+            {
+              "id": "week-15/night-walks/task-2",
+              "text": "One calm evening walk with the new gear, treats for weird shadows"
+            },
+            {
+              "id": "week-15/night-walks/task-3",
+              "text": "Reflective harness strip or vest confirmed working (car headlights test)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "week": 16,
+      "theme": "brain games",
+      "month": 4,
+      "lessons": [
+        {
+          "slug": "week-16/snuffle-and-scentwork",
+          "week": 16,
+          "order": 1,
+          "title": "snuffle mats & starter scentwork",
+          "minutesPerDay": 10,
+          "body": "A biewer's nose is a supercomputer that mostly sits idle. Scentwork puts it on payroll — and nose-work is the single best effort-to-exhaustion ratio in dog enrichment.\n\nStart easy: dinner in a snuffle mat (or kibble rolled in a towel). Then \"which hand?\" — treat in one fist, both offered, he noses the right one, it opens. Then the shell game: three cups, one treat, let him indicate. Mark the moment his nose tells you he's found it — you're teaching him that *telling you what he smells* is the game.\n\nSessions stay short and end while he's still hunting happily. A worked nose is a tired, satisfied dog.\n\n⚠️ **biewer tip:** count every scentwork treat against the daily ration — nose games can quietly double a tiny dog's calories. Kibble works fine once he loves the game.",
+          "tasks": [
+            {
+              "id": "week-16/snuffle-and-scentwork/task-1",
+              "text": "Dinner served in a snuffle mat or rolled towel 3 times this week"
+            },
+            {
+              "id": "week-16/snuffle-and-scentwork/task-2",
+              "text": "Played 'which hand?' — he indicates the treat hand by nose, 10 rounds"
+            },
+            {
+              "id": "week-16/snuffle-and-scentwork/task-3",
+              "text": "Hid a treat under one of three cups and let him work the puzzle"
+            }
+          ]
+        },
+        {
+          "slug": "week-16/puzzle-toys",
+          "week": 16,
+          "order": 2,
+          "title": "puzzle toys & food dispensers",
+          "minutesPerDay": 10,
+          "body": "Puzzle feeders turn mealtime into a shift at the office — in the best way. Start at level 1 (sliding lids, simple flaps) and let him work. The hard part is yours: do not help. Watching him struggle politely is the point; solving it himself is what builds the confident, persistent brain you want.\n\nLevel up only when the current puzzle takes him under two minutes. Rotate two or three so novelty stays high, and retire anything he can brute-force by flipping (small dogs discover leverage fast).\n\nWobble-dispensers sized for toy breeds are great rainy-day dinners; freeze-stuffed toys remain the gold standard for alone time.\n\n⚠️ **biewer tip:** check puzzle sizing — many are built for retriever noses, and a biewer can get a whole head stuck where a labrador gets a nostril. Toy-breed lines exist; use them.",
+          "tasks": [
+            {
+              "id": "week-16/puzzle-toys/task-1",
+              "text": "Introduced one level-1 puzzle feeder and let him solve it without help"
+            },
+            {
+              "id": "week-16/puzzle-toys/task-2",
+              "text": "Resisted the urge to show him the answer (struggle IS the enrichment)"
+            },
+            {
+              "id": "week-16/puzzle-toys/task-3",
+              "text": "Rotated puzzles so nothing goes stale — a schedule is on the fridge"
+            }
+          ]
+        },
+        {
+          "slug": "week-16/find-it-game",
+          "week": 16,
+          "order": 3,
+          "title": "the \"find it\" game",
+          "minutesPerDay": 10,
+          "body": "\"Find it\" is a cue that turns any room into a treasure hunt and doubles as a secret behavior tool: a dog with his nose on the floor isn't barking at the doorbell, fixating on a passing dog, or spiraling at the groomer's.\n\nBuild it: say \"find it,\" scatter a few treats in plain sight, let him hoover. Repeat until the words alone flip on search mode. Then add difficulty — treats hidden while he holds a stay in the next room (look at that, the stay is load-bearing now), then behind furniture legs, then a beloved toy instead of food.\n\nDeploy it tactically: \"find it\" during fireworks, at the vet's waiting room, when a scary dog passes. Nose down, brain busy, crisis averted.\n\n⚠️ **biewer tip:** this game is the best bad-weather exercise a biewer can get — twenty minutes of find-it on a rainy day outworks a soggy walk neither of you wanted.",
+          "tasks": [
+            {
+              "id": "week-16/find-it-game/task-1",
+              "text": "\"Find it\" cued a floor-scatter hunt — he stopped and searched on the word"
+            },
+            {
+              "id": "week-16/find-it-game/task-2",
+              "text": "Hid treats around one room while he waited in a stay; released to hunt"
+            },
+            {
+              "id": "week-16/find-it-game/task-3",
+              "text": "Graduated to hiding a favorite TOY and having him find it by name-of-smell"
+            }
+          ]
+        },
+        {
+          "slug": "week-16/name-of-toys",
+          "week": 16,
+          "order": 4,
+          "title": "toy names & tidy-up",
+          "minutesPerDay": 10,
+          "body": "Dogs can learn dozens of toy names (the famous ones know hundreds), and biewers — sharp, showy, eager — are naturals. Start with his favorite: say its name (\"piggy!\"), play with it, repeat for days until the word drips with meaning. Then the test: piggy next to a boring toy, \"get piggy!\" — pay the right choice enormously, laugh off wrong ones and reset.\n\nOnce two toys are named, you have a genuine party trick and a foundation for the finale: \"in the basket.\" He picks up a toy (drop-it skills cashing in), you lure the drop over the toy box, and suddenly the dog cleans his own room.\n\nWill he actually tidy up daily? No. Will your wife film it forty times? Yes.\n\n⚠️ **biewer tip:** biewers learn fastest in tiny joyful bursts — three minutes of name-games beats fifteen of drilling. Stop while he's showing off.",
+          "tasks": [
+            {
+              "id": "week-16/name-of-toys/task-1",
+              "text": "One toy (\"piggy\"?) reliably fetched by name from a two-toy lineup"
+            },
+            {
+              "id": "week-16/name-of-toys/task-2",
+              "text": "Second toy named and discriminated 4 out of 5 times"
+            },
+            {
+              "id": "week-16/name-of-toys/task-3",
+              "text": "Started 'in the basket' — toys dropped into the toy box for treats"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "week": 17,
+      "theme": "heel & fancy footwork",
+      "month": 5,
+      "lessons": [
+        {
+          "slug": "week-17/heel-foundations",
+          "week": 17,
+          "order": 1,
+          "title": "heel foundations",
+          "minutesPerDay": 10,
+          "body": "Heel is different from loose-leash walking: loose-leash means \"don't tow me,\" heel means \"glue yourself to my left leg like we practiced it in the mirror.\" You won't heel whole walks (that's no fun for a sniffing dog) — but a crisp heel gets you through crowds, past temptations, and across chaos, and it looks fantastic.\n\nBuild the position first, no walking: stand still, lure him to your left side, and pay repeatedly right at your pant seam. Position = payday. Then one step, pay. Three steps, pay. Feed low and at the seam so his head stays up-and-in.\n\nAdd the word \"heel\" only when he's already magnetized. Keep sessions to three minutes — precision work burns brain fuel fast.\n\n⚠️ **biewer tip:** at his height, feeding in heel position wrecks your back — use a long wooden spoon dabbed with something lickable, or drop treats at your seam. Your spine matters for the next 15 years too.",
+          "tasks": [
+            {
+              "id": "week-17/heel-foundations/task-1",
+              "text": "Charged the heel position: standing at your left leg = treats rain from the seam"
+            },
+            {
+              "id": "week-17/heel-foundations/task-2",
+              "text": "He finds and holds position for 5 steps, marked and paid"
+            },
+            {
+              "id": "week-17/heel-foundations/task-3",
+              "text": "Added the cue word once the position was his favorite spot on earth"
+            }
+          ]
+        },
+        {
+          "slug": "week-17/heel-on-the-street",
+          "week": 17,
+          "order": 2,
+          "title": "heel on the street",
+          "minutesPerDay": 10,
+          "body": "Take the heel outside, where it earns its keep. The structure that works: most of the walk stays free-range sniffing (his walk, his newspaper), and short heel bursts handle the moments that need control — doorways, crowded stretches, passing that one bakery.\n\nCue \"heel,\" get five beautiful steps past the temptation, then release with \"go sniff!\" — the release is the payment. Heel that always ends in freedom stays enthusiastic; heel that means \"fun is over\" goes limp.\n\nStack difficulty slowly: quiet block, then busier, then past dogs. Every clean heel-past is a rep in the bank for the day you truly need it.\n\n⚠️ **biewer tip:** five heel-steps for a biewer is a sprint of concentration — his legs take four strides to your one. Keep bursts short and celebrate like he cleared a jump course.",
+          "tasks": [
+            {
+              "id": "week-17/heel-on-the-street/task-1",
+              "text": "\"Heel\" through one doorway-to-sidewalk transition, released with \"go sniff!\""
+            },
+            {
+              "id": "week-17/heel-on-the-street/task-2",
+              "text": "Held heel past one big temptation (food wrapper, other dog) — jackpot"
+            },
+            {
+              "id": "week-17/heel-on-the-street/task-3",
+              "text": "Used heel-vs-sniff structure: 80% free walk, 20% formation flying"
+            }
+          ]
+        },
+        {
+          "slug": "week-17/auto-sit-at-curbs",
+          "week": 17,
+          "order": 3,
+          "title": "auto-sit at curbs",
+          "minutesPerDay": 5,
+          "body": "The auto-sit: every curb, his butt hits the ground without being asked. It's the seatbelt of dog behaviors — invisible until the day it stops him at the edge of a road you didn't see him approaching.\n\nTraining is pure pattern-laying: approach curb, stop, cue sit, pay, release across. After a few dozen curbs, start pausing at the edge and waiting — give him three seconds to offer the sit himself. The first uncued one gets a party. From there, consistency does the rest: curbs simply *mean* sit now, the way red means stop.\n\nWet pavement objections are legitimate at his coat length — a brief pause-and-wait at the curb is an acceptable rainy-day substitute. The stop is the safety feature; the sit is the style points.\n\n⚠️ **biewer tip:** an auto-stopping biewer is protected from the #1 small-urban-dog accident: stepping off a curb into a turning car's blind spot. This tiny habit is genuinely life insurance.",
+          "tasks": [
+            {
+              "id": "week-17/auto-sit-at-curbs/task-1",
+              "text": "Sat at every curb on one full walk (cued at first, that's fine)"
+            },
+            {
+              "id": "week-17/auto-sit-at-curbs/task-2",
+              "text": "First uncued automatic curb-sit happened — paid like a jackpot"
+            },
+            {
+              "id": "week-17/auto-sit-at-curbs/task-3",
+              "text": "Rain-or-shine rule adopted: curbs mean sit, no exceptions"
+            }
+          ]
+        },
+        {
+          "slug": "week-17/position-middle",
+          "week": 17,
+          "order": 4,
+          "title": "\"middle\" — the safety pocket",
+          "minutesPerDay": 5,
+          "body": "\"Middle\" parks Biru standing between your feet, facing forward — half trick, half panic room. In a crowd, at a vet's busy waiting room, when an off-leash dog is approaching: \"middle\" tucks him into the one spot on earth where nothing can reach him without going through you.\n\nTeach it with a lure from behind: treat hand between your legs from the back, draw him through until his head pokes out front, pay him standing there. Repeat until he's diving in, add the word, then cue it from a step away, then from the front (he'll swing around — very satisfying).\n\nPay generously every time forever. Middle should feel like the VIP booth.\n\n⚠️ **biewer tip:** middle beats picking him up in dicey dog moments — scooping can trigger the other dog to jump at you, while a biewer standing in your ankle-fortress reads as boring. (Still scoop if it's truly going wrong.)",
+          "tasks": [
+            {
+              "id": "week-17/position-middle/task-1",
+              "text": "Lured Biru into standing between your feet from behind; named it \"middle\""
+            },
+            {
+              "id": "week-17/position-middle/task-2",
+              "text": "He drives into middle from a step away on the cue"
+            },
+            {
+              "id": "week-17/position-middle/task-3",
+              "text": "Used middle once in real life (crowded sidewalk, incoming dog) as a safe pocket"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "week": 18,
+      "theme": "distance & duration",
+      "month": 5,
+      "lessons": [
+        {
+          "slug": "week-18/stay-duration",
+          "week": 18,
+          "order": 1,
+          "title": "stay — the long hold",
+          "minutesPerDay": 10,
+          "body": "Week 6 built seconds; now build minutes. The secret to long stays is that they stop being obedience and become relaxation — you're not asking him to freeze, you're asking him to *settle in for a bit*.\n\nDown-stays are your duration workhorse (sitting for two minutes is physically annoying; lying down invites an actual chill). Pay early and often at first — a treat delivered between the paws every 15 seconds — then stretch the gaps. Always release with your word; never let stays just evaporate.\n\nThe tell that you've succeeded: mid-stay, he sighs, shifts a hip, and puts his chin down. That's not sloppy — that's a dog who trusts the deal.\n\n⚠️ **biewer tip:** always stage long stays on a mat or bed — asking a single-coated 5-pounder for a three-minute down on cold tile is a hardship post, and he'll rightly file a complaint.",
+          "tasks": [
+            {
+              "id": "week-18/stay-duration/task-1",
+              "text": "One-minute sit-stay with you standing nearby, paid during, released properly"
+            },
+            {
+              "id": "week-18/stay-duration/task-2",
+              "text": "Two-minute down-stay while you sat and scrolled your phone"
+            },
+            {
+              "id": "week-18/stay-duration/task-3",
+              "text": "Built a 'relax on the mat' default — he chose to flop and chill mid-stay"
+            }
+          ]
+        },
+        {
+          "slug": "week-18/stay-distance",
+          "week": 18,
+          "order": 2,
+          "title": "stay — the long walk away",
+          "minutesPerDay": 10,
+          "body": "Distance is the second stay dimension, and it's harder than it looks from his angle: your leaving mid-stay violates his strongest instinct (follow the human). Build it in single steps, literally.\n\nOne step back, return, pay. Two steps. Five. The iron rule: *return to pay* — don't call him out of stays to you at this stage, or every stay becomes a coiled spring aimed at your treat pouch. Add strangeness gradually: turn your back, do a jumping jack, drop your keys, circle him (the circle is spicy — go slow).\n\nIf he breaks, the universe stays neutral: no scolding, just reset closer. Breaking should be boring; holding should be lucrative.\n\n⚠️ **biewer tip:** from ground level, ten feet of distance makes you *small* — a genuinely different picture than stay-at-your-feet. Expect a wobble at the 8–10 foot mark and pay through it.",
+          "tasks": [
+            {
+              "id": "week-18/stay-distance/task-1",
+              "text": "Held a stay while you walked 10 feet away and back, 5 for 5"
+            },
+            {
+              "id": "week-18/stay-distance/task-2",
+              "text": "You did weird stuff mid-stay (jumping jack, dropped keys) — he held"
+            },
+            {
+              "id": "week-18/stay-distance/task-3",
+              "text": "Held a stay while you walked a full circle around him"
+            }
+          ]
+        },
+        {
+          "slug": "week-18/out-of-sight-stay",
+          "week": 18,
+          "order": 3,
+          "title": "the out-of-sight stay",
+          "minutesPerDay": 10,
+          "body": "The boss level: you disappear and the stay holds. This is equal parts stay-training and separation confidence — a dog who holds a calm stay while you're in another room has internalized \"humans leave, humans return, everything is fine.\"\n\nUse a doorframe: step halfway behind it, reappear, pay. Then fully behind for one second. Two. Five. The art is returning *before* he breaks, every time — you're stacking an unbroken record of \"she always comes back and it always pays.\" Set up your phone camera to watch him honestly; hope is not data.\n\nAt a minute out of sight, you have a genuinely trained dog and a party trick that quietly doubles as anxiety-proofing.\n\n⚠️ **biewer tip:** this drill pays compound interest for a velcro breed — every out-of-sight stay is a mini rehearsal of home-alone calm. It's week 8 wearing a tuxedo.",
+          "tasks": [
+            {
+              "id": "week-18/out-of-sight-stay/task-1",
+              "text": "He held a stay while you stepped behind a doorframe for 2 seconds"
+            },
+            {
+              "id": "week-18/out-of-sight-stay/task-2",
+              "text": "Built to 15 seconds fully out of sight, returning BEFORE he broke"
+            },
+            {
+              "id": "week-18/out-of-sight-stay/task-3",
+              "text": "One full minute out of the room (verified by phone camera, not hope)"
+            }
+          ]
+        },
+        {
+          "slug": "week-18/cue-from-across-the-room",
+          "week": 18,
+          "order": 4,
+          "title": "cues at a distance",
+          "minutesPerDay": 10,
+          "body": "Most dogs think every cue includes an invisible first step: \"come to the human, then do the thing.\" Distance cues break that assumption — \"sit\" means sit *where you are*, even across the room. It's harder than it looks and absurdly useful (a dog who'll drop into a down at thirty feet can be stopped mid-mistake).\n\nThe trick to stopping the creep-in: cue with him behind a low barrier at first (a broom on the floor, a baby gate), so walking to you isn't an option and doing-it-there is. Pay by tossing the treat TO him — payment arriving at his spot reinforces staying at his spot.\n\nBuild from three feet to across the room. Hand signals earn their keep here; arms are visible where words get thin.\n\n⚠️ **biewer tip:** exaggerate your hand signals — at 20 feet, your subtle finger-flick is invisible below knee height. Signal like you're directing a plane; he's small and far.",
+          "tasks": [
+            {
+              "id": "week-18/cue-from-across-the-room/task-1",
+              "text": "\"Sit\" from 6 feet away — he sat THERE instead of walking to you first"
+            },
+            {
+              "id": "week-18/cue-from-across-the-room/task-2",
+              "text": "Down from across the room, hand signal + word"
+            },
+            {
+              "id": "week-18/cue-from-across-the-room/task-3",
+              "text": "One distance cue on a walk (sit at 10 feet on the long line)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "week": 19,
+      "theme": "the trick portfolio",
+      "month": 5,
+      "lessons": [
+        {
+          "slug": "week-19/trick-weave",
+          "week": 19,
+          "order": 1,
+          "title": "leg weaves",
+          "minutesPerDay": 10,
+          "body": "Leg weaves — Biru threading figure-8s through your steps — is the signature small-dog trick, and biewers are built for it: agile, showy, and exactly the right height.\n\nStand with legs apart, lure him through from front to back with your right hand, catch the lure with your left behind, draw him around and through again. Slow is smooth; let him learn the racetrack. Chain single pass → figure-8 → weaving as you actually walk forward, one deliberate step per pass.\n\nFade the lure to an empty-hand flourish, then to a small gesture plus \"weave!\". Practice on carpet or grass — this trick is knees-and-ankles precision, and traction matters.\n\n⚠️ **biewer tip:** your job is footwork discipline — a mistimed step on a weaving biewer is the real hazard here. Big slow theatrical steps until you're both choreographed.",
+          "tasks": [
+            {
+              "id": "week-19/trick-weave/task-1",
+              "text": "Lured a single figure-8 through your legs, slow and happy"
+            },
+            {
+              "id": "week-19/trick-weave/task-2",
+              "text": "Chained 3 continuous weaves as you stepped forward"
+            },
+            {
+              "id": "week-19/trick-weave/task-3",
+              "text": "Performed weaves for an audience without the lure in the leading hand"
+            }
+          ]
+        },
+        {
+          "slug": "week-19/trick-play-dead",
+          "week": 19,
+          "order": 2,
+          "title": "play dead (\"bang!\")",
+          "minutesPerDay": 10,
+          "body": "The crowd-slayer. From a down, lure his nose toward his shoulder blade (the week-12 roll-over path) but stop halfway — when he tips flat onto his side, mark and feed him *while flat*. Flat is the trick; payment location is everything.\n\nOnce he flops readily, attach your cue of choice: the classic finger-gun \"bang!\", or \"go to sleep\" if the household prefers its drama pacifist. Build a short hold before the release word — a dramatic death that lasts three seconds reads infinitely better than an instant pop-up.\n\nPolish points: a slow head-drop at the end (capture it when it happens, jackpot), and releasing to huge applause. Biewers metabolize applause.\n\n⚠️ **biewer tip:** train on soft surfaces and never push him over — flopping must be his idea. A biewer who's been tipped by hand starts dodging the trick entirely.",
+          "tasks": [
+            {
+              "id": "week-19/trick-play-dead/task-1",
+              "text": "From a down, lured him flat onto his side and paid him there — \"flat\" happens on cue"
+            },
+            {
+              "id": "week-19/trick-play-dead/task-2",
+              "text": "Added the theatrical cue (finger-gun 'bang!' or 'go to sleep')"
+            },
+            {
+              "id": "week-19/trick-play-dead/task-3",
+              "text": "He holds the dramatic death for 3 seconds until released"
+            }
+          ]
+        },
+        {
+          "slug": "week-19/trick-high-five-wave",
+          "week": 19,
+          "order": 3,
+          "title": "high five & wave",
+          "minutesPerDay": 10,
+          "body": "Two tricks for the price of one, built from week 12's \"shake.\" High five first: take the shake, rotate your palm to face him, raise it a few inches, cue \"high five!\" — same motion, cooler branding. Pay contact with the palm.\n\nWave is high five with the target removed: offer the palm slightly farther away and mark the paw-lift *before* contact. He flaps at air; you cheer like it's Wimbledon. Separate cue (\"bye-bye!\" with your own wave) or he'll merge them into one confused paw-flail.\n\nChain the set: sit, high five, wave goodbye. That's a complete talk-show exit, and yes, this is what all the training was for.\n\n⚠️ **biewer tip:** biewers naturally paw when they want things — capture those offered paw-lifts with a mark-and-pay and this week trains itself.",
+          "tasks": [
+            {
+              "id": "week-19/trick-high-five-wave/task-1",
+              "text": "High five: paw meets raised palm on cue, 8 of 10"
+            },
+            {
+              "id": "week-19/trick-high-five-wave/task-2",
+              "text": "Wave: paw flaps at air (no contact) on a separate cue"
+            },
+            {
+              "id": "week-19/trick-high-five-wave/task-3",
+              "text": "Chained sit → high five → wave for the full late-night-show goodbye"
+            }
+          ]
+        },
+        {
+          "slug": "week-19/trick-carry-and-fetch",
+          "week": 19,
+          "order": 4,
+          "title": "carry & delivery service",
+          "minutesPerDay": 10,
+          "body": "The delivery service: Biru carries something small and soft — a rolled sock, a tiny plush, eventually the TV-remote-that-fits — and brings it to a human hand. It's fetch with a diploma, built on drop-it and toy names.\n\nTeach the hold first: he takes the item, you wait one beat, \"bring it,\" and pay the arrival-with-item — the treat appears when the item lands in your hand, not the floor. Dropping en route just resets, no drama. Then add distance, then add the recipient: \"take it to Mei!\" with her calling warmly from across the room.\n\nA dog who ferries items between his humans is 40% useful, 100% adorable, and permanently employed.\n\n⚠️ **biewer tip:** size the cargo honestly — soft, light, and smaller than his head. The dream of him fetching your slippers dies at the physics of a five-pound courier; the dream of him delivering a love note survives beautifully.",
+          "tasks": [
+            {
+              "id": "week-19/trick-carry-and-fetch/task-1",
+              "text": "He carries a soft item 5 steps without dropping (paid ON delivery, not release)"
+            },
+            {
+              "id": "week-19/trick-carry-and-fetch/task-2",
+              "text": "Fetches the named item TO YOUR HAND (drop-it finally shows its trick form)"
+            },
+            {
+              "id": "week-19/trick-carry-and-fetch/task-3",
+              "text": "Delivered one item to your wife across the room — the courier is operational"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "week": 20,
+      "theme": "spa mastery",
+      "month": 5,
+      "lessons": [
+        {
+          "slug": "week-20/full-home-groom",
+          "week": 20,
+          "order": 1,
+          "title": "the full home groom",
+          "minutesPerDay": 15,
+          "body": "By now the adult coat is arriving — and biewer adolescence is peak matting season as puppy coat and adult silk tangle together. This week: graduate from maintenance brushing to the full structured groom.\n\nThe sequence: mist with conditioner spray, line-brush in layers from the skin out (part the hair, work section by section), comb-through to verify (the comb finds what the brush missed — if the comb snags, you're not done), face wipe, paw check between the pads. Fifteen minutes, treats at each station change.\n\nTangles: saturate with spray, tease apart with fingers from the ends inward, then comb. Never yank a dry mat — one painful session can undo months of table tolerance.\n\n⚠️ **biewer tip:** the mat zones are armpits, behind the ears, and under the harness — check those three daily even when you skip everything else. A caught tangle is a 30-second fix; a missed one is a shave spot.",
+          "tasks": [
+            {
+              "id": "week-20/full-home-groom/task-1",
+              "text": "Ran a complete session: line-brush, comb-through, face wipe, all four paws — under 15 min"
+            },
+            {
+              "id": "week-20/full-home-groom/task-2",
+              "text": "Found and worked out one real tangle without drama (spray, fingers, then comb)"
+            },
+            {
+              "id": "week-20/full-home-groom/task-3",
+              "text": "Established the weekly full-groom slot on the calendar (daily quick-brush continues)"
+            }
+          ]
+        },
+        {
+          "slug": "week-20/bath-and-blowdry",
+          "week": 20,
+          "order": 2,
+          "title": "bath & blow-dry at home",
+          "minutesPerDay": 15,
+          "body": "The home bath, mastered. Warm (not hot) water, a non-slip mat in the sink — a biewer fits in a kitchen sink, which beats kneeling at a tub — dog shampoo diluted per the label, and *conditioner every time*: that silk coat drinks it.\n\nThe part everyone skips and shouldn't: the full dry. Air-drying a biewer creates mats at the skin while looking dry on top. Blow-dry on cool-to-warm, low speed, brushing as you dry, until the coat is genuinely dry at the roots. Week 11's dryer desensitization pays off here — keep treats flowing and take breaks.\n\nFull baths every 2–3 weeks is plenty; more strips the coat's oils.\n\n⚠️ **biewer tip:** water in the ears is the biewer bath hazard — a light cotton ball in each ear during the rinse, removed after, prevents the head-shaking week of ear trouble.",
+          "tasks": [
+            {
+              "id": "week-20/bath-and-blowdry/task-1",
+              "text": "One full bath with dog shampoo + conditioner, treats at every stage"
+            },
+            {
+              "id": "week-20/bath-and-blowdry/task-2",
+              "text": "Blow-dry on cool/low while brushing — dried fully (a damp biewer = instant mats)"
+            },
+            {
+              "id": "week-20/bath-and-blowdry/task-3",
+              "text": "He stayed relaxed enough to take treats through the whole pipeline"
+            }
+          ]
+        },
+        {
+          "slug": "week-20/ear-and-eye-care",
+          "week": 20,
+          "order": 3,
+          "title": "ears, eyes & teeth — the weekly once-over",
+          "minutesPerDay": 10,
+          "body": "Fold the health checks into one calm weekly ritual — Sunday spa. Ears: lift, look, sniff (healthy ears smell like nothing; yeasty smell means a vet chat), wipe the visible inner flap with a pet ear wipe, never dig into the canal. Eyes: the daily tear-corner wipe you've done for months, plus a check for redness. Teeth: the week-11 brushing habit should be daily by now — this is its quality audit.\n\nTeach a chin-rest for all face work: his chin parks in your cupped palm, treats arrive, face-stuff happens. A dog who volunteers his face makes every future vet visit easier.\n\nLog oddities in the diary — you're building the baseline that makes \"something's off\" obvious early.\n\n⚠️ **biewer tip:** small breeds hide illness well and go downhill fast — this boring weekly once-over is how tiny-dog owners catch things while they're still small problems.",
+          "tasks": [
+            {
+              "id": "week-20/ear-and-eye-care/task-1",
+              "text": "Weekly check ritual done: ears sniffed & wiped, eye corners cleaned, teeth brushed"
+            },
+            {
+              "id": "week-20/ear-and-eye-care/task-2",
+              "text": "He held still for a 10-second chin-rest during the face work"
+            },
+            {
+              "id": "week-20/ear-and-eye-care/task-3",
+              "text": "Anything odd (redness, smell, gunk) gets noted in the diary — baseline knowledge is the goal"
+            }
+          ]
+        },
+        {
+          "slug": "week-20/standing-for-the-groomer",
+          "week": 20,
+          "order": 4,
+          "title": "stand & stay for the pros",
+          "minutesPerDay": 10,
+          "body": "Groomers need one skill above all: a dog who *stands still*. Sit and down you have; stand is the missing position. From a sit, draw the lure forward and level — as his back legs unfold, mark and pay while he's standing square. Add \"stand,\" then build a stand-stay with gentle all-over handling: legs lifted, tail touched, muzzle steadied.\n\nThen rehearse the full groomer experience at cooperative-care level: up on the non-slip table, stand-stay, brush, dryer running nearby, handling everywhere a groomer goes. End with the jackpot of his life.\n\nBook the real appointment with confidence — and tell the groomer he knows \"stand,\" \"middle,\" and a chin-rest. Watching a groomer discover a trained biewer is its own reward.\n\n⚠️ **biewer tip:** biewers see show-style groomers who expect long sessions — a dog with a real stand-stay gets shorter, calmer appointments and becomes the salon favorite. Favorites get the gentle treatment.",
+          "tasks": [
+            {
+              "id": "week-20/standing-for-the-groomer/task-1",
+              "text": "Taught \"stand\" (from sit, lure forward-and-level) on cue"
+            },
+            {
+              "id": "week-20/standing-for-the-groomer/task-2",
+              "text": "He holds a stand-stay for 20 seconds while you handle legs and tail"
+            },
+            {
+              "id": "week-20/standing-for-the-groomer/task-3",
+              "text": "Ran a mock groomer session: table, stand, all-over handling, dryer noise — smooth"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "week": 21,
+      "theme": "adventure dog",
+      "month": 6,
+      "lessons": [
+        {
+          "slug": "week-21/first-real-hike",
+          "week": 21,
+          "order": 1,
+          "title": "the first real hike",
+          "minutesPerDay": 20,
+          "body": "Yes, a biewer can hike — spirited little dogs routinely out-stubborn their humans on trails. The rules are just scaled: distance modest (a 5-pound dog takes four strides to your one — your easy 2 miles is his 8), terrain gentle, weather mild, and a bail-out plan on board (a carry sling means the hike ends when he's done, not where the car is).\n\nOn the trail: long line unless it's a legally-off-leash zone he's proofed for, water offered every 20 minutes, and let him sniff — a hike is the world's greatest sniffari, not a forced march.\n\nAfterward, the ritual: paws checked pad by pad, a nose-to-tail tick sweep (that coat is tick velcro), and a comb-out before the burrs mat in.\n\n⚠️ **biewer tip:** birds of prey are a real consideration for a sub-6-pound dog on open trails — favor wooded routes and keep him close in open meadows. The sling doubles as hawk insurance.",
+          "tasks": [
+            {
+              "id": "week-21/first-real-hike/task-1",
+              "text": "Picked a short, shaded, low-traffic trail (under 2 miles) and walked it at his pace"
+            },
+            {
+              "id": "week-21/first-real-hike/task-2",
+              "text": "Packed the kit: water + bowl, treats, tick check plan, carry sling for bail-outs"
+            },
+            {
+              "id": "week-21/first-real-hike/task-3",
+              "text": "Post-hike ritual done: paw check, full-body tick sweep, coat comb-out"
+            }
+          ]
+        },
+        {
+          "slug": "week-21/water-and-beaches",
+          "week": 21,
+          "order": 2,
+          "title": "water, beaches & the swim question",
+          "minutesPerDay": 15,
+          "body": "The swim question, answered honestly: some biewers love water, many regard it as a personal insult, and both are acceptable outcomes. Your job is a pressure-free introduction — ankle-deep calm water, you in it looking delighted, treats for any voluntary paw-dip — and then respecting the verdict.\n\nIf he's a swimmer: a toy-breed life vest is non-negotiable (tiny dogs tire fast, and the handle on top is worth everything), calm water only, and sessions measured in minutes.\n\nBeach days regardless: shade and fresh drinking water always available (salt water = misery later), sunscreen on his nose if he's pink-skinned there, and a full freshwater rinse afterward — salt and sand shred a silk coat overnight if left in.\n\n⚠️ **biewer tip:** wet + breeze = a shivering biewer even at 75°F. Pack a towel and a dry sweater; the ride home in a soggy coat is where beach days go wrong.",
+          "tasks": [
+            {
+              "id": "week-21/water-and-beaches/task-1",
+              "text": "Paddling-depth intro: he chose to wade (or chose not to — both are fine answers)"
+            },
+            {
+              "id": "week-21/water-and-beaches/task-2",
+              "text": "If swimming: a toy-breed life vest, fitted, always — tested in calm shallow water"
+            },
+            {
+              "id": "week-21/water-and-beaches/task-3",
+              "text": "Beach protocol: shade breaks, fresh water on tap, full rinse + dry afterward"
+            }
+          ]
+        },
+        {
+          "slug": "week-21/picnic-manners",
+          "week": 21,
+          "order": 3,
+          "title": "picnics, parks & patio pro",
+          "minutesPerDay": 15,
+          "body": "The café-settle from week 10 graduates to the full outdoor social: picnics, park hangs, patio lunches — longer, smellier, with food at nose height and strangers who *want* to feed him.\n\nSetup is everything: his mat under the table or beside your chair, a long-lasting chew deployed before your food arrives, water down, leash under your chair leg (hands-free security). Pay quiet settling intermittently; run \"find it\" if he gets restless.\n\nThe exams: leave-it versus a dropped fry (triple pay — that's a career highlight), and the begging embargo, which requires disciplining *the humans*: nobody feeds him from the table, including charming strangers. One fry from a stranger funds a summer of begging.\n\n⚠️ **biewer tip:** a biewer at a picnic is a celebrity — the crowd will come to him. Pre-brief your table: \"he says hi after he sits\" turns admirers into training assistants.",
+          "tasks": [
+            {
+              "id": "week-21/picnic-manners/task-1",
+              "text": "Mat + settle held for 20 minutes at an outdoor meal with real food present"
+            },
+            {
+              "id": "week-21/picnic-manners/task-2",
+              "text": "'Leave it' passed the fallen-french-fry exam (paid triple for it)"
+            },
+            {
+              "id": "week-21/picnic-manners/task-3",
+              "text": "He greeted table-visitors politely or ignored them — no begging circuit"
+            }
+          ]
+        },
+        {
+          "slug": "week-21/weather-gear",
+          "week": 21,
+          "order": 4,
+          "title": "four-season gear & limits",
+          "minutesPerDay": 10,
+          "body": "A five-pound single-coated dog lives closer to the weather than most. Dial in the four-season kit now, with week-2 handling skills making every garment a treat-fest instead of a wrestling match.\n\nCold: sweater below ~55°F, real insulated coat below 40°F, walk-shortening below freezing. Booties for salted sidewalks — introduce one boot at a time, treats flowing, and film the first high-step walk because it's cinema. Heat: he overheats faster than you — walks shift to mornings/evenings above 80°F, pavement passes the back-of-hand five-second test, and water travels with you.\n\nRain: try a raincoat once. Some biewers accept it; some declare the walk cancelled. Both have precedent.\n\n⚠️ **biewer tip:** shivering, paw-lifting, or sudden slow-motion walking is a biewer saying \"I'm done\" — believe him the first time. Tough-love acclimatization doesn't work on a dog with no undercoat.",
+          "tasks": [
+            {
+              "id": "week-21/weather-gear/task-1",
+              "text": "Cold kit dialed: sweater threshold set, coat tried, booties introduced with treats"
+            },
+            {
+              "id": "week-21/weather-gear/task-2",
+              "text": "Heat rules posted: shorten walks over 80°F, pavement back-of-hand test, never parked cars"
+            },
+            {
+              "id": "week-21/weather-gear/task-3",
+              "text": "Rain verdict reached: raincoat or 'absolutely not' — logged for posterity"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "week": 22,
+      "theme": "travel & sleepovers",
+      "month": 6,
+      "lessons": [
+        {
+          "slug": "week-22/car-travel-long",
+          "week": 22,
+          "order": 1,
+          "title": "road trips",
+          "minutesPerDay": 15,
+          "body": "Week 4 built the short-hop car dog; this week builds the road-tripper. The jump from 10 minutes to a few hours is mostly logistics: a secured carrier he already loves, his familiar blanket inside (smell is home), light meals before departure, and a stop every 60–90 minutes for water, potty, and a leg stretch — on leash *before* the door opens, every single time.\n\nStage a permanent travel kit: collapsible bowls, food portions, any meds, a photo of his vet records on your phone, spare leash, the blanket. Kit lives ready; trips become spontaneous.\n\nThe non-negotiable: never alone in a parked car. A biewer's tolerance for a warming car is measured in minutes, and it's the most preventable emergency there is.\n\n⚠️ **biewer tip:** clip his harness leash on before any car door opens at a rest stop — a spooked biewer bolting at a highway rest area is the road-trip nightmare. Leash first, door second, forever.",
+          "tasks": [
+            {
+              "id": "week-22/car-travel-long/task-1",
+              "text": "One 45+ minute drive with a rest-and-potty stop, calm the whole way"
+            },
+            {
+              "id": "week-22/car-travel-long/task-2",
+              "text": "Travel kit packed & staged: food, water, meds, vet records photo, familiar blanket"
+            },
+            {
+              "id": "week-22/car-travel-long/task-3",
+              "text": "Motion-comfort protocol confirmed: light pre-trip meals, airflow, breaks every 1.5 hrs"
+            }
+          ]
+        },
+        {
+          "slug": "week-22/hotel-and-airbnb",
+          "week": 22,
+          "order": 2,
+          "title": "hotels & airbnbs",
+          "minutesPerDay": 15,
+          "body": "The secret to a dog who travels anywhere: home is the *stuff*, not the address. His crate or pen, his mat, his blanket — set those up first thing on arrival, before he even explores, and any room becomes his room.\n\nThe arrival ritual: potty-spot tour outside (he needs to know where the bathroom is — so do you), then a leashed sniff-tour of the room (leashed = calm exploration, not a zoomie inspection), then mat + chew while you unpack. Keep meal and walk times on home schedule; routine is portable comfort.\n\nNight one: crate next to your bed, exactly like his actual first night with you, minus the crying (probably). Alone-time in a strange room starts at minutes, not hours — run a camera check before any real dinner out.\n\n⚠️ **biewer tip:** hotel rooms hide biewer-sized hazards under every bed — dropped pills from previous guests are the classic. Do a floor-level sweep before he does.",
+          "tasks": [
+            {
+              "id": "week-22/hotel-and-airbnb/task-1",
+              "text": "First night away: pen/crate set up FIRST, before he explored — instant home base"
+            },
+            {
+              "id": "week-22/hotel-and-airbnb/task-2",
+              "text": "Ran the arrival ritual: potty spot tour, room sniff on leash, settle on his mat"
+            },
+            {
+              "id": "week-22/hotel-and-airbnb/task-3",
+              "text": "He slept the night in the new place without a 2am concert"
+            }
+          ]
+        },
+        {
+          "slug": "week-22/staying-with-friends",
+          "week": 22,
+          "order": 3,
+          "title": "sleepovers & dog-sitters",
+          "minutesPerDay": 10,
+          "body": "Someday you'll need a night away without him — and a dog who can be happily left with a trusted person is a freedom you build *before* you need it.\n\nWrite the Biru manual: one page. His schedule, the cues he actually knows (with your exact words — \"bedtime,\" not \"crate up\"), food amounts, the vet's number, and the quirks (\"he barks at the vacuum,\" \"the emergency word is PARTY and it costs chicken\"). Future sitters will treat it like scripture.\n\nThen rehearse: a half-day with the future sitter while you genuinely leave. The pass mark isn't \"he survived\" — it's that he ate, pottied, and settled for them. A dog who won't eat for anyone but you isn't loyal; he's under-rehearsed.\n\n⚠️ **biewer tip:** velcro breeds imprint hard on their people — do the sitter rehearsal at YOUR place first (familiar territory, new human), then their place. Two small steps beat one big abandonment.",
+          "tasks": [
+            {
+              "id": "week-22/staying-with-friends/task-1",
+              "text": "Wrote the one-page Biru manual: schedule, cues he knows, foods, vet number, quirks"
+            },
+            {
+              "id": "week-22/staying-with-friends/task-2",
+              "text": "Did a practice half-day with the future sitter (friend/family) while you left"
+            },
+            {
+              "id": "week-22/staying-with-friends/task-3",
+              "text": "He ate, pottied, and settled normally for someone who isn't you — the real test"
+            }
+          ]
+        },
+        {
+          "slug": "week-22/alone-in-new-places",
+          "week": 22,
+          "order": 4,
+          "title": "alone time, anywhere",
+          "minutesPerDay": 10,
+          "body": "The final separation skill: being fine alone somewhere that isn't home. It's week 8 on the road — same protocol, higher difficulty, and it's what makes traveling *with* him actually fun (you can see the thing, eat the meal, take the tour).\n\nThe stack that works: exercise beforehand (a tired dog naps through your absence), potty, then the pen/crate home base with a frozen stuffed toy, white noise or TV on to blur hallway sounds, and a boring departure. Camera on — always camera on, in new places especially.\n\nBuild the time: 5 minutes while you stand outside, 15 while you get coffee, 45 while you eat something. Each calm alone-session in a new place makes every future one easier.\n\n⚠️ **biewer tip:** hotel hallway sounds are the #1 trigger for alone-barking in small dogs — white noise near the door and a pen placed AWAY from the door solve most of it before it starts.",
+          "tasks": [
+            {
+              "id": "week-22/alone-in-new-places/task-1",
+              "text": "He stayed calm alone in a new room (hotel/friend's house) for 15 min — camera-verified"
+            },
+            {
+              "id": "week-22/alone-in-new-places/task-2",
+              "text": "Pre-departure checklist ran: exercise first, potty, stuffed toy, white noise on"
+            },
+            {
+              "id": "week-22/alone-in-new-places/task-3",
+              "text": "Extended to 45 minutes somewhere new — dinner out while traveling is now possible"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "week": 23,
+      "theme": "good citizen",
+      "month": 6,
+      "lessons": [
+        {
+          "slug": "week-23/cgc-skills-1",
+          "week": 23,
+          "order": 1,
+          "title": "good citizen skills — part one",
+          "minutesPerDay": 15,
+          "body": "The AKC Canine Good Citizen (CGC) test is the closest thing dogdom has to a diploma — ten real-world skills, all of which you've been building for five months. This week and next, we assemble them into test form. (Biewers are AKC-recognized; he can earn the actual title if you fancy it.)\n\nPart one is the stranger suite: he sits calmly at your side while a stranger approaches and talks to *you* (the hard part: being ignored politely); he accepts petting from that stranger without launching; and he allows a stranger to handle his paws and run a brush over him — week 2 and week 11, cashing their checks.\n\nRecruit friends as test strangers, rotate them, keep it upbeat. He knows all of this; he's just never been graded.\n\n⚠️ **biewer tip:** the jumping-on-greeters habit is the classic small-dog CGC fail — everyone has always let him. Two weeks of ruthless four-on-the-floor from every greeter fixes it.",
+          "tasks": [
+            {
+              "id": "week-23/cgc-skills-1/task-1",
+              "text": "Accepting a friendly stranger: he sat politely while a stranger chatted with you"
+            },
+            {
+              "id": "week-23/cgc-skills-1/task-2",
+              "text": "Sitting politely for petting from that stranger — no jumping, no wiggle-launch"
+            },
+            {
+              "id": "week-23/cgc-skills-1/task-3",
+              "text": "Appearance & grooming test: a stranger handled his paws and brushed him briefly"
+            }
+          ]
+        },
+        {
+          "slug": "week-23/cgc-skills-2",
+          "week": 23,
+          "order": 2,
+          "title": "good citizen skills — part two",
+          "minutesPerDay": 15,
+          "body": "Part two is composure under traffic: walking on a loose leash through a small crowd (recruit a family gathering and have them mill), the two-team meet (you and another handler approach, shake hands, chat briefly — dogs sit at heel and do *not* greet each other; leave-it and heel doing their finest work), and the distraction test — something clatters or jogs past, and he's allowed to startle but must recover and carry on.\n\nThe recovery is the skill, not the not-startling. A glance, a beat, back to you — that's a pass. Rehearse the pan-drop at home with treats until clatter means \"check in with the human, get paid.\"\n\n⚠️ **biewer tip:** for the dog-meet test, pair with a calm, medium-or-small dog he doesn't know well — his best friend is too exciting and a giant stranger is unfair. Stack the deck the first few reps.",
+          "tasks": [
+            {
+              "id": "week-23/cgc-skills-2/task-1",
+              "text": "Walk-through-a-crowd passed: loose leash weaving among 4+ milling people"
+            },
+            {
+              "id": "week-23/cgc-skills-2/task-2",
+              "text": "Reaction to another dog: two handler-teams met, chatted, dogs stayed parked"
+            },
+            {
+              "id": "week-23/cgc-skills-2/task-3",
+              "text": "Reaction to distraction: a dropped pan / jogger passing — startle allowed, recovery required"
+            }
+          ]
+        },
+        {
+          "slug": "week-23/vet-visits-happily",
+          "week": 23,
+          "order": 3,
+          "title": "the happy vet visit",
+          "minutesPerDay": 10,
+          "body": "The vet's office deserves the groomer treatment from week 11: deliberate happy-visits so the smell of the lobby stops predicting needles. Drop in for nothing: walk in, step on the scale (a stand-stay on a metal square — you've trained this), collect treats from the reception staff (call ahead; vet staff *love* this assignment), leave.\n\nAt home, rehearse the exam itself: up on the table, chin-rest in your palm, ears peeked, teeth lifted, paws squeezed, a spoon pressed to his chest as a stethoscope stand-in. Cooperative care means the real exam is just a rerun with a stranger.\n\nA dog who's easy at the vet gets better medicine his whole life — vets can find what a frozen, panicking dog hides.\n\n⚠️ **biewer tip:** tiny dogs get whisked to the back room precisely because they're easy to carry off — a biewer with a chin-rest and a stand-stay earns exam-room treatment, with you present. Advocate for it.",
+          "tasks": [
+            {
+              "id": "week-23/vet-visits-happily/task-1",
+              "text": "Did a 'just saying hi' vet lobby visit: scale, treats from staff, leave — no procedures"
+            },
+            {
+              "id": "week-23/vet-visits-happily/task-2",
+              "text": "Rehearsed the exam at home: table, chin-rest, ears/eyes/paws handled, fake stethoscope (spoon)"
+            },
+            {
+              "id": "week-23/vet-visits-happily/task-3",
+              "text": "Booked or completed a real visit using the skills — treats before, during, after"
+            }
+          ]
+        },
+        {
+          "slug": "week-23/cgc-test-run",
+          "week": 23,
+          "order": 4,
+          "title": "the full test run",
+          "minutesPerDay": 20,
+          "body": "Dress rehearsal: all ten CGC items, one session, honest grading. The list — friendly stranger, sit for petting, appearance & grooming, loose-leash walk, walk through a crowd, sit-and-down on cue, stay in place, come when called, reaction to another dog, reaction to distraction — plus the finale: *supervised separation*, three minutes held by a friendly stranger while you walk out of sight. Week 18's out-of-sight stay and week 22's sitter work make this a formality.\n\nGrade pass / wobbly / needs-work, tune up the wobblies, and then decide: book the real test with an AKC evaluator (a lovely thing to frame), or simply know that you own a certifiable good citizen and let the diary entry be the certificate.\n\n⚠️ **biewer tip:** evaluators consistently say small dogs fail on handler behavior — scooping them up mid-test, nervous leash-tightening, baby-talking through the stay. Trust your dog. He's ready; be ready with him.",
+          "tasks": [
+            {
+              "id": "week-23/cgc-test-run/task-1",
+              "text": "Ran all 10 CGC items in one session with helper friends, graded honestly"
+            },
+            {
+              "id": "week-23/cgc-test-run/task-2",
+              "text": "Supervised separation passed: 3 minutes with a friendly stranger, no panic"
+            },
+            {
+              "id": "week-23/cgc-test-run/task-3",
+              "text": "Wobbly items got one tune-up plan each — or you booked the real CGC test, you keeper"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "week": 24,
+      "theme": "graduation ii — with honors",
+      "month": 6,
+      "lessons": [
+        {
+          "slug": "week-24/skills-marathon",
+          "week": 24,
+          "order": 1,
+          "title": "the six-month skills marathon",
+          "minutesPerDay": 20,
+          "body": "Final exams, semester two. Run the complete skill inventory — the week-12 dozen plus the new class: heel, middle, stand, distance cues, out-of-sight stay, whistle recall, emergency word, leave-it-versus-french-fry, mat-settle at a meal, alone 45 minutes somewhere new.\n\nGrade honestly, then do the satisfying part: put this report card next to week 12's. The things that were wobbly mid-adolescence should be back and sturdier — that's the double foundation you rebuilt in weeks 13–14 showing its value.\n\nWhatever's still imperfect is just... a dog. A living, opinionated, mostly-wonderful dog. Perfection was never the syllabus.\n\n⚠️ **biewer tip:** he's roughly 8–9 months now — adolescence isn't over, and one more regression wave around his first birthday is normal. You now own every tool to ride it out. That's the actual diploma.",
+          "tasks": [
+            {
+              "id": "week-24/skills-marathon/task-1",
+              "text": "Ran the FULL curriculum checklist — all core skills from both semesters, graded"
+            },
+            {
+              "id": "week-24/skills-marathon/task-2",
+              "text": "Compared against the week-12 report card: the regressions came back stronger"
+            },
+            {
+              "id": "week-24/skills-marathon/task-3",
+              "text": "Wrote the honest 'state of the Biru' entry in the diary, wobbles and all"
+            }
+          ]
+        },
+        {
+          "slug": "week-24/family-trick-show",
+          "week": 24,
+          "order": 2,
+          "title": "the family trick show",
+          "minutesPerDay": 15,
+          "body": "Assemble the portfolio into a show. Pick five tricks that flow: spin to warm up, leg weaves as the centerpiece, high five for audience participation, \"bang!\" for drama, wave goodbye as the closer. Chain them with tiny pauses — each cue lands after the applause, not during.\n\nRehearse with both of you as co-handlers; a trick hand-off (he weaves your legs, then delivers a toy to Mei, then dies theatrically at her feet) is production value no golden retriever act can match, because none of them are this portable.\n\nThen: audience. Grandparents on a video call count. Film it properly — this is the graduation performance, and future-you will rewatch it an embarrassing number of times.\n\n⚠️ **biewer tip:** biewers are hams who feed on audience energy — but they also read audience *boredom*. Keep the show under 90 seconds and leave the crowd wanting more. Showbiz rules.",
+          "tasks": [
+            {
+              "id": "week-24/family-trick-show/task-1",
+              "text": "Programmed a 5-trick routine: e.g. spin → weave → high five → bang! → wave goodbye"
+            },
+            {
+              "id": "week-24/family-trick-show/task-2",
+              "text": "Rehearsed with both humans as co-stars (hand-offs between you = extra credit)"
+            },
+            {
+              "id": "week-24/family-trick-show/task-3",
+              "text": "Performed for an audience (in person or video call) and filmed the whole thing"
+            }
+          ]
+        },
+        {
+          "slug": "week-24/six-month-portrait",
+          "week": 24,
+          "order": 3,
+          "title": "the six-month portrait session",
+          "minutesPerDay": 15,
+          "body": "Before the diploma: the portrait session. Recreate the week-12 graduation photo as exactly as you can — same corner of the apartment, same pose, same bow tie if it still fits (it won't; that's the point). The side-by-side of those two photos is the entire journey in one image.\n\nThen the full family portrait: both humans, one dog, timer mode, forty attempts, one keeper. Use the stand-stay and the \"middle\" position shamelessly — you trained a dog who can pose; pose him.\n\nPut the best of it in the diary as a then-vs-now entry. Day one Biru was a stranger who cried at 2am. This Biru holds a stay while you walk out of the room, because he knows exactly where you're going: back to him. Always back to him.\n\n⚠️ **biewer tip:** natural window light, his eye level, and a treat held just above the lens — that's the entire secret to the head-tilt portrait every biewer owner is chasing.",
+          "tasks": [
+            {
+              "id": "week-24/six-month-portrait/task-1",
+              "text": "Recreated the week-12 graduation photo — same spot, same pose, six months of dog later"
+            },
+            {
+              "id": "week-24/six-month-portrait/task-2",
+              "text": "Shot the family portrait: both humans, one biewer, nobody blinking (attempt #23 counts)"
+            },
+            {
+              "id": "week-24/six-month-portrait/task-3",
+              "text": "Added the best shots to the diary with a then-vs-now side-by-side entry"
+            }
+          ]
+        },
+        {
+          "slug": "week-24/graduation-with-honors",
+          "week": 24,
+          "order": 4,
+          "title": "graduation day ii — with honors 🎓🎓",
+          "minutesPerDay": 15,
+          "body": "Six months. Two semesters. Ninety-six lessons. One very small dog who came home fitting in a slipper and now navigates city streets, holds his ground politely with strangers, performs a 90-second stage show, and falls asleep in hotel rooms like a tiny seasoned diplomat.\n\nToday: the ceremony (cap, photo, a frankly excessive treat), the celebration outing (you know his favorites by heart now — that's its own diploma), and the letter. Write a diary entry addressed to yourselves, to be reread on his first birthday: what he's like right now, the sound he makes when you come home, the exact spot he sleeps in. You think you'll remember. Write it down anyway.\n\nThere is no month seven of this course. There's just the two of you and your dog, and the long, happy, ordinary years — which were the point of every lesson all along.\n\n⚠️ **biewer tip:** 12–16 years, remember. You're not at the end of anything; you're at the end of the beginning. Class dismissed, with honors. Now go get the puppuccino. 🎓",
+          "tasks": [
+            {
+              "id": "week-24/graduation-with-honors/task-1",
+              "text": "The ceremony: cap photo, diploma treat (something absurd and delicious), the works"
+            },
+            {
+              "id": "week-24/graduation-with-honors/task-2",
+              "text": "The celebration outing: his favorite everything, one more time, fully earned"
+            },
+            {
+              "id": "week-24/graduation-with-honors/task-3",
+              "text": "The letter: wrote a diary entry to yourselves for his first birthday — seal it with a photo"
+            }
+          ]
+        }
+      ]
     }
   ],
-  "totalLessons": 48,
-  "totalTasks": 146
+  "totalLessons": 96,
+  "totalTasks": 290
 } as CourseManifest;

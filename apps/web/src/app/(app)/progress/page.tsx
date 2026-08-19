@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/session";
 import type { ProgressStatsDto } from "@biru/shared";
-import { SKILL_BADGES } from "@biru/shared";
+import { COURSE_MANIFEST, SKILL_BADGES } from "@biru/shared";
 import { Stamp, Loading, ErrorNote } from "@/components/scrapbook";
 
 type Stats = ProgressStatsDto & { badges: string[] };
@@ -48,7 +48,7 @@ export default function ProgressPage() {
           <div>
             <b className="text-xl">
               {stats.weeksDone}
-              <span className="text-sm text-inkSoft">/12</span>
+              <span className="text-sm text-inkSoft">/{COURSE_MANIFEST.weeks.length}</span>
             </b>
             <br />
             weeks done

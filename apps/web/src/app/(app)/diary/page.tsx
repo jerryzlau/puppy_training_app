@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/session";
-import type { EntryDto } from "@biru/shared";
+import { COURSE_MANIFEST, type EntryDto } from "@biru/shared";
 import { EntryCard } from "@/components/EntryCard";
 import { Stamp, SketchButton, Loading, ErrorNote, NoteCard } from "@/components/scrapbook";
 
@@ -91,7 +91,7 @@ export default function DiaryFeed() {
           </span>
           <div className="flex-1">
             <div className="text-sm font-bold">
-              puppy school · week {stats.currentWeek} of 12
+              puppy school · week {stats.currentWeek} of {COURSE_MANIFEST.weeks.length}
             </div>
             <div className="text-xs text-inkSoft">
               {stats.percent}% of the course

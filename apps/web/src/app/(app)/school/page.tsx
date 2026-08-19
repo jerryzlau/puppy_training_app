@@ -12,7 +12,7 @@ export default function School() {
     <main className="px-5 pt-12">
       <h1 className="font-hand text-[38px] leading-none px-1">Puppy School 🎓</h1>
       <div className="px-1 mt-2">
-        <Stamp>12-week biewer curriculum</Stamp>
+        <Stamp>{COURSE_MANIFEST.weeks.length}-week biewer curriculum</Stamp>
       </div>
 
       <div className="bg-white border-2 border-ink rounded-lg px-4 py-3.5 shadow-sketchSoft my-5 -rotate-[0.5deg]">
@@ -30,10 +30,10 @@ export default function School() {
         </div>
       </div>
 
-      {[1, 2, 3].map((month) => (
+      {[...new Set(COURSE_MANIFEST.weeks.map((w) => w.month))].map((month) => (
         <section key={month}>
           <h2 className="font-hand text-2xl text-wood mb-1 mt-4 px-1">
-            {MONTH_TITLES[month as 1 | 2 | 3]}
+            {MONTH_TITLES[month] ?? `month ${month}`}
           </h2>
           {COURSE_MANIFEST.weeks
             .filter((w) => w.month === month)

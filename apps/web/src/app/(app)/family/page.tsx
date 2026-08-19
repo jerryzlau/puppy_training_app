@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import { uploadDogPhoto } from "@/lib/photos";
 import { useSession } from "@/lib/session";
 import {
   Stamp,
@@ -31,10 +32,28 @@ export default function FamilyPage() {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const photoInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     api<Invite[]>("/invites").then(setInvites).catch(() => {});
   }, []);
+
+  async function pickDogPhoto(files: FileList | null) {
+    const file = files?.[0];
+    if (!file) return;
+    setPhotoBusy(true);
+    setPhotoError(null);
+    try {
+      await uploadDogPhoto(file);
+      await refreshHousehold();
+    } catch (err) {
+      setPhotoError(err instanceof Error ? err.message : "couldn't upload the photo");
+    } finally {
+      setPhotoBusy(false);
+    }
+  }
 
   async function sendInvite(e: React.FormEvent) {
     e.preventDefault();
@@ -75,19 +94,48 @@ export default function FamilyPage() {
         {household?.dogName ?? "Biru"}&apos;s Family 🏠
       </h1>
 
-      <div className="w-[180px] mx-auto my-6">
-        <Polaroid
-          seed="dog-profile"
-          caption={`${household?.dogName ?? "Biru"} · ${household?.dogBreed?.toLowerCase() ?? "biewer"}${dogAge ? ` · ${dogAge}` : ""}`}
+      <div className="w-[180px] mx-auto mt-6 mb-1">
+        <button
+          type="button"
+          className="block w-full text-left active:opacity-80"
+          onClick={() => photoInput.current?.click()}
+          disabled={photoBusy}
+          aria-label={`change ${household?.dogName ?? "Biru"}'s photo`}
         >
-          {household?.dogPhotoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={household.dogPhotoUrl} alt={household.dogName} className="h-[140px] w-full object-cover" />
-          ) : (
-            <PawPlaceholder className="h-[140px]" />
-          )}
-        </Polaroid>
+          <Polaroid
+            seed="dog-profile"
+            caption={`${household?.dogName ?? "Biru"} · ${household?.dogBreed?.toLowerCase() ?? "biewer"}${dogAge ? ` · ${dogAge}` : ""}`}
+          >
+            {household?.dogPhotoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={household.dogPhotoUrl}
+                alt={household.dogName}
+                className={`h-[140px] w-full object-cover ${photoBusy ? "opacity-40" : ""}`}
+              />
+            ) : (
+              <PawPlaceholder className={`h-[140px] ${photoBusy ? "opacity-40" : ""}`} />
+            )}
+            <span className="absolute bottom-8 right-1.5 w-8 h-8 rounded-full bg-white border-2 border-ink flex items-center justify-center text-sm rotate-3 shadow-sketchSoft">
+              📷
+            </span>
+          </Polaroid>
+        </button>
+        <input
+          ref={photoInput}
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={(e) => {
+            void pickDogPhoto(e.target.files);
+            e.target.value = "";
+          }}
+        />
       </div>
+      <p className="text-center font-hand text-lg text-inkFaint mb-4">
+        {photoBusy ? "developing the portrait…" : "tap the polaroid to change his photo"}
+      </p>
+      {photoError && <ErrorNote message={photoError} />}
 
       <h2 className="font-hand text-2xl text-wood mb-1">the pack</h2>
       {household?.members.map((m) => (
