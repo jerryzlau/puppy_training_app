@@ -5,6 +5,7 @@ import { householdRoutes } from "./routes/households.js";
 import { inviteRoutes } from "./routes/invites.js";
 import { entryRoutes } from "./routes/entries.js";
 import { progressRoutes } from "./routes/progress.js";
+import { routineRoutes } from "./routes/routine.js";
 
 const app = Fastify({ logger: true });
 
@@ -26,6 +27,7 @@ householdRoutes(app);
 inviteRoutes(app);
 entryRoutes(app);
 progressRoutes(app);
+routineRoutes(app);
 
 app
   .listen({ port: env.port, host: "0.0.0.0" })

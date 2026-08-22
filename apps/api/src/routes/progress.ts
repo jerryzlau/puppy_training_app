@@ -5,13 +5,13 @@ import {
   courseRollup,
   streakDays,
   earnedBadges,
+  HOUSEHOLD_TZ,
   type ProgressStatsDto,
 } from "@biru/shared";
 import { requireMember } from "../auth.js";
 import { db } from "../supabase.js";
 
 const VALID_TASKS = allTaskIds(COURSE_MANIFEST);
-const HOUSEHOLD_TZ = "America/New_York";
 
 export function progressRoutes(app: FastifyInstance) {
   app.get("/progress", async (req, reply) => {

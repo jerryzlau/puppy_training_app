@@ -116,3 +116,53 @@ export interface ProgressStatsDto {
   streakDays: number;
   perMember: { userId: string; displayName: string; color: MemberColor; count: number }[];
 }
+
+/* ── routine ─────────────────────────────────────────────────────────────── */
+
+/** Case-folded form of a routine title, used to match "Walk" with "walk". */
+export const routineKindKey = (kind: string): string => kind.trim().toLowerCase();
+
+export const CreateRoutineItemSchema = z.object({
+  day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  kind: z.string().min(1).max(60),
+  note: z.string().max(500).nullable().optional(),
+  happenedAt: z.string().datetime({ offset: true }),
+});
+export type CreateRoutineItemInput = z.infer<typeof CreateRoutineItemSchema>;
+
+export const UpdateRoutineItemSchema = z.object({
+  kind: z.string().min(1).max(60).optional(),
+  note: z.string().max(500).nullable().optional(),
+  happenedAt: z.string().datetime({ offset: true }).optional(),
+  day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+});
+
+export interface RoutineItemDto {
+  id: string;
+  day: string;
+  kind: string;
+  note: string | null;
+  happenedAt: string;
+  createdBy: string;
+  createdByName: string;
+}
+
+/** A title you've used before — the quick-add chips, most-used first. */
+export interface RoutineKindDto {
+  kind: string;
+  kindKey: string;
+  count: number;
+  lastUsedAt: string;
+}
+
+/** Time-of-day pattern for one kind, in minutes past local midnight. */
+export interface RoutinePatternDto {
+  kind: string;
+  kindKey: string;
+  count: number;
+  medianMinutes: number;
+  earliestMinutes: number;
+  latestMinutes: number;
+  /** Recent occurrences, newest first, as minutes past local midnight. */
+  recentMinutes: number[];
+}
