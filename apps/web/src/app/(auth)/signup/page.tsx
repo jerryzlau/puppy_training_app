@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { HandLabel, SketchButton, ErrorNote } from "@/components/scrapbook";
+import { useSession } from "@/lib/session";
+import { HandLabel, SketchButton, ErrorNote, Loading } from "@/components/scrapbook";
 
 export default function SignUp() {
   const router = useRouter();
+  const { loading, session } = useSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -22,6 +24,14 @@ export default function SignUp() {
     if (error) setError(error.message);
     else router.replace("/onboarding");
   }
+
+  // Never paint the signed-out form until we know there is no session —
+  // otherwise an already-signed-in user sees a login screen flash on load.
+  useEffect(() => {
+    if (!loading && session) router.replace("/");
+  }, [loading, session, router]);
+
+  if (loading || session) return <Loading label="opening the book…" />;
 
   return (
     <main className="px-8 pt-20 pb-10 min-h-dvh">

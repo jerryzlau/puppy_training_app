@@ -6,16 +6,16 @@ import { useSession } from "@/lib/session";
 import { Loading } from "@/components/scrapbook";
 
 export default function Home() {
-  const { loading, configured, session, household } = useSession();
+  const { loading, configured, session, household, householdKnown } = useSession();
   const router = useRouter();
 
   useEffect(() => {
     if (loading) return;
     if (!configured) return; // setup notice below
     if (!session) router.replace("/signin");
-    else if (!household) router.replace("/onboarding");
-    else router.replace("/diary");
-  }, [loading, configured, session, household, router]);
+    else if (household) router.replace("/diary");
+    else if (householdKnown) router.replace("/onboarding");
+  }, [loading, configured, session, household, householdKnown, router]);
 
   if (!loading && !configured) {
     return (
