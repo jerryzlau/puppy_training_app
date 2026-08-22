@@ -20,9 +20,11 @@ body {
 /* dashed underline inputs, scrapbook style */
 .input-line {
   @apply w-full bg-transparent border-0 border-b-2 border-dashed border-wood px-1 py-2 text-base text-ink;
+  /* Explicit so the caret can never inherit an invisible colour. */
+  caret-color: theme("colors.accent");
 }
 .input-line:focus {
-  @apply outline-none border-accent;
+  @apply outline-none border-accent border-solid;
 }
 
 .ruled-textarea {
@@ -30,9 +32,12 @@ body {
   background: repeating-linear-gradient(0deg, transparent, transparent 30px, #d8cbb2 31px);
   line-height: 31px;
   @apply w-full bg-transparent text-base text-ink px-1;
+  caret-color: theme("colors.accent");
 }
 .ruled-textarea:focus {
   @apply outline-none;
+  /* outline-none alone left no focus indicator at all */
+  box-shadow: inset 0 -2px 0 0 theme("colors.accent");
 }
 
 /* markdown lesson body */

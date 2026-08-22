@@ -206,7 +206,7 @@ export default function RoutinePage() {
       </SketchButton>
 
       {formOpen && (
-        <div className="bg-white border border-[#E2D5B8] px-4 py-3 shadow-sketchSoft mb-4 -rotate-[0.3deg]">
+        <div className="bg-white border border-[#E2D5B8] px-4 py-3 shadow-sketchSoft mb-4">
           <HandLabel>what happened?</HandLabel>
           <input
             className="input-line"
