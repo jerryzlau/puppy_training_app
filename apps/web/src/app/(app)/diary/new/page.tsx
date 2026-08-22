@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, Suspense } from "react";
+import { useEffect, useMemo, useRef, useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
@@ -28,9 +28,25 @@ function NewEntryForm() {
   const today = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD local
   const [entryDate, setEntryDate] = useState(today);
 
-  const lessons = COURSE_MANIFEST.weeks.flatMap((w) =>
-    w.lessons.map((l) => ({ slug: l.slug, label: `week ${w.week} · ${l.title}` }))
+  // Built once: the manifest is static, and re-rendering 96 <option>s on every
+  // keystroke is pure waste.
+  const lessonOptions = useMemo(
+    () =>
+      COURSE_MANIFEST.weeks.flatMap((w) =>
+        w.lessons.map((l) => (
+          <option key={l.slug} value={l.slug}>
+            {`week ${w.week} · ${l.title}`}
+          </option>
+        ))
+      ),
+    []
   );
+
+  // One blob URL per file, not one per render. Creating these during render gave
+  // every keystroke a fresh src and forced the browser to re-decode full-size
+  // camera photos (and leaked a URL each time).
+  const previews = useMemo(() => files.map((f) => URL.createObjectURL(f)), [files]);
+  useEffect(() => () => previews.forEach((u) => URL.revokeObjectURL(u)), [previews]);
 
   function pickFiles(list: FileList | null) {
     if (!list) return;
@@ -98,12 +114,12 @@ function NewEntryForm() {
 
       <HandLabel>photos ({files.length}/{MAX_PHOTOS})</HandLabel>
       <div className="flex gap-3 flex-wrap">
-        {files.map((f, i) => (
+        {files.map((_, i) => (
           <div key={i} className="relative w-[104px]">
             <div className="bg-white p-1.5 pb-6 shadow-polaroid -rotate-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={URL.createObjectURL(f)}
+                src={previews[i]}
                 alt=""
                 className="h-[84px] w-full object-cover"
               />
@@ -173,11 +189,7 @@ function NewEntryForm() {
         onChange={(e) => setLessonSlug(e.target.value)}
       >
         <option value="">— not pinned —</option>
-        {lessons.map((l) => (
-          <option key={l.slug} value={l.slug}>
-            {l.label}
-          </option>
-        ))}
+        {lessonOptions}
       </select>
 
       {error && <ErrorNote message={error} />}
