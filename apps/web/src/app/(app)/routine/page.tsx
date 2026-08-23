@@ -273,7 +273,7 @@ export default function RoutinePage() {
             <button
               type="button"
               onClick={() => void remove(it.id)}
-              className="text-inkFaint text-sm px-1"
+              className="text-inkFaint text-base shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2 active:opacity-60"
               aria-label={`remove ${it.kind}`}
             >
               ✕

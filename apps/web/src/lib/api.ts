@@ -16,7 +16,11 @@ export async function api<T = unknown>(
   path: string,
   opts: { method?: string; body?: unknown; auth?: boolean } = {}
 ): Promise<T> {
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  // Only declare a JSON body when there actually is one: Fastify rejects a
+  // request carrying Content-Type: application/json with an empty body
+  // (FST_ERR_CTP_EMPTY_JSON_BODY), which 400s every bodyless PUT/DELETE.
+  const headers: Record<string, string> = {};
+  if (opts.body !== undefined) headers["Content-Type"] = "application/json";
   if (opts.auth !== false) {
     const { data } = await supabase().auth.getSession();
     const token = data.session?.access_token;
