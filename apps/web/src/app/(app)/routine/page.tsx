@@ -43,7 +43,8 @@ export default function RoutinePage() {
   const [patterns, setPatterns] = useState<RoutinePatternDto[]>([]);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
+  /** temp ids of rows whose POST is still in flight */
+  const [pending, setPending] = useState<Set<string>>(new Set());
 
   // full-form state
   const [formOpen, setFormOpen] = useState(false);
@@ -84,47 +85,67 @@ export default function RoutinePage() {
     void loadSide();
   }, [loadSide]);
 
-  /** One tap: log this title at the current time. */
-  async function quickAdd(title: string) {
-    setBusy(true);
+  /**
+   * Adds an item optimistically so the row appears the instant you submit,
+   * rather than after the POST and two reloads have all come back. The
+   * placeholder carries a temp id and renders dimmed until the server
+   * answers with the real row.
+   */
+  async function addItem(title: string, noteText: string | null, happenedAt: string) {
+    const tempId = `temp-${happenedAt}-${title}`;
+    const placeholder: RoutineItemDto = {
+      id: tempId,
+      day,
+      kind: title,
+      note: noteText,
+      happenedAt,
+      createdBy: "me",
+      createdByName: "you",
+    };
     setError("");
+    setPending((prev) => new Set(prev).add(tempId));
+    setItems((prev) =>
+      [...prev, placeholder].sort((a, b) => a.happenedAt.localeCompare(b.happenedAt))
+    );
     try {
-      const now = new Date();
-      await api<RoutineItemDto>("/routine", {
+      const saved = await api<RoutineItemDto>("/routine", {
         method: "POST",
-        body: { day, kind: title, note: null, happenedAt: instantFrom(day, clockValue(now)) },
+        body: { day, kind: title, note: noteText, happenedAt },
       });
-      await Promise.all([loadDay(day), loadSide()]);
+      // swap the placeholder for the real row in place — no flash, no reload
+      setItems((prev) =>
+        prev
+          .map((i) => (i.id === tempId ? saved : i))
+          .sort((a, b) => a.happenedAt.localeCompare(b.happenedAt))
+      );
+      void loadSide(); // chips and patterns can catch up in the background
     } catch (e) {
+      setItems((prev) => prev.filter((i) => i.id !== tempId));
       setError(e instanceof Error ? e.message : "couldn't add that");
     } finally {
-      setBusy(false);
+      setPending((prev) => {
+        const next = new Set(prev);
+        next.delete(tempId);
+        return next;
+      });
     }
+  }
+
+  /** One tap: log this title at the current time. */
+  async function quickAdd(title: string) {
+    await addItem(title, null, instantFrom(day, clockValue(new Date())));
   }
 
   async function addDetailed() {
     if (!kind.trim()) return;
-    setBusy(true);
-    setError("");
-    try {
-      await api<RoutineItemDto>("/routine", {
-        method: "POST",
-        body: {
-          day,
-          kind: kind.trim(),
-          note: note.trim() || null,
-          happenedAt: instantFrom(day, clock),
-        },
-      });
-      setKind("");
-      setNote("");
-      setFormOpen(false);
-      await Promise.all([loadDay(day), loadSide()]);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "couldn't add that");
-    } finally {
-      setBusy(false);
-    }
+    const title = kind.trim();
+    const noteText = note.trim() || null;
+    const at = instantFrom(day, clock);
+    // Clear and close immediately: the row is already on screen below.
+    setKind("");
+    setNote("");
+    setFormOpen(false);
+    await addItem(title, noteText, at);
   }
 
   async function remove(id: string) {
@@ -190,7 +211,6 @@ export default function RoutinePage() {
               <button
                 key={k.kindKey}
                 type="button"
-                disabled={busy}
                 onClick={() => void quickAdd(k.kind)}
                 className="px-3 py-1.5 rounded-full border-2 border-ink bg-white text-sm font-bold active:opacity-70 disabled:opacity-40"
               >
@@ -239,8 +259,8 @@ export default function RoutinePage() {
             maxLength={500}
           />
           <div className="h-4" />
-          <SketchButton onClick={addDetailed} disabled={busy || !kind.trim()}>
-            {busy ? "writing it down…" : "add to the routine"}
+          <SketchButton onClick={addDetailed} disabled={!kind.trim()}>
+            add to the routine
           </SketchButton>
         </div>
       )}
@@ -257,10 +277,14 @@ export default function RoutinePage() {
         </div>
       )}
       {state === "ready" &&
-        items.map((it) => (
+        items.map((it) => {
+          const saving = pending.has(it.id);
+          return (
           <div
             key={it.id}
-            className="flex gap-3 items-start py-3 px-1 border-b-[1.5px] border-dashed border-ruled"
+            className={`flex gap-3 items-start py-3 px-1 border-b-[1.5px] border-dashed border-ruled ${
+              saving ? "opacity-55" : ""
+            }`}
           >
             <span className="font-hand text-xl text-accent w-[72px] shrink-0 tabular-nums">
               {formatMinutes(minutesPastMidnight(it.happenedAt))}
@@ -268,10 +292,13 @@ export default function RoutinePage() {
             <span className="flex-1">
               <b className="text-[15px]">{it.kind}</b>
               {it.note && <span className="block text-sm text-inkSoft">{it.note}</span>}
-              <span className="font-hand text-base text-inkFaint">— {it.createdByName}</span>
+              <span className="font-hand text-base text-inkFaint">
+                {saving ? "saving…" : `— ${it.createdByName}`}
+              </span>
             </span>
             <button
               type="button"
+              disabled={saving}
               onClick={() => void remove(it.id)}
               className="text-inkFaint text-base shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2 active:opacity-60"
               aria-label={`remove ${it.kind}`}
@@ -279,7 +306,8 @@ export default function RoutinePage() {
               ✕
             </button>
           </div>
-        ))}
+          );
+        })}
 
         </div>
 
