@@ -23,7 +23,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <ProgressProvider>
-      <div className="pb-28">{children}</div>
+      {/* phones: a single 560px column above the tab bar.
+          md+: content sits beside the sidebar and is free to grow. */}
+      <div className="md:pl-[228px]">
+        <div className="mx-auto max-w-[560px] pb-28 md:max-w-[760px] lg:max-w-[1040px] md:pb-12 md:px-6">
+          {children}
+        </div>
+      </div>
       <TabBar />
     </ProgressProvider>
   );

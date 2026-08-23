@@ -83,6 +83,7 @@ export default function School() {
           <h2 className="font-hand text-2xl text-wood mb-1 mt-4 px-1">
             {MONTH_TITLES[month] ?? `month ${month}`}
           </h2>
+          <div className="lg:grid lg:grid-cols-2 lg:gap-x-5 lg:items-start">
           {COURSE_MANIFEST.weeks
             .filter((w) => w.month === month)
             .map((w) => {
@@ -124,6 +125,7 @@ export default function School() {
                 </Link>
               );
             })}
+          </div>
         </section>
       ))}
 

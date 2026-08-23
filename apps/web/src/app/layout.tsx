@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { SessionProvider } from "@/lib/session";
+import { ServiceWorker } from "@/components/ServiceWorker";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -31,7 +32,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <div className="mx-auto max-w-[560px] min-h-dvh relative">
+        <ServiceWorker />
+        <div className="min-h-dvh relative">
           <SessionProvider>{children}</SessionProvider>
         </div>
       </body>

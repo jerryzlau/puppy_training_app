@@ -60,7 +60,7 @@ export default function JoinPage() {
 
   if (notFound) {
     return (
-      <main className="px-8 pt-24">
+      <main className="mx-auto max-w-[560px] px-8 pt-24">
         <NoteCard tape={false}>
           <div className="font-hand text-2xl text-accent">this invite has wandered off…</div>
           <p className="text-sm mt-1">
@@ -73,7 +73,7 @@ export default function JoinPage() {
   if (!preview) return <Loading label="reading the invite…" />;
 
   return (
-    <main className="px-8 pt-16 pb-10">
+    <main className="mx-auto max-w-[560px] px-8 pt-16 pb-10">
       <h1 className="font-hand text-4xl leading-tight">
         {preview.invitedBy} invited you to
         <br />

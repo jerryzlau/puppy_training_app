@@ -149,7 +149,7 @@ export default function RoutinePage() {
       <h1 className="font-hand text-[38px] leading-none px-1">{dogName}&apos;s Routine ⏰</h1>
 
       {/* day picker */}
-      <div className="flex items-center justify-between mt-3 mb-1 px-1">
+      <div className="flex items-center justify-between mt-3 mb-1 px-1 md:max-w-[440px]">
         <button
           type="button"
           onClick={() => setDay(shiftDay(day, -1))}
@@ -201,12 +201,14 @@ export default function RoutinePage() {
         </>
       )}
 
-      <SketchButton variant="ghost" onClick={() => setFormOpen(!formOpen)} className="mb-3">
+      <div className="md:max-w-[440px]">
+        <SketchButton variant="ghost" onClick={() => setFormOpen(!formOpen)} className="mb-3">
         {formOpen ? "never mind" : "+ log something else"}
-      </SketchButton>
+        </SketchButton>
+      </div>
 
       {formOpen && (
-        <div className="bg-white border border-[#E2D5B8] px-4 py-3 shadow-sketchSoft mb-4">
+        <div className="bg-white border border-[#E2D5B8] px-4 py-3 shadow-sketchSoft mb-4 md:max-w-[520px]">
           <HandLabel>what happened?</HandLabel>
           <input
             className="input-line"
@@ -245,6 +247,8 @@ export default function RoutinePage() {
 
       {error && <ErrorNote message={error} />}
 
+      <div className="lg:grid lg:grid-cols-[1fr_360px] lg:gap-8 lg:items-start">
+        <div>
       {/* the day's timeline */}
       {state === "loading" && <Loading label="reading the day…" />}
       {state === "ready" && items.length === 0 && (
@@ -277,7 +281,10 @@ export default function RoutinePage() {
           </div>
         ))}
 
+        </div>
+
       {/* patterns */}
+      <div className="lg:sticky lg:top-8">
       {patterns.length > 0 && (
         <>
           <h2 className="font-hand text-2xl text-wood mt-7 mb-1 px-1">when things usually happen</h2>
@@ -318,6 +325,9 @@ export default function RoutinePage() {
           </div>
         </>
       )}
+
+      </div>
+      </div>
 
       <div className="h-8" />
     </main>

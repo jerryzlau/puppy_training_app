@@ -115,9 +115,11 @@ export default function DiaryFeed() {
         </NoteCard>
       )}
 
-      {entries.map((e) => (
-        <EntryCard key={e.id} entry={e} />
-      ))}
+      <div className="lg:grid lg:grid-cols-2 lg:gap-x-5 lg:items-start">
+        {entries.map((e) => (
+          <EntryCard key={e.id} entry={e} />
+        ))}
+      </div>
 
       {cursor && (
         <SketchButton variant="ghost" onClick={loadMore} disabled={loadingMore} className="mb-6">
