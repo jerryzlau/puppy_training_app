@@ -63,6 +63,38 @@ export function routineRoutes(app: FastifyInstance) {
     return reply.send({ day: q.day, items: (data ?? []).map((r) => toDto(r as Row, names)) });
   });
 
+  /** Per-day activity for one month — feeds the history calendar. */
+  app.get("/routine/calendar", async (req, reply) => {
+    const caller = await requireMember(req, reply);
+    if (!caller) return;
+    const q = req.query as { month?: string };
+    if (!q.month || !/^\d{4}-\d{2}$/.test(q.month)) {
+      return reply.code(400).send({ error: "month=YYYY-MM is required" });
+    }
+    const [y, m] = q.month.split("-").map(Number);
+    const next = `${m === 12 ? y + 1 : y}-${String(m === 12 ? 1 : m + 1).padStart(2, "0")}-01`;
+    const { data, error } = await db
+      .from("routine_items")
+      .select("day, kind")
+      .eq("household_id", caller.householdId)
+      .gte("day", `${q.month}-01`)
+      .lt("day", next);
+    if (error) return reply.code(500).send({ error: error.message });
+    const byDay = new Map<string, { count: number; kinds: string[] }>();
+    for (const r of data ?? []) {
+      const d = byDay.get(r.day) ?? { count: 0, kinds: [] };
+      d.count += 1;
+      if (!d.kinds.includes(r.kind) && d.kinds.length < 3) d.kinds.push(r.kind);
+      byDay.set(r.day, d);
+    }
+    return reply.send({
+      month: q.month,
+      days: [...byDay.entries()]
+        .map(([day, d]) => ({ day, ...d }))
+        .sort((a, b) => a.day.localeCompare(b.day)),
+    });
+  });
+
   /** Titles used before, most-used first — the quick-add chips. */
   app.get("/routine/kinds", async (req, reply) => {
     const caller = await requireMember(req, reply);

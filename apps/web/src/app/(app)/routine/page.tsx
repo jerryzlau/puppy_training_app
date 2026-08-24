@@ -12,6 +12,7 @@ import {
   type RoutinePatternDto,
 } from "@biru/shared";
 import { HandLabel, SketchButton, ErrorNote, Loading, Stamp } from "@/components/scrapbook";
+import { RoutineCalendar } from "@/components/RoutineCalendar";
 
 /** "14:05" for a datetime-local input, in the browser's own zone. */
 function clockValue(d: Date): string {
@@ -38,6 +39,7 @@ export default function RoutinePage() {
   const { household } = useSession();
   const today = useMemo(() => localDay(new Date()), []);
   const [day, setDay] = useState(today);
+  const [view, setView] = useState<"day" | "calendar">("day");
   const [items, setItems] = useState<RoutineItemDto[]>([]);
   const [kinds, setKinds] = useState<RoutineKindDto[]>([]);
   const [patterns, setPatterns] = useState<RoutinePatternDto[]>([]);
@@ -169,6 +171,44 @@ export default function RoutinePage() {
     <main className="px-5 pt-12">
       <h1 className="font-hand text-[38px] leading-none px-1">{petName}&apos;s Routine ⏰</h1>
 
+      {/* view tabs */}
+      <div className="flex gap-2 mt-3 px-1 md:max-w-[440px]">
+        {(
+          [
+            { value: "day", label: "📄 the day" },
+            { value: "calendar", label: "🗓️ history" },
+          ] as const
+        ).map((t) => (
+          <button
+            key={t.value}
+            type="button"
+            onClick={() => setView(t.value)}
+            aria-pressed={view === t.value}
+            className={`flex-1 px-3 py-2 rounded-lg border-2 text-sm font-bold ${
+              view === t.value
+                ? "border-ink bg-white shadow-sketchSoft text-ink"
+                : "border-transparent text-inkFaint"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {view === "calendar" && (
+        <div className="mt-3">
+          <RoutineCalendar
+            today={today}
+            onPickDay={(d) => {
+              setDay(d);
+              setView("day");
+            }}
+          />
+        </div>
+      )}
+
+      {view === "day" && (
+        <>
       {/* day picker */}
       <div className="flex items-center justify-between mt-3 mb-1 px-1 md:max-w-[440px]">
         <button
@@ -357,6 +397,8 @@ export default function RoutinePage() {
 
       </div>
       </div>
+        </>
+      )}
 
       <div className="h-8" />
     </main>
