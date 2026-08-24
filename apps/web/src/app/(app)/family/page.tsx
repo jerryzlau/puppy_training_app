@@ -42,6 +42,24 @@ export default function FamilyPage() {
     api<Invite[]>("/invites").then(setInvites).catch(() => {});
   }, []);
 
+  async function reframeCurrent() {
+    if (!household?.petPhotoUrl) {
+      photoInput.current?.click(); // nothing to re-frame yet — pick one
+      return;
+    }
+    setPhotoError(null);
+    try {
+      // Storage serves with Access-Control-Allow-Origin: *, so the signed URL
+      // can be fetched into a File and fed through the same crop modal.
+      const res = await fetch(household.petPhotoUrl);
+      if (!res.ok) throw new Error("couldn't load the current photo");
+      const blob = await res.blob();
+      setCropFile(new File([blob], "current.jpg", { type: blob.type || "image/jpeg" }));
+    } catch {
+      photoInput.current?.click(); // fall back to picking a fresh photo
+    }
+  }
+
   function pickDogPhoto(files: FileList | null) {
     const file = files?.[0];
     if (!file) return;
@@ -106,7 +124,7 @@ export default function FamilyPage() {
         <button
           type="button"
           className="block w-full text-left active:opacity-80"
-          onClick={() => photoInput.current?.click()}
+          onClick={() => void reframeCurrent()}
           disabled={photoBusy}
           aria-label={`change ${household?.petName ?? "Biru"}'s photo`}
         >
@@ -141,7 +159,20 @@ export default function FamilyPage() {
         />
       </div>
       <p className="text-center font-hand text-lg text-inkFaint mb-4">
-        {photoBusy ? "developing the portrait…" : "tap the polaroid to change their photo"}
+        {photoBusy ? (
+          "developing the portrait…"
+        ) : (
+          <>
+            tap the polaroid to re-frame ·{" "}
+            <button
+              type="button"
+              className="underline text-accent"
+              onClick={() => photoInput.current?.click()}
+            >
+              upload a new photo
+            </button>
+          </>
+        )}
       </p>
       {photoError && <ErrorNote message={photoError} />}
 
