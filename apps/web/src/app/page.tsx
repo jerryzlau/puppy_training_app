@@ -20,7 +20,7 @@ export default function Home() {
   if (!loading && !configured) {
     return (
       <main className="px-8 py-16">
-        <h1 className="font-hand text-4xl mb-4">The Biru Diaries 🐶</h1>
+        <h1 className="font-hand text-4xl mb-4">Pet Diaries 🐾</h1>
         <p className="text-[15px] leading-7">
           Almost there! The app isn&apos;t connected to Supabase yet. Copy{" "}
           <code>.env.example</code> to <code>.env.local</code>, fill in your Supabase URL and anon

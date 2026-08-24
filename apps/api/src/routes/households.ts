@@ -18,18 +18,19 @@ async function householdDto(householdId: string): Promise<HouseholdDto | null> {
     .select("user_id, display_name, role, color, joined_at")
     .eq("household_id", householdId)
     .order("joined_at");
-  let dogPhotoUrl: string | null = null;
-  if (h.dog_photo_path) {
-    const { data } = await db.storage.from(PHOTO_BUCKET).createSignedUrl(h.dog_photo_path, SIGNED_URL_TTL);
-    dogPhotoUrl = data?.signedUrl ?? null;
+  let petPhotoUrl: string | null = null;
+  if (h.pet_photo_path) {
+    const { data } = await db.storage.from(PHOTO_BUCKET).createSignedUrl(h.pet_photo_path, SIGNED_URL_TTL);
+    petPhotoUrl = data?.signedUrl ?? null;
   }
   return {
     id: h.id,
     name: h.name,
-    dogName: h.dog_name,
-    dogBreed: h.dog_breed,
-    dogBirthday: h.dog_birthday,
-    dogPhotoUrl,
+    species: h.species,
+    petName: h.pet_name,
+    petBreed: h.pet_breed,
+    petBirthday: h.pet_birthday,
+    petPhotoUrl,
     createdAt: h.created_at,
     members: (members ?? []).map(
       (m): MemberDto => ({
@@ -55,10 +56,11 @@ export function householdRoutes(app: FastifyInstance) {
     const { data: household, error } = await db
       .from("households")
       .insert({
-        name: `${input.dogName}'s family`,
-        dog_name: input.dogName,
-        dog_breed: input.dogBreed,
-        dog_birthday: input.dogBirthday ?? null,
+        name: `${input.petName}'s family`,
+        species: input.species,
+        pet_name: input.petName,
+        pet_breed: input.petBreed ?? null,
+        pet_birthday: input.petBirthday ?? null,
         created_by: caller.userId,
       })
       .select()
@@ -90,22 +92,22 @@ export function householdRoutes(app: FastifyInstance) {
     if (!parsed.success) return reply.code(400).send({ error: parsed.error.flatten() });
     const patch: Record<string, unknown> = {};
     if (parsed.data.name !== undefined) patch.name = parsed.data.name;
-    if (parsed.data.dogName !== undefined) patch.dog_name = parsed.data.dogName;
-    if (parsed.data.dogBirthday !== undefined) patch.dog_birthday = parsed.data.dogBirthday;
-    if (parsed.data.dogPhotoPath !== undefined) patch.dog_photo_path = parsed.data.dogPhotoPath;
-    // the dog's profile photo is a whole-family affair; everything else is owner-only
-    const onlyPhoto = Object.keys(patch).every((k) => k === "dog_photo_path");
+    if (parsed.data.petName !== undefined) patch.pet_name = parsed.data.petName;
+    if (parsed.data.petBirthday !== undefined) patch.pet_birthday = parsed.data.petBirthday;
+    if (parsed.data.petPhotoPath !== undefined) patch.pet_photo_path = parsed.data.petPhotoPath;
+    // the pet's profile photo is a whole-family affair; everything else is owner-only
+    const onlyPhoto = Object.keys(patch).every((k) => k === "pet_photo_path");
     if (!onlyPhoto && caller.role !== "owner")
       return reply.code(403).send({ error: "owner only" });
     // clean up the old profile photo when replacing it
-    if (patch.dog_photo_path !== undefined) {
+    if (patch.pet_photo_path !== undefined) {
       const { data: current } = await db
         .from("households")
-        .select("dog_photo_path")
+        .select("pet_photo_path")
         .eq("id", caller.householdId)
         .single();
-      if (current?.dog_photo_path && current.dog_photo_path !== patch.dog_photo_path) {
-        await db.storage.from(PHOTO_BUCKET).remove([current.dog_photo_path]);
+      if (current?.pet_photo_path && current.pet_photo_path !== patch.pet_photo_path) {
+        await db.storage.from(PHOTO_BUCKET).remove([current.pet_photo_path]);
       }
     }
     const { error } = await db.from("households").update(patch).eq("id", caller.householdId);
@@ -113,7 +115,7 @@ export function householdRoutes(app: FastifyInstance) {
     return reply.send(await householdDto(caller.householdId));
   });
 
-  // Signed direct-to-storage upload slot for the dog's profile photo (any member).
+  // Signed direct-to-storage upload slot for the pet's profile photo (any member).
   app.post("/households/me/photo/sign", async (req, reply) => {
     const caller = await requireMember(req, reply);
     if (!caller) return;

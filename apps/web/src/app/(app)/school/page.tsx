@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { COURSE_MANIFEST, MONTH_TITLES, SKILL_BADGES, weekProgress } from "@biru/shared";
+import { MONTH_TITLES, SKILL_BADGES, weekProgress } from "@biru/shared";
+import { useCourse, useSpecies, SPECIES_COPY } from "@/lib/course";
 import type { ProgressStatsDto } from "@biru/shared";
 import { api } from "@/lib/api";
 import { useProgress } from "@/lib/progress";
@@ -14,6 +15,9 @@ type Stats = ProgressStatsDto & { badges: string[] };
 export default function School() {
   const { checkedSet, rollup } = useProgress();
   const { household } = useSession();
+  const manifest = useCourse();
+  const species = useSpecies();
+  const copy = SPECIES_COPY[species];
   const [stats, setStats] = useState<Stats | null>(null);
 
   // The report card is a nice-to-have on top of the curriculum: if it fails to
@@ -28,15 +32,15 @@ export default function School() {
     };
   }, [checkedSet.size]);
 
-  const dogName = household?.dogName ?? "Biru";
+  const petName = household?.petName ?? "Biru";
   const memberBar = (color: string) => (color === "blue" ? "bg-sky" : "bg-accent");
   const maxCount = Math.max(1, ...(stats?.perMember ?? []).map((m) => m.count));
 
   return (
     <main className="px-5 pt-12">
-      <h1 className="font-hand text-[38px] leading-none px-1">Puppy School 🎓</h1>
+      <h1 className="font-hand text-[38px] leading-none px-1">{copy.school} 🎓</h1>
       <div className="px-1 mt-2">
-        <Stamp>{COURSE_MANIFEST.weeks.length}-week biewer curriculum</Stamp>
+        <Stamp>{manifest.weeks.length}-week {copy.curriculum}</Stamp>
       </div>
 
       {/* report card */}
@@ -63,7 +67,7 @@ export default function School() {
             <div>
               <b className="text-xl">
                 {stats.weeksDone}
-                <span className="text-sm text-inkSoft">/{COURSE_MANIFEST.weeks.length}</span>
+                <span className="text-sm text-inkSoft">/{manifest.weeks.length}</span>
               </b>
               <br />
               weeks done
@@ -78,13 +82,13 @@ export default function School() {
       </div>
 
       {/* curriculum */}
-      {[...new Set(COURSE_MANIFEST.weeks.map((w) => w.month))].map((month) => (
+      {[...new Set(manifest.weeks.map((w) => w.month))].map((month) => (
         <section key={month}>
           <h2 className="font-hand text-2xl text-wood mb-1 mt-4 px-1">
             {MONTH_TITLES[month] ?? `month ${month}`}
           </h2>
           <div className="lg:grid lg:grid-cols-2 lg:gap-x-5 lg:items-start">
-          {COURSE_MANIFEST.weeks
+          {manifest.weeks
             .filter((w) => w.month === month)
             .map((w) => {
               const wp = weekProgress(w, checkedSet);
@@ -172,7 +176,7 @@ export default function School() {
       )}
 
       <div className="font-hand text-lg text-inkFaint text-center mt-6">
-        {dogName} is {rollup.percent}% of the way through school
+        {petName} is {rollup.percent}% of the way through school
       </div>
       <div className="h-8" />
     </main>

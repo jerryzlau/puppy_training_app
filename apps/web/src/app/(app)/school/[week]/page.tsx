@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { notFound, useParams } from "next/navigation";
-import { COURSE_MANIFEST, lessonProgress } from "@biru/shared";
+import { lessonProgress } from "@biru/shared";
+import { useCourse } from "@/lib/course";
 import { useProgress } from "@/lib/progress";
 import { Stamp } from "@/components/scrapbook";
 
@@ -10,7 +11,8 @@ export default function WeekPage() {
   const { week } = useParams<{ week: string }>();
   const { checkedSet } = useProgress();
   const weekNum = parseInt(week.replace("week-", ""), 10);
-  const w = COURSE_MANIFEST.weeks.find((x) => x.week === weekNum);
+  const manifest = useCourse();
+  const w = manifest.weeks.find((x) => x.week === weekNum);
   if (!w) notFound();
 
   const lessonsDone = w.lessons.filter((l) => lessonProgress(l, checkedSet).done).length;

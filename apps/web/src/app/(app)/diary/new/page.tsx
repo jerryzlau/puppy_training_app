@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { uploadEntryPhoto } from "@/lib/photos";
-import { MOODS, COURSE_MANIFEST, type EntryDto, type Mood } from "@biru/shared";
+import { MOODS, type EntryDto, type Mood } from "@biru/shared";
+import { useCourse } from "@/lib/course";
 import { MOOD_LABEL } from "@/components/EntryCard";
 import { HandLabel, SketchButton, ErrorNote, Loading } from "@/components/scrapbook";
 
@@ -14,6 +15,7 @@ const MAX_PHOTOS = 5;
 function NewEntryForm() {
   const router = useRouter();
   const params = useSearchParams();
+  const manifest = useCourse();
   const [title, setTitle] = useState(params.get("title") ?? "");
   const [note, setNote] = useState("");
   const [mood, setMood] = useState<Mood | null>(
@@ -32,7 +34,7 @@ function NewEntryForm() {
   // keystroke is pure waste.
   const lessonOptions = useMemo(
     () =>
-      COURSE_MANIFEST.weeks.flatMap((w) =>
+      manifest.weeks.flatMap((w) =>
         w.lessons.map((l) => (
           <option key={l.slug} value={l.slug}>
             {`week ${w.week} · ${l.title}`}

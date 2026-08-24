@@ -4,7 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/session";
-import { COURSE_MANIFEST, type EntryDto } from "@biru/shared";
+import { type EntryDto } from "@biru/shared";
+import { useCourse, useSpecies, SPECIES_COPY } from "@/lib/course";
 import { EntryCard } from "@/components/EntryCard";
 import { Stamp, SketchButton, Loading, ErrorNote, NoteCard } from "@/components/scrapbook";
 
@@ -21,6 +22,8 @@ interface Stats {
 
 export default function DiaryFeed() {
   const { household } = useSession();
+  const manifest = useCourse();
+  const species = useSpecies();
   const [entries, setEntries] = useState<EntryDto[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
@@ -60,8 +63,8 @@ export default function DiaryFeed() {
     }
   }
 
-  const dogName = household?.dogName ?? "Biru";
-  const dayCount = household?.dogBirthday
+  const petName = household?.petName ?? "Biru";
+  const dayCount = household?.petBirthday
     ? Math.max(1, Math.floor((Date.now() - new Date(household.createdAt).getTime()) / 86_400_000) + 1)
     : Math.max(1, Math.floor((Date.now() - new Date(household?.createdAt ?? Date.now()).getTime()) / 86_400_000) + 1);
 
@@ -69,7 +72,7 @@ export default function DiaryFeed() {
     <main className="px-5 pt-12">
       <header className="flex items-start justify-between mb-4 px-1">
         <div>
-          <h1 className="font-hand text-[38px] leading-none">The {dogName} Diaries</h1>
+          <h1 className="font-hand text-[38px] leading-none">The {petName} Diaries</h1>
           <Stamp className="mt-2">day {dayCount} · vol. 1</Stamp>
         </div>
         <Link
@@ -91,7 +94,7 @@ export default function DiaryFeed() {
           </span>
           <div className="flex-1">
             <div className="text-sm font-bold">
-              puppy school · week {stats.currentWeek} of {COURSE_MANIFEST.weeks.length}
+              {SPECIES_COPY[species].school.toLowerCase()} · week {stats.currentWeek} of {manifest.weeks.length}
             </div>
             <div className="text-xs text-inkSoft">
               {stats.percent}% of the course
@@ -109,7 +112,7 @@ export default function DiaryFeed() {
         <NoteCard className="mt-8 text-center">
           <div className="font-hand text-3xl">an empty book, for now ✂️</div>
           <p className="text-sm text-inkSoft mt-2 mb-4">
-            every great scrapbook starts with one page. what did {dogName} do today?
+            every great scrapbook starts with one page. what did {petName} do today?
           </p>
           <SketchButton href="/diary/new">paste in the first memory</SketchButton>
         </NoteCard>

@@ -26,7 +26,7 @@ export async function uploadEntryPhoto(entryId: string, file: File, caption?: st
   return slot.photoId;
 }
 
-/** Upload the dog's profile photo and save it on the household. */
+/** Upload the pet's profile photo and save it on the household. */
 export async function uploadDogPhoto(file: File) {
   const compressed = await imageCompression(file, {
     maxWidthOrHeight: 1200,
@@ -43,5 +43,5 @@ export async function uploadDogPhoto(file: File) {
     .storage.from(BUCKET)
     .uploadToSignedUrl(slot.path, slot.token, compressed, { contentType });
   if (error) throw new Error(`photo upload failed: ${error.message}`);
-  await api("/households/me", { method: "PATCH", body: { dogPhotoPath: slot.path } });
+  await api("/households/me", { method: "PATCH", body: { petPhotoPath: slot.path } });
 }

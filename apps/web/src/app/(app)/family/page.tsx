@@ -84,14 +84,14 @@ export default function FamilyPage() {
     router.replace("/signin");
   }
 
-  const dogAge = household?.dogBirthday
-    ? `${Math.floor((Date.now() - new Date(household.dogBirthday).getTime()) / (30.44 * 86_400_000))} mo`
+  const dogAge = household?.petBirthday
+    ? `${Math.floor((Date.now() - new Date(household.petBirthday).getTime()) / (30.44 * 86_400_000))} mo`
     : null;
 
   return (
     <main className="px-6 pt-12">
       <h1 className="font-hand text-[38px] leading-none">
-        {household?.dogName ?? "Biru"}&apos;s Family 🏠
+        {household?.petName ?? "Biru"}&apos;s Family 🏠
       </h1>
 
       <div className="w-[180px] mx-auto mt-6 mb-1">
@@ -100,17 +100,17 @@ export default function FamilyPage() {
           className="block w-full text-left active:opacity-80"
           onClick={() => photoInput.current?.click()}
           disabled={photoBusy}
-          aria-label={`change ${household?.dogName ?? "Biru"}'s photo`}
+          aria-label={`change ${household?.petName ?? "Biru"}'s photo`}
         >
           <Polaroid
-            seed="dog-profile"
-            caption={`${household?.dogName ?? "Biru"} · ${household?.dogBreed?.toLowerCase() ?? "biewer"}${dogAge ? ` · ${dogAge}` : ""}`}
+            seed="pet-profile"
+            caption={`${household?.petName ?? "our pet"}${household?.petBreed ? ` · ${household.petBreed.toLowerCase()}` : ""}${dogAge ? ` · ${dogAge}` : ""}`}
           >
-            {household?.dogPhotoUrl ? (
+            {household?.petPhotoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={household.dogPhotoUrl}
-                alt={household.dogName}
+                src={household.petPhotoUrl}
+                alt={household.petName}
                 className={`h-[140px] w-full object-cover ${photoBusy ? "opacity-40" : ""}`}
               />
             ) : (

@@ -3,7 +3,8 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { api } from "./api";
 import type { ProgressCheckDto } from "@biru/shared";
-import { COURSE_MANIFEST, courseRollup } from "@biru/shared";
+import { COURSE_MANIFESTS, courseRollup } from "@biru/shared";
+import { useCourse } from "./course";
 
 interface ProgressState {
   loaded: boolean;
@@ -14,7 +15,7 @@ interface ProgressState {
   refresh: () => Promise<void>;
 }
 
-const empty = courseRollup(COURSE_MANIFEST, new Set());
+const empty = courseRollup(COURSE_MANIFESTS.dog, new Set());
 
 const Ctx = createContext<ProgressState>({
   loaded: false,
@@ -26,6 +27,7 @@ const Ctx = createContext<ProgressState>({
 });
 
 export function ProgressProvider({ children }: { children: React.ReactNode }) {
+  const manifest = useCourse();
   const [checks, setChecks] = useState<Map<string, ProgressCheckDto>>(new Map());
   const [loaded, setLoaded] = useState(false);
   /** Ticks whose write is still in flight: taskId -> intended state. A server
@@ -101,7 +103,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   );
 
   const checkedSet = new Set(checks.keys());
-  const rollup = courseRollup(COURSE_MANIFEST, checkedSet);
+  const rollup = courseRollup(manifest, checkedSet);
 
   return (
     <Ctx.Provider value={{ loaded, checks, checkedSet, rollup, toggle, refresh }}>

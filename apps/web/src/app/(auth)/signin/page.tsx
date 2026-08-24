@@ -36,12 +36,12 @@ export default function SignIn() {
   return (
     <main className="px-8 pt-14 pb-10 min-h-dvh flex flex-col justify-center">
       <div className="w-[190px] mx-auto mb-6">
-        <Polaroid caption="our Biru ♡" seed="login">
+        <Polaroid caption="your best friend ♡" seed="login">
           <PawPlaceholder className="h-[170px] text-6xl" />
         </Polaroid>
       </div>
-      <h1 className="font-hand text-5xl text-center leading-none">The Biru Diaries</h1>
-      <p className="text-center text-sm text-inkSoft mt-2">a scrapbook of one very small dog</p>
+      <h1 className="font-hand text-5xl text-center leading-none">Pet Diaries</h1>
+      <p className="text-center text-sm text-inkSoft mt-2">a scrapbook of one very good animal</p>
 
       <form onSubmit={submit} className="mt-4">
         <HandLabel>email</HandLabel>

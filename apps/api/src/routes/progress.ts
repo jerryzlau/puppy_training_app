@@ -1,17 +1,28 @@
 import type { FastifyInstance } from "fastify";
 import {
-  COURSE_MANIFEST,
+  COURSE_MANIFESTS,
   allTaskIds,
   courseRollup,
   streakDays,
   earnedBadges,
   HOUSEHOLD_TZ,
   type ProgressStatsDto,
+  type Species,
 } from "@biru/shared";
 import { requireMember } from "../auth.js";
 import { db } from "../supabase.js";
 
-const VALID_TASKS = allTaskIds(COURSE_MANIFEST);
+// A task id is valid if it belongs to either curriculum; which one applies to
+// the caller is decided by their household's species at read time.
+const VALID_TASKS = new Set<string>([
+  ...allTaskIds(COURSE_MANIFESTS.dog),
+  ...allTaskIds(COURSE_MANIFESTS.cat),
+]);
+
+async function householdSpecies(householdId: string): Promise<Species> {
+  const { data } = await db.from("households").select("species").eq("id", householdId).maybeSingle();
+  return (data?.species as Species) ?? "dog";
+}
 
 export function progressRoutes(app: FastifyInstance) {
   app.get("/progress", async (req, reply) => {
@@ -33,7 +44,8 @@ export function progressRoutes(app: FastifyInstance) {
       checkedByName: names.get(r.checked_by) ?? "someone",
       checkedAt: r.checked_at,
     }));
-    const rollup = courseRollup(COURSE_MANIFEST, new Set(checks.map((c) => c.taskId)));
+    const species = await householdSpecies(caller.householdId);
+    const rollup = courseRollup(COURSE_MANIFESTS[species], new Set(checks.map((c) => c.taskId)));
     return reply.send({ checks, rollup });
   });
 
@@ -84,8 +96,10 @@ export function progressRoutes(app: FastifyInstance) {
         .order("created_at", { ascending: false })
         .limit(400),
     ]);
+    const species = await householdSpecies(caller.householdId);
+    const manifest = COURSE_MANIFESTS[species];
     const checkedSet = new Set((checks ?? []).map((c) => c.task_id));
-    const rollup = courseRollup(COURSE_MANIFEST, checkedSet);
+    const rollup = courseRollup(manifest, checkedSet);
     const activity = [
       ...(checks ?? []).map((c) => new Date(c.checked_at)),
       ...(entryDates ?? []).map((e) => new Date(e.created_at)),
@@ -109,7 +123,7 @@ export function progressRoutes(app: FastifyInstance) {
     };
     return reply.send({
       ...stats,
-      badges: earnedBadges(COURSE_MANIFEST, checkedSet).map((b) => b.label),
+      badges: earnedBadges(manifest, checkedSet).map((b) => b.label),
     });
   });
 }

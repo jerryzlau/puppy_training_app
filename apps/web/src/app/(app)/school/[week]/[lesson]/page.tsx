@@ -4,7 +4,8 @@ import { useMemo } from "react";
 import Link from "next/link";
 import Markdown from "react-markdown";
 import { notFound, useParams } from "next/navigation";
-import { COURSE_MANIFEST, lessonProgress } from "@biru/shared";
+import { lessonProgress } from "@biru/shared";
+import { useCourse } from "@/lib/course";
 import { useProgress } from "@/lib/progress";
 import { useSession } from "@/lib/session";
 import { Stamp, SketchButton, WashiTape } from "@/components/scrapbook";
@@ -16,13 +17,19 @@ export default function LessonPage() {
   const { session } = useSession();
 
   const weekNum = parseInt(week.replace("week-", ""), 10);
-  const w = COURSE_MANIFEST.weeks.find((x) => x.week === weekNum);
+  const manifest = useCourse();
+  const petName = useSession().household?.petName ?? "your pet";
+  // Course content is written about "Biru" (dog) — read it as this household's pet.
+  const personalize = useMemo(() => {
+    return (text: string) => text.replace(/\bBiru\b/g, petName);
+  }, [petName]);
+  const w = manifest.weeks.find((x) => x.week === weekNum);
   const l = w?.lessons.find((x) => x.slug === `${week}/${lesson}`);
   if (!w || !l) notFound();
 
   const lp = lessonProgress(l, checkedSet);
   const next = useMemo(() => {
-    const all = COURSE_MANIFEST.weeks.flatMap((x) => x.lessons);
+    const all = manifest.weeks.flatMap((x) => x.lessons);
     const idx = all.findIndex((x) => x.slug === l.slug);
     return idx >= 0 && idx < all.length - 1 ? all[idx + 1] : null;
   }, [l.slug]);
@@ -46,12 +53,16 @@ export default function LessonPage() {
         week {w.week} · {w.theme} · ~{l.minutesPerDay} min/day
       </div>
 
-      <VoiceOver title={l.title} body={l.body} tasks={l.tasks.map((t) => t.text)} />
+      <VoiceOver
+        title={l.title}
+        body={personalize(l.body)}
+        tasks={l.tasks.map((t) => personalize(t.text))}
+      />
 
       <div className="relative bg-white border border-[#E2D5B8] px-4 py-4 shadow-sketchSoft -rotate-[0.3deg] mb-6">
         <WashiTape className="w-16" />
         <div className="lesson-body">
-          <Markdown>{l.body}</Markdown>
+          <Markdown>{personalize(l.body)}</Markdown>
         </div>
       </div>
 
@@ -77,7 +88,7 @@ export default function LessonPage() {
               <span
                 className={`text-[15px] leading-6 block ${on ? "line-through decoration-accent decoration-2 text-inkFaint" : ""}`}
               >
-                {t.text}
+                {personalize(t.text)}
               </span>
               {check && (
                 <span className="font-hand text-base text-inkFaint">

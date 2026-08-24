@@ -4,10 +4,10 @@ import { ServiceWorker } from "@/components/ServiceWorker";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "The Biru Diaries",
-  description: "A scrapbook of one very small dog — diary + puppy school.",
+  title: "Pet Diaries",
+  description: "A scrapbook for your pet — diary, school, and routine.",
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, statusBarStyle: "default", title: "Biru" },
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "Pet Diaries" },
   icons: { icon: "/icon-192.png", apple: "/icon-192.png" },
 };
 

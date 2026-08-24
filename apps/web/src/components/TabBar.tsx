@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "@/lib/session";
 
 const TABS = [
   { href: "/diary", icon: "📔", label: "Diary" },
@@ -16,6 +17,7 @@ const TABS = [
  */
 export function TabBar() {
   const path = usePathname();
+  const { household } = useSession();
   return (
     <nav
       className="fixed bottom-0 inset-x-0 z-40 mx-auto max-w-[560px] bg-paperD border-t-2 border-dashed border-wood flex px-2 pt-2 pb-[max(1.25rem,env(safe-area-inset-bottom))]
@@ -23,8 +25,12 @@ export function TabBar() {
         md:flex-col md:justify-start md:gap-1 md:border-t-0 md:border-r-2 md:px-4 md:pt-8 md:pb-8"
     >
       <div className="hidden md:block px-3 mb-6">
-        <div className="font-hand text-3xl leading-none">The Biru Diaries</div>
-        <div className="text-xs text-inkSoft mt-1">a scrapbook of one very small dog</div>
+        <div className="font-hand text-3xl leading-none">
+          {household ? `The ${household.petName} Diaries` : "Pet Diaries"}
+        </div>
+        <div className="text-xs text-inkSoft mt-1">
+          {household?.species === "cat" ? "a scrapbook of one very fine cat" : "a scrapbook of one very good dog"}
+        </div>
       </div>
 
       {TABS.map((t) => {

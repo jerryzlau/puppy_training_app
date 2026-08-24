@@ -28,6 +28,8 @@ export interface CourseWeek {
   lessons: CourseLesson[];
 }
 
+export type { Species } from "./types.js";
+
 export interface CourseManifest {
   weeks: CourseWeek[];
   totalLessons: number;

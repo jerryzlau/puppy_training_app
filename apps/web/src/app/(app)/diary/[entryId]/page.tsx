@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/session";
-import { COURSE_MANIFEST, type EntryDto } from "@biru/shared";
+import { type EntryDto } from "@biru/shared";
+import { useCourse } from "@/lib/course";
 import { MOOD_LABEL, friendlyDate } from "@/components/EntryCard";
 import {
   Polaroid,
@@ -18,6 +19,7 @@ import {
 
 export default function EntryDetail() {
   const { entryId } = useParams<{ entryId: string }>();
+  const manifest = useCourse();
   const router = useRouter();
   const { session } = useSession();
   const [entry, setEntry] = useState<EntryDto | null>(null);
@@ -43,7 +45,7 @@ export default function EntryDetail() {
 
   const isAuthor = session?.user.id === entry.authorId;
   const lesson = entry.linkedLessonSlug
-    ? COURSE_MANIFEST.weeks
+    ? manifest.weeks
         .flatMap((w) => w.lessons)
         .find((l) => l.slug === entry.linkedLessonSlug)
     : null;

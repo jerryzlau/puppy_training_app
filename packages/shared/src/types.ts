@@ -7,19 +7,23 @@ export const MEMBER_COLORS = ["red", "blue", "green", "brown"] as const;
 export type MemberColor = (typeof MEMBER_COLORS)[number];
 
 // ---------- households ----------
+export const SPECIES = ["dog", "cat"] as const;
+export type Species = (typeof SPECIES)[number];
+
 export const CreateHouseholdSchema = z.object({
   displayName: z.string().min(1).max(40),
-  dogName: z.string().min(1).max(40).default("Biru"),
-  dogBreed: z.string().min(1).max(60).default("Biewer Terrier"),
-  dogBirthday: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  species: z.enum(SPECIES).default("dog"),
+  petName: z.string().min(1).max(40),
+  petBreed: z.string().min(1).max(60).nullable().optional(),
+  petBirthday: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
 });
 export type CreateHouseholdInput = z.infer<typeof CreateHouseholdSchema>;
 
 export const UpdateHouseholdSchema = z.object({
   name: z.string().min(1).max(60).optional(),
-  dogName: z.string().min(1).max(40).optional(),
-  dogBirthday: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
-  dogPhotoPath: z.string().max(300).nullable().optional(),
+  petName: z.string().min(1).max(40).optional(),
+  petBirthday: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  petPhotoPath: z.string().max(300).nullable().optional(),
 });
 
 // ---------- invites ----------
@@ -60,10 +64,11 @@ export interface MemberDto {
 export interface HouseholdDto {
   id: string;
   name: string;
-  dogName: string;
-  dogBreed: string;
-  dogBirthday: string | null;
-  dogPhotoUrl: string | null;
+  species: Species;
+  petName: string;
+  petBreed: string | null;
+  petBirthday: string | null;
+  petPhotoUrl: string | null;
   createdAt: string;
   members: MemberDto[];
 }

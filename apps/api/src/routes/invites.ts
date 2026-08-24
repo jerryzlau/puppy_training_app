@@ -55,7 +55,7 @@ export function inviteRoutes(app: FastifyInstance) {
     }
     const { data: h } = await db
       .from("households")
-      .select("name, dog_name, dog_breed")
+      .select("name, species, pet_name, pet_breed")
       .eq("id", invite.household_id)
       .single();
     const { data: owner } = await db
@@ -66,8 +66,9 @@ export function inviteRoutes(app: FastifyInstance) {
       .maybeSingle();
     return reply.send({
       householdName: h?.name,
-      dogName: h?.dog_name,
-      dogBreed: h?.dog_breed,
+      species: h?.species ?? "dog",
+      petName: h?.pet_name,
+      petBreed: h?.pet_breed,
       invitedBy: owner?.display_name ?? "someone",
     });
   });

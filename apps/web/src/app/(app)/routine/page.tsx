@@ -158,7 +158,7 @@ export default function RoutinePage() {
     }
   }
 
-  const dogName = household?.dogName ?? "Biru";
+  const petName = household?.petName ?? "Biru";
   const dayLabel = new Date(`${day}T12:00:00`).toLocaleDateString("en-US", {
     weekday: "long",
     month: "short",
@@ -167,7 +167,7 @@ export default function RoutinePage() {
 
   return (
     <main className="px-5 pt-12">
-      <h1 className="font-hand text-[38px] leading-none px-1">{dogName}&apos;s Routine ⏰</h1>
+      <h1 className="font-hand text-[38px] leading-none px-1">{petName}&apos;s Routine ⏰</h1>
 
       {/* day picker */}
       <div className="flex items-center justify-between mt-3 mb-1 px-1 md:max-w-[440px]">

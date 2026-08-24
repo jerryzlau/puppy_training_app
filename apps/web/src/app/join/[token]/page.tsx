@@ -9,8 +9,9 @@ import { HandLabel, SketchButton, ErrorNote, NoteCard, Loading } from "@/compone
 
 interface Preview {
   householdName: string;
-  dogName: string;
-  dogBreed: string;
+  species: "dog" | "cat";
+  petName: string;
+  petBreed: string | null;
   invitedBy: string;
 }
 
@@ -77,10 +78,10 @@ export default function JoinPage() {
       <h1 className="font-hand text-4xl leading-tight">
         {preview.invitedBy} invited you to
         <br />
-        <span className="text-accent">the {preview.dogName} diaries 🐶</span>
+        <span className="text-accent">the {preview.petName} diaries {preview.species === "cat" ? "🐱" : "🐶"}</span>
       </h1>
       <p className="text-sm text-inkSoft mt-2">
-        one {preview.dogBreed}, two humans, every little moment — written down together.
+        one {preview.petBreed ?? (preview.species === "cat" ? "very opinionated cat" : "very good dog")}, a few humans, every little moment — written down together.
       </p>
       <form
         onSubmit={(e) => {
@@ -121,7 +122,7 @@ export default function JoinPage() {
         {error && <ErrorNote message={error} />}
         <div className="h-8" />
         <SketchButton type="submit" disabled={busy || !displayName}>
-          {busy ? "joining the pack…" : `Join ${preview.dogName}'s pack 🐾`}
+          {busy ? "joining the pack…" : `Join ${preview.petName}'s pack 🐾`}
         </SketchButton>
       </form>
     </main>

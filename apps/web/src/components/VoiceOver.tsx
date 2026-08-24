@@ -12,14 +12,14 @@ type VoState = "idle" | "playing" | "paused";
 export function speakableText(md: string): string {
   return md
     .replace(/⚠️/g, "")
-    .replace(/[🎓🐾🐶⭐✂️📔🏠🏅😊😴😆😤]/gu, "")
+    .replace(/[🎓🐾🐶🐱⭐✂️📔🏠🏅😊😴😆😤]/gu, "")
     .replace(/\*\*([^*]+)\*\*/g, "$1")
     .replace(/\*([^*]+)\*/g, "$1")
     .replace(/^#+\s*/gm, "")
     .replace(/`([^`]+)`/g, "$1")
     .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
     .replace(/^\s*[-*]\s+/gm, "")
-    .replace(/biewer tip:/gi, "Biewer tip: ")
+    .replace(/\b(biewer|cat|dog) tip:/gi, "tip: ")
     .replace(/\n{2,}/g, ". ")
     .replace(/\s+/g, " ")
     .trim();
