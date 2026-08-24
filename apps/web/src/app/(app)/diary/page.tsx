@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/session";
 import { type EntryDto } from "@biru/shared";
@@ -20,12 +21,19 @@ interface Stats {
   streakDays: number;
 }
 
-export default function DiaryFeed() {
+function DiaryFeed() {
+  const params = useSearchParams();
   const { household } = useSession();
   const manifest = useCourse();
   const species = useSpecies();
+  const [view, setView] = useState<"book" | "friends">(
+    params.get("view") === "friends" ? "friends" : "book"
+  );
   const [entries, setEntries] = useState<EntryDto[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
+  const [friendEntries, setFriendEntries] = useState<EntryDto[]>([]);
+  const [friendCursor, setFriendCursor] = useState<string | null>(null);
+  const [friendState, setFriendState] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [stats, setStats] = useState<Stats | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const [errMsg, setErrMsg] = useState("");
@@ -50,6 +58,32 @@ export default function DiaryFeed() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    if (view !== "friends" || friendState !== "idle") return;
+    setFriendState("loading");
+    api<Feed>("/entries?scope=friends")
+      .then((feed) => {
+        setFriendEntries(feed.entries);
+        setFriendCursor(feed.nextCursor);
+        setFriendState("ready");
+      })
+      .catch(() => setFriendState("error"));
+  }, [view, friendState]);
+
+  async function loadMoreFriends() {
+    if (!friendCursor) return;
+    setLoadingMore(true);
+    try {
+      const feed = await api<Feed>(
+        `/entries?scope=friends&cursor=${encodeURIComponent(friendCursor)}`
+      );
+      setFriendEntries((prev) => [...prev, ...feed.entries]);
+      setFriendCursor(feed.nextCursor);
+    } finally {
+      setLoadingMore(false);
+    }
+  }
 
   async function loadMore() {
     if (!cursor) return;
@@ -84,6 +118,32 @@ export default function DiaryFeed() {
         </Link>
       </header>
 
+      {/* view tabs */}
+      <div className="flex gap-2 mb-4 px-1 md:max-w-[440px]">
+        {(
+          [
+            { value: "book", label: "📖 our book" },
+            { value: "friends", label: "🐾 friends" },
+          ] as const
+        ).map((t) => (
+          <button
+            key={t.value}
+            type="button"
+            onClick={() => setView(t.value)}
+            aria-pressed={view === t.value}
+            className={`flex-1 px-3 py-2 rounded-lg border-2 text-sm font-bold ${
+              view === t.value
+                ? "border-ink bg-white shadow-sketchSoft text-ink"
+                : "border-transparent text-inkFaint"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {view === "book" && (
+        <>
       {stats && (
         <Link
           href="/school"
@@ -129,6 +189,39 @@ export default function DiaryFeed() {
           {loadingMore ? "flipping back…" : "earlier pages →"}
         </SketchButton>
       )}
+        </>
+      )}
+
+      {view === "friends" && (
+        <>
+          {friendState === "loading" && <Loading label="fetching the neighbourhood…" />}
+          {friendState === "error" && <ErrorNote message="couldn't load the friends feed" />}
+          {friendState === "ready" && friendEntries.length === 0 && (
+            <NoteCard className="mt-8 text-center">
+              <div className="font-hand text-3xl">no friend books yet 🐾</div>
+              <p className="text-sm text-inkSoft mt-2 mb-4">
+                link books with a friend and their pages show up here next to yours.
+              </p>
+              <SketchButton href="/family">make a friend link</SketchButton>
+            </NoteCard>
+          )}
+          <div className="lg:grid lg:grid-cols-2 lg:gap-x-5 lg:items-start">
+            {friendEntries.map((e) => (
+              <EntryCard key={e.id} entry={e} />
+            ))}
+          </div>
+          {friendCursor && (
+            <SketchButton
+              variant="ghost"
+              onClick={loadMoreFriends}
+              disabled={loadingMore}
+              className="mb-6"
+            >
+              {loadingMore ? "flipping back…" : "earlier pages →"}
+            </SketchButton>
+          )}
+        </>
+      )}
 
       <Link
         href="/diary/new"
@@ -138,5 +231,13 @@ export default function DiaryFeed() {
         ✏️
       </Link>
     </main>
+  );
+}
+
+export default function DiaryPage() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <DiaryFeed />
+    </Suspense>
   );
 }

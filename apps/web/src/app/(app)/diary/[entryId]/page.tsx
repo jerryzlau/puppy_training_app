@@ -108,6 +108,14 @@ export default function EntryDetail() {
       <div className={`font-hand text-xl mt-1 mb-3 ${authorHand}`}>
         — {entry.authorName} · {friendlyDate(entry.entryDate)}
       </div>
+      {entry.household && (
+        <div className="mb-3 -mt-1">
+          <Stamp color="gray">
+            {entry.household.species === "cat" ? "🐱" : "🐶"} from the {entry.household.petName}{" "}
+            diaries
+          </Stamp>
+        </div>
+      )}
 
       {entry.note && (
         <p className="text-[15px] leading-7 whitespace-pre-wrap">{entry.note}</p>
@@ -134,7 +142,11 @@ export default function EntryDetail() {
       <div className="mt-7">
         {(entry.comments ?? []).map((c) => (
           <NoteCard key={c.id} seed={c.id} tape={false} className="mb-3 border-dashed">
-            <div className="font-hand text-lg text-sky">{c.authorName} wrote in the margin:</div>
+            <div className="font-hand text-lg text-sky">
+              {c.authorName}
+              {c.authorHousehold ? ` (from ${c.authorHousehold.petName}'s book)` : ""} wrote in the
+              margin:
+            </div>
             <p className="text-sm">{c.body}</p>
           </NoteCard>
         ))}

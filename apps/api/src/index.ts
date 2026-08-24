@@ -6,6 +6,7 @@ import { inviteRoutes } from "./routes/invites.js";
 import { entryRoutes } from "./routes/entries.js";
 import { progressRoutes } from "./routes/progress.js";
 import { routineRoutes } from "./routes/routine.js";
+import { friendRoutes } from "./routes/friends.js";
 
 const app = Fastify({ logger: true });
 
@@ -28,6 +29,7 @@ inviteRoutes(app);
 entryRoutes(app);
 progressRoutes(app);
 routineRoutes(app);
+friendRoutes(app);
 
 app
   .listen({ port: env.port, host: "0.0.0.0" })

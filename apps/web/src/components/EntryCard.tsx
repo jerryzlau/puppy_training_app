@@ -52,6 +52,11 @@ export function EntryCard({ entry }: { entry: EntryDto }) {
         </NoteCard>
       )}
       <div className="px-1.5 mt-1.5 flex items-center gap-2 flex-wrap">
+        {entry.household && (
+          <Stamp color="gray">
+            {entry.household.species === "cat" ? "🐱" : "🐶"} {entry.household.petName}&apos;s book
+          </Stamp>
+        )}
         <span className={`font-hand text-lg ${authorColor}`}>
           — {entry.authorName}
           {!cover ? ` · ${friendlyDate(entry.entryDate)}` : ""}

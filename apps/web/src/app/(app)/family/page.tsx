@@ -6,6 +6,7 @@ import { api } from "@/lib/api";
 import { uploadDogPhoto } from "@/lib/photos";
 import { CropModal } from "@/components/CropModal";
 import { useSession } from "@/lib/session";
+import type { FriendDto } from "@biru/shared";
 import {
   Stamp,
   SketchButton,
@@ -37,9 +38,17 @@ export default function FamilyPage() {
   const [cropFile, setCropFile] = useState<File | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const photoInput = useRef<HTMLInputElement>(null);
+  const [friends, setFriends] = useState<FriendDto[]>([]);
+  const [friendLink, setFriendLink] = useState<string | null>(null);
+  const [friendCopied, setFriendCopied] = useState(false);
+  const [friendBusy, setFriendBusy] = useState(false);
+  const [friendError, setFriendError] = useState<string | null>(null);
 
   useEffect(() => {
     api<Invite[]>("/invites").then(setInvites).catch(() => {});
+    api<{ friends: FriendDto[] }>("/friends")
+      .then((r) => setFriends(r.friends))
+      .catch(() => {});
   }, []);
 
   async function reframeCurrent() {
@@ -95,6 +104,38 @@ export default function FamilyPage() {
       setError(err instanceof Error ? err.message : "couldn't create invite");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function createFriendLink() {
+    setFriendBusy(true);
+    setFriendError(null);
+    try {
+      const inv = await api<{ token: string }>("/friend-invites", { method: "POST" });
+      setFriendLink(`${window.location.origin}/befriend/${inv.token}`);
+      setFriendCopied(false);
+    } catch (err) {
+      setFriendError(err instanceof Error ? err.message : "couldn't make the link");
+    } finally {
+      setFriendBusy(false);
+    }
+  }
+
+  async function copyFriendLink() {
+    if (!friendLink) return;
+    await navigator.clipboard.writeText(friendLink);
+    setFriendCopied(true);
+  }
+
+  async function unfriend(f: FriendDto) {
+    if (!window.confirm(`unlink books with ${f.petName}'s family? they'll stop seeing your pages too.`))
+      return;
+    setFriends((prev) => prev.filter((x) => x.householdId !== f.householdId)); // optimistic
+    try {
+      await api(`/friends/${f.householdId}`, { method: "DELETE" });
+    } catch {
+      const r = await api<{ friends: FriendDto[] }>("/friends").catch(() => null);
+      if (r) setFriends(r.friends);
     }
   }
 
@@ -228,6 +269,56 @@ export default function FamilyPage() {
           <p className="text-xs text-inkSoft mt-3">
             pending: {invites.filter((i) => i.status === "pending").map((i) => i.email).join(", ")}
           </p>
+        )}
+      </div>
+
+      <div className="border-[2.5px] border-dashed border-wood rounded-lg p-4 mt-5 bg-cream">
+        <div className="font-hand text-2xl">🐾 friend books</div>
+        <p className="text-xs text-inkSoft mt-1 mb-3">
+          link books with a friend&apos;s pet — you&apos;ll see each other&apos;s pages in the
+          friends feed &amp; can write in the margins
+        </p>
+        {friends.map((f) => (
+          <DashedRow key={f.householdId}>
+            <span className="text-xl" aria-hidden>
+              {f.species === "cat" ? "🐱" : "🐶"}
+            </span>
+            <span className="flex-1 text-sm">
+              <b>{f.petName}</b>
+              <span className="text-inkSoft"> · {f.name}</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => void unfriend(f)}
+              className="text-inkFaint text-sm min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2"
+              aria-label={`unfriend ${f.petName}`}
+            >
+              ✕
+            </button>
+          </DashedRow>
+        ))}
+        {friendLink ? (
+          <div className="mt-2">
+            <p className="text-sm break-all bg-white border border-ruled rounded p-2.5 mb-3">
+              {friendLink}
+            </p>
+            <SketchButton onClick={copyFriendLink}>
+              {friendCopied ? "copied! ✓ now send it to them" : "copy the friend link"}
+            </SketchButton>
+            <button
+              className="block mx-auto mt-3 text-xs underline text-inkSoft"
+              onClick={() => setFriendLink(null)}
+            >
+              done
+            </button>
+          </div>
+        ) : (
+          <div className="mt-2">
+            {friendError && <ErrorNote message={friendError} />}
+            <SketchButton variant="ghost" onClick={createFriendLink} disabled={friendBusy}>
+              {friendBusy ? "making the link…" : "create a friend link"}
+            </SketchButton>
+          </div>
         )}
       </div>
 

@@ -1,13 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/session";
 import type { Species } from "@biru/shared";
 import { HandLabel, SketchButton, ErrorNote, Loading } from "@/components/scrapbook";
 
-export default function Onboarding() {
+function OnboardingForm() {
+  const params = useSearchParams();
+  // only same-origin paths; "//host" would be a protocol-relative escape
+  const rawReturn = params.get("returnTo") ?? "";
+  const returnTo = rawReturn.startsWith("/") && !rawReturn.startsWith("//") ? rawReturn : null;
   const router = useRouter();
   const { loading, session, household, refreshHousehold } = useSession();
   const [displayName, setDisplayName] = useState("");
@@ -21,8 +25,8 @@ export default function Onboarding() {
   useEffect(() => {
     if (loading) return;
     if (!session) router.replace("/signin");
-    else if (household) router.replace("/diary");
-  }, [loading, session, household, router]);
+    else if (household) router.replace(returnTo ?? "/diary");
+  }, [loading, session, household, router, returnTo]);
 
   if (loading || !session) return <Loading />;
 
@@ -42,7 +46,7 @@ export default function Onboarding() {
         },
       });
       await refreshHousehold();
-      router.replace("/diary");
+      router.replace(returnTo ?? "/diary");
     } catch (err) {
       setError(err instanceof Error ? err.message : "something went wrong");
       setBusy(false);
@@ -115,5 +119,13 @@ export default function Onboarding() {
         </SketchButton>
       </form>
     </main>
+  );
+}
+
+export default function Onboarding() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <OnboardingForm />
+    </Suspense>
   );
 }

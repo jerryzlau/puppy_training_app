@@ -81,6 +81,8 @@ export interface PhotoDto {
 }
 
 export interface CommentDto {
+  /** set when the comment comes from a friended household's member */
+  authorHousehold?: { id: string; petName: string } | null;
   id: string;
   authorId: string;
   authorName: string;
@@ -101,6 +103,8 @@ export interface EntryDto {
   createdAt: string;
   photos: PhotoDto[];
   comments?: CommentDto[];
+  /** present only on entries from a friended household (feed badge + detail) */
+  household?: { id: string; petName: string; species: Species };
 }
 
 export interface ProgressCheckDto {
@@ -170,4 +174,25 @@ export interface RoutinePatternDto {
   latestMinutes: number;
   /** Recent occurrences, newest first, as minutes past local midnight. */
   recentMinutes: number[];
+}
+
+/* ── friends ─────────────────────────────────────────────────────────────── */
+
+export interface FriendDto {
+  householdId: string;
+  name: string;
+  petName: string;
+  species: Species;
+  petBreed: string | null;
+  petPhotoUrl: string | null;
+  /** friendship created_at */
+  since: string;
+}
+
+export interface FriendInviteDto {
+  id: string;
+  token: string;
+  status: "pending" | "accepted" | "revoked";
+  expiresAt: string;
+  createdAt: string;
 }
