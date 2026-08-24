@@ -251,8 +251,9 @@ export default function RoutinePage() {
             onChange={(e) => setClock(e.target.value)}
           />
           <HandLabel>anything to note? (optional)</HandLabel>
-          <input
-            className="input-line"
+          <textarea
+            className="ruled-textarea"
+            rows={3}
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="ate everything, no fuss"
@@ -291,7 +292,7 @@ export default function RoutinePage() {
             </span>
             <span className="flex-1">
               <b className="text-[15px]">{it.kind}</b>
-              {it.note && <span className="block text-sm text-inkSoft">{it.note}</span>}
+              {it.note && <span className="block text-sm text-inkSoft whitespace-pre-line">{it.note}</span>}
               <span className="font-hand text-base text-inkFaint">
                 {saving ? "saving…" : `— ${it.createdByName}`}
               </span>
