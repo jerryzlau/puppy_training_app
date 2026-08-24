@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { uploadDogPhoto } from "@/lib/photos";
+import { CropModal } from "@/components/CropModal";
 import { useSession } from "@/lib/session";
 import {
   Stamp,
@@ -33,6 +34,7 @@ export default function FamilyPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [photoBusy, setPhotoBusy] = useState(false);
+  const [cropFile, setCropFile] = useState<File | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const photoInput = useRef<HTMLInputElement>(null);
 
@@ -40,13 +42,19 @@ export default function FamilyPage() {
     api<Invite[]>("/invites").then(setInvites).catch(() => {});
   }, []);
 
-  async function pickDogPhoto(files: FileList | null) {
+  function pickDogPhoto(files: FileList | null) {
     const file = files?.[0];
     if (!file) return;
+    setPhotoError(null);
+    setCropFile(file); // crop first; upload happens on confirm
+  }
+
+  async function uploadCropped(cropped: File) {
+    setCropFile(null);
     setPhotoBusy(true);
     setPhotoError(null);
     try {
-      await uploadDogPhoto(file);
+      await uploadDogPhoto(cropped);
       await refreshHousehold();
     } catch (err) {
       setPhotoError(err instanceof Error ? err.message : "couldn't upload the photo");
@@ -127,7 +135,7 @@ export default function FamilyPage() {
           accept="image/*"
           hidden
           onChange={(e) => {
-            void pickDogPhoto(e.target.files);
+            pickDogPhoto(e.target.files);
             e.target.value = "";
           }}
         />
@@ -212,6 +220,13 @@ export default function FamilyPage() {
         </button>
       </div>
       <div className="h-8" />
+      {cropFile && (
+        <CropModal
+          file={cropFile}
+          onCancel={() => setCropFile(null)}
+          onConfirm={(f) => void uploadCropped(f)}
+        />
+      )}
     </main>
   );
 }
