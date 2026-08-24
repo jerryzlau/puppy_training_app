@@ -141,7 +141,7 @@ export default function FamilyPage() {
         />
       </div>
       <p className="text-center font-hand text-lg text-inkFaint mb-4">
-        {photoBusy ? "developing the portrait…" : "tap the polaroid to change his photo"}
+        {photoBusy ? "developing the portrait…" : "tap the polaroid to change their photo"}
       </p>
       {photoError && <ErrorNote message={photoError} />}
 
