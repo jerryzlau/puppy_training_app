@@ -136,10 +136,15 @@ function DiaryFeed() {
         </div>
         <Link
           href="/family"
-          className="w-11 h-11 rounded-full bg-white border-2 border-ink flex items-center justify-center text-xl rotate-3"
+          className="w-11 h-11 rounded-full bg-white border-2 border-ink flex items-center justify-center text-xl rotate-3 overflow-hidden"
           aria-label="family & settings"
         >
-          🧑
+          {household?.petPhotoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={household.petPhotoUrl} alt="" className="w-full h-full object-cover" />
+          ) : (
+            "🧑"
+          )}
         </Link>
       </header>
 

@@ -39,6 +39,7 @@ export default function FamilyPage() {
   const [photoError, setPhotoError] = useState<string | null>(null);
   const photoInput = useRef<HTMLInputElement>(null);
   const [friends, setFriends] = useState<FriendDto[]>([]);
+  const [friendsLoading, setFriendsLoading] = useState(true);
   const [petForm, setPetForm] = useState({ species: "dog" as "dog" | "cat", name: "" });
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState("");
@@ -55,7 +56,8 @@ export default function FamilyPage() {
     api<Invite[]>("/invites").then(setInvites).catch(() => {});
     api<{ friends: FriendDto[] }>("/friends")
       .then((r) => setFriends(r.friends))
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setFriendsLoading(false));
   }, []);
 
   async function reframeCurrent() {
@@ -417,10 +419,25 @@ export default function FamilyPage() {
           for OTHER households — friends keep their own book; you see each other&apos;s pages
           in the friends feed &amp; can write in the margins, but never edit each other&apos;s
         </p>
+        {friendsLoading && (
+          <p className="font-hand text-lg text-inkFaint py-2">fetching friend books…</p>
+        )}
         {friends.map((f) => (
           <DashedRow key={f.householdId}>
-            <span className="text-xl" aria-hidden>
-              {f.species === "cat" ? "🐱" : "🐶"}
+            <span
+              className="w-9 h-9 rounded-full border-2 border-ink bg-white overflow-hidden flex items-center justify-center text-lg shrink-0"
+              aria-hidden
+            >
+              {f.petPhotoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={f.petPhotoUrl} alt="" className="w-full h-full object-cover" />
+              ) : !f.hasPet ? (
+                "🧑"
+              ) : f.species === "cat" ? (
+                "🐱"
+              ) : (
+                "🐶"
+              )}
             </span>
             <span className="flex-1 text-sm">
               <b>{f.petName}</b>
