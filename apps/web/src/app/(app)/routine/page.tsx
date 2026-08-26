@@ -160,7 +160,7 @@ export default function RoutinePage() {
     }
   }
 
-  const petName = household?.petName ?? "Biru";
+  const petName = household?.petName;
   const dayLabel = new Date(`${day}T12:00:00`).toLocaleDateString("en-US", {
     weekday: "long",
     month: "short",
@@ -169,7 +169,7 @@ export default function RoutinePage() {
 
   return (
     <main className="px-5 pt-12">
-      <h1 className="font-hand text-[38px] leading-none px-1">{petName}&apos;s Routine ⏰</h1>
+      <h1 className="font-hand text-[38px] leading-none px-1">{petName ? `${petName}\u2019s Routine` : "Routine"} ⏰</h1>
 
       {/* view tabs */}
       <div className="flex gap-2 mt-3 px-1 md:max-w-[440px]">

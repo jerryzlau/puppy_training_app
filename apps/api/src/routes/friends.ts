@@ -40,7 +40,7 @@ async function friendDto(householdId: string, since: string): Promise<FriendDto 
   return {
     householdId: h.id,
     name: h.name,
-    petName: h.pet_name,
+    petName: h.pet_name ?? h.name,
     species: h.species as Species,
     petBreed: h.pet_breed,
     petPhotoUrl,
@@ -103,7 +103,7 @@ export function friendRoutes(app: FastifyInstance) {
     return reply.send({
       householdName: h?.name,
       species: h?.species ?? "dog",
-      petName: h?.pet_name,
+      petName: h?.pet_name ?? h?.name,
       petBreed: h?.pet_breed,
       invitedBy: owner?.display_name ?? "someone",
     });

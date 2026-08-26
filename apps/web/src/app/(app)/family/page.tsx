@@ -39,6 +39,9 @@ export default function FamilyPage() {
   const [photoError, setPhotoError] = useState<string | null>(null);
   const photoInput = useRef<HTMLInputElement>(null);
   const [friends, setFriends] = useState<FriendDto[]>([]);
+  const [petForm, setPetForm] = useState({ species: "dog" as "dog" | "cat", name: "" });
+  const [petBusy, setPetBusy] = useState(false);
+  const [petError, setPetError] = useState<string | null>(null);
   const [friendLink, setFriendLink] = useState<string | null>(null);
   const [friendCopied, setFriendCopied] = useState(false);
   const [friendBusy, setFriendBusy] = useState(false);
@@ -107,6 +110,23 @@ export default function FamilyPage() {
     }
   }
 
+  async function addPet() {
+    if (!petForm.name.trim()) return;
+    setPetBusy(true);
+    setPetError(null);
+    try {
+      await api("/households/me", {
+        method: "PATCH",
+        body: { petName: petForm.name.trim(), species: petForm.species },
+      });
+      await refreshHousehold();
+    } catch (err) {
+      setPetError(err instanceof Error ? err.message : "couldn't add the pet");
+    } finally {
+      setPetBusy(false);
+    }
+  }
+
   async function createFriendLink() {
     setFriendBusy(true);
     setFriendError(null);
@@ -158,7 +178,7 @@ export default function FamilyPage() {
   return (
     <main className="px-6 pt-12">
       <h1 className="font-hand text-[38px] leading-none">
-        {household?.petName ?? "Biru"}&apos;s Family 🏠
+        {household?.petName ? `${household.petName}\u2019s Family` : "Family"} 🏠
       </h1>
 
       <div className="w-[180px] mx-auto mt-6 mb-1">
@@ -167,7 +187,7 @@ export default function FamilyPage() {
           className="block w-full text-left active:opacity-80"
           onClick={() => void reframeCurrent()}
           disabled={photoBusy}
-          aria-label={`change ${household?.petName ?? "Biru"}'s photo`}
+          aria-label="change the profile photo"
         >
           <Polaroid
             seed="pet-profile"
@@ -177,7 +197,7 @@ export default function FamilyPage() {
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={household.petPhotoUrl}
-                alt={household.petName}
+                alt={household.petName ?? "our pet"}
                 className={`h-[140px] w-full object-cover ${photoBusy ? "opacity-40" : ""}`}
               />
             ) : (
@@ -271,6 +291,47 @@ export default function FamilyPage() {
           </p>
         )}
       </div>
+
+      {household && !household.petName && (
+        <div className="border-[2.5px] border-dashed border-wood rounded-lg p-4 mt-5 bg-cream">
+          <div className="font-hand text-2xl">🐾 got a pet now?</div>
+          <p className="text-xs text-inkSoft mt-1 mb-3">
+            add them and your book comes alive — diary, school, the whole thing
+          </p>
+          <div className="flex gap-2 mb-1">
+            {(
+              [
+                { value: "dog", label: "a dog 🐶" },
+                { value: "cat", label: "a cat 🐱" },
+              ] as const
+            ).map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setPetForm((f) => ({ ...f, species: opt.value }))}
+                className={`flex-1 px-3 py-2 rounded-lg border-2 text-sm font-bold ${
+                  petForm.species === opt.value
+                    ? "border-accent bg-accent text-white"
+                    : "border-ink bg-white text-inkSoft"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <input
+            className="input-line mb-3"
+            placeholder="their name"
+            value={petForm.name}
+            onChange={(e) => setPetForm((f) => ({ ...f, name: e.target.value }))}
+            maxLength={40}
+          />
+          {petError && <ErrorNote message={petError} />}
+          <SketchButton onClick={addPet} disabled={petBusy || !petForm.name.trim()}>
+            {petBusy ? "writing them in…" : "add my pet ✂️"}
+          </SketchButton>
+        </div>
+      )}
 
       <div className="border-[2.5px] border-dashed border-wood rounded-lg p-4 mt-5 bg-cream">
         <div className="font-hand text-2xl">🐾 friend books</div>

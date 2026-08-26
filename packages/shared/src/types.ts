@@ -13,7 +13,8 @@ export type Species = (typeof SPECIES)[number];
 export const CreateHouseholdSchema = z.object({
   displayName: z.string().min(1).max(40),
   species: z.enum(SPECIES).default("dog"),
-  petName: z.string().min(1).max(40),
+  /** null = no pet yet — a follow-along household */
+  petName: z.string().min(1).max(40).nullable().optional(),
   petBreed: z.string().min(1).max(60).nullable().optional(),
   petBirthday: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
 });
@@ -22,6 +23,8 @@ export type CreateHouseholdInput = z.infer<typeof CreateHouseholdSchema>;
 export const UpdateHouseholdSchema = z.object({
   name: z.string().min(1).max(60).optional(),
   petName: z.string().min(1).max(40).optional(),
+  /** settable only while the household has no pet yet (adding the first pet) */
+  species: z.enum(SPECIES).optional(),
   petBirthday: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
   petPhotoPath: z.string().max(300).nullable().optional(),
 });
@@ -65,7 +68,8 @@ export interface HouseholdDto {
   id: string;
   name: string;
   species: Species;
-  petName: string;
+  /** null while the household has no pet yet */
+  petName: string | null;
   petBreed: string | null;
   petBirthday: string | null;
   petPhotoUrl: string | null;
@@ -181,6 +185,7 @@ export interface RoutinePatternDto {
 export interface FriendDto {
   householdId: string;
   name: string;
+  /** falls back to the household name when there's no pet yet */
   petName: string;
   species: Species;
   petBreed: string | null;

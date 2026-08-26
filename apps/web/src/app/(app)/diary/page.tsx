@@ -97,7 +97,7 @@ function DiaryFeed() {
     }
   }
 
-  const petName = household?.petName ?? "Biru";
+  const petName = household?.petName;
   const dayCount = household?.petBirthday
     ? Math.max(1, Math.floor((Date.now() - new Date(household.createdAt).getTime()) / 86_400_000) + 1)
     : Math.max(1, Math.floor((Date.now() - new Date(household?.createdAt ?? Date.now()).getTime()) / 86_400_000) + 1);
@@ -106,7 +106,9 @@ function DiaryFeed() {
     <main className="px-5 pt-12">
       <header className="flex items-start justify-between mb-4 px-1">
         <div>
-          <h1 className="font-hand text-[38px] leading-none">The {petName} Diaries</h1>
+          <h1 className="font-hand text-[38px] leading-none">
+            {petName ? `The ${petName} Diaries` : (household?.name ?? "Pet Diaries")}
+          </h1>
           <Stamp className="mt-2">day {dayCount} · vol. 1</Stamp>
         </div>
         <Link
@@ -172,7 +174,7 @@ function DiaryFeed() {
         <NoteCard className="mt-8 text-center">
           <div className="font-hand text-3xl">an empty book, for now ✂️</div>
           <p className="text-sm text-inkSoft mt-2 mb-4">
-            every great scrapbook starts with one page. what did {petName} do today?
+            every great scrapbook starts with one page. what happened today?
           </p>
           <SketchButton href="/diary/new">paste in the first memory</SketchButton>
         </NoteCard>

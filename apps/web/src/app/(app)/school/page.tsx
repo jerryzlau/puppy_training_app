@@ -32,7 +32,7 @@ export default function School() {
     };
   }, [checkedSet.size]);
 
-  const petName = household?.petName ?? "Biru";
+  const petName = household?.petName ?? "your pet";
   const memberBar = (color: string) => (color === "blue" ? "bg-sky" : "bg-accent");
   const maxCount = Math.max(1, ...(stats?.perMember ?? []).map((m) => m.count));
 

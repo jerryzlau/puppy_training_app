@@ -56,9 +56,9 @@ export function householdRoutes(app: FastifyInstance) {
     const { data: household, error } = await db
       .from("households")
       .insert({
-        name: `${input.petName}'s family`,
+        name: input.petName ? `${input.petName}'s family` : `${input.displayName}'s book`,
         species: input.species,
-        pet_name: input.petName,
+        pet_name: input.petName ?? null,
         pet_breed: input.petBreed ?? null,
         pet_birthday: input.petBirthday ?? null,
         created_by: caller.userId,
@@ -93,6 +93,17 @@ export function householdRoutes(app: FastifyInstance) {
     const patch: Record<string, unknown> = {};
     if (parsed.data.name !== undefined) patch.name = parsed.data.name;
     if (parsed.data.petName !== undefined) patch.pet_name = parsed.data.petName;
+    if (parsed.data.species !== undefined) {
+      // species is settable only while the household has no pet yet —
+      // switching mid-curriculum would orphan course progress
+      const { data: cur } = await db
+        .from("households")
+        .select("pet_name")
+        .eq("id", caller.householdId)
+        .single();
+      if (cur?.pet_name) return reply.code(409).send({ error: "species can't change once the pet is set" });
+      patch.species = parsed.data.species;
+    }
     if (parsed.data.petBirthday !== undefined) patch.pet_birthday = parsed.data.petBirthday;
     if (parsed.data.petPhotoPath !== undefined) patch.pet_photo_path = parsed.data.petPhotoPath;
     // the pet's profile photo is a whole-family affair; everything else is owner-only

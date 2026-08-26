@@ -51,8 +51,11 @@ interface HouseholdBadge {
 
 async function householdsBadgeMap(ids: string[]): Promise<Map<string, HouseholdBadge>> {
   if (ids.length === 0) return new Map();
-  const { data } = await db.from("households").select("id, pet_name, species").in("id", ids);
-  return new Map((data ?? []).map((h) => [h.id, { petName: h.pet_name, species: h.species }]));
+  const { data } = await db.from("households").select("id, name, pet_name, species").in("id", ids);
+  // petless households are labelled by their household name instead
+  return new Map(
+    (data ?? []).map((h) => [h.id, { petName: h.pet_name ?? h.name, species: h.species }])
+  );
 }
 
 async function photosDto(entryIds: string[]): Promise<Map<string, PhotoDto[]>> {

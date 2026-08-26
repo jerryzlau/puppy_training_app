@@ -26,7 +26,7 @@ export function TabBar() {
     >
       <div className="hidden md:block px-3 mb-6">
         <div className="font-hand text-3xl leading-none">
-          {household ? `The ${household.petName} Diaries` : "Pet Diaries"}
+          {household?.petName ? `The ${household.petName} Diaries` : (household?.name ?? "Pet Diaries")}
         </div>
         <div className="text-xs text-inkSoft mt-1">
           {household?.species === "cat" ? "a scrapbook of one very fine cat" : "a scrapbook of one very good dog"}

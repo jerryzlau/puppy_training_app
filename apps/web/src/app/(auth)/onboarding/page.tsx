@@ -16,6 +16,7 @@ function OnboardingForm() {
   const { loading, session, household, refreshHousehold } = useSession();
   const [displayName, setDisplayName] = useState("");
   const [species, setSpecies] = useState<Species>("dog");
+  const [noPet, setNoPet] = useState(false);
   const [petName, setPetName] = useState("");
   const [petBreed, setPetBreed] = useState("");
   const [petBirthday, setPetBirthday] = useState("");
@@ -40,9 +41,9 @@ function OnboardingForm() {
         body: {
           displayName,
           species,
-          petName,
-          petBreed: petBreed.trim() || null,
-          petBirthday: petBirthday || null,
+          petName: noPet ? null : petName,
+          petBreed: noPet ? null : petBreed.trim() || null,
+          petBirthday: noPet ? null : petBirthday || null,
         },
       });
       await refreshHousehold();
@@ -67,6 +68,17 @@ function OnboardingForm() {
           maxLength={40}
         />
         <HandLabel>who is this book about?</HandLabel>
+        <label className="flex items-center gap-2 text-sm text-inkSoft mb-2">
+          <input
+            type="checkbox"
+            checked={noPet}
+            onChange={(e) => setNoPet(e.target.checked)}
+            className="w-4 h-4 accent-[#C0533E]"
+          />
+          no pet yet — I&apos;m here to follow my friends&apos; diaries
+        </label>
+        {!noPet && (
+          <>
         <div className="flex gap-2 mb-1">
           {(
             [
@@ -112,9 +124,11 @@ function OnboardingForm() {
           value={petBirthday}
           onChange={(e) => setPetBirthday(e.target.value)}
         />
+          </>
+        )}
         {error && <ErrorNote message={error} />}
         <div className="h-8" />
-        <SketchButton type="submit" disabled={busy || !displayName || !petName.trim()}>
+        <SketchButton type="submit" disabled={busy || !displayName || (!noPet && !petName.trim())}>
           {busy ? "binding the book…" : "Start the scrapbook ✂️"}
         </SketchButton>
       </form>
