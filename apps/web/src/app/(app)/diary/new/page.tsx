@@ -123,7 +123,7 @@ function NewEntryForm() {
               <img
                 src={previews[i]}
                 alt=""
-                className="h-[84px] w-full object-cover"
+                className="aspect-square w-full object-cover"
               />
             </div>
             <button

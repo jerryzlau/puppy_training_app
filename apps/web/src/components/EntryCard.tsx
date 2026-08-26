@@ -38,7 +38,7 @@ export function EntryCard({ entry }: { entry: EntryDto }) {
             <img
               src={cover.url}
               alt={entry.title ?? "diary photo"}
-              className="h-[200px] w-full object-cover"
+              className="aspect-square w-full object-cover"
             />
           </Polaroid>
           {entry.note && (

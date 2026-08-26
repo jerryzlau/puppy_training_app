@@ -97,7 +97,7 @@ export default function EntryDetail() {
             <img
               src={photo.url}
               alt={entry.title ?? "diary photo"}
-              className="h-[250px] w-full object-cover cursor-pointer"
+              className="aspect-square w-full object-cover cursor-pointer"
               onClick={() => setPhotoIdx((photoIdx + 1) % entry.photos.length)}
             />
           </Polaroid>
