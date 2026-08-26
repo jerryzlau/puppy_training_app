@@ -25,13 +25,23 @@ const toInviteDto = (r: InviteRow): FriendInviteDto => ({
   createdAt: r.created_at,
 });
 
-async function friendDto(householdId: string, since: string): Promise<FriendDto | null> {
+async function friendDto(
+  householdId: string,
+  since: string,
+  viaMyLink = false
+): Promise<FriendDto | null> {
   const { data: h } = await db
     .from("households")
     .select("id, name, species, pet_name, pet_breed, pet_photo_path")
     .eq("id", householdId)
     .maybeSingle();
   if (!h) return null;
+  const { data: owner } = await db
+    .from("household_members")
+    .select("display_name")
+    .eq("household_id", householdId)
+    .eq("role", "owner")
+    .maybeSingle();
   let petPhotoUrl: string | null = null;
   if (h.pet_photo_path) {
     const { data } = await db.storage.from(PHOTO_BUCKET).createSignedUrl(h.pet_photo_path, SIGNED_URL_TTL);
@@ -44,6 +54,8 @@ async function friendDto(householdId: string, since: string): Promise<FriendDto 
     species: h.species as Species,
     petBreed: h.pet_breed,
     petPhotoUrl,
+    ownerName: owner?.display_name ?? "someone",
+    viaMyLink,
     since,
   };
 }
@@ -148,7 +160,7 @@ export function friendRoutes(app: FastifyInstance) {
       .update({ status: "accepted", accepted_household_id: caller.householdId })
       .eq("id", invite.id)
       .eq("status", "pending");
-    const friend = await friendDto(invite.household_id, new Date().toISOString());
+    const friend = await friendDto(invite.household_id, new Date().toISOString(), false);
     return reply.send({ ok: true, friend });
   });
 
@@ -173,10 +185,21 @@ export function friendRoutes(app: FastifyInstance) {
       .select("household_a, household_b, created_at")
       .or(`household_a.eq.${caller.householdId},household_b.eq.${caller.householdId}`)
       .order("created_at", { ascending: true });
+    const others = (data ?? []).map((r) =>
+      r.household_a === caller.householdId ? r.household_b : r.household_a
+    );
+    // households that accepted a link WE created
+    const { data: myInvites } = await db
+      .from("friend_invites")
+      .select("accepted_household_id")
+      .eq("household_id", caller.householdId)
+      .eq("status", "accepted")
+      .in("accepted_household_id", others.length ? others : ["00000000-0000-0000-0000-000000000000"]);
+    const viaMine = new Set((myInvites ?? []).map((i) => i.accepted_household_id));
     const friends: FriendDto[] = [];
     for (const r of data ?? []) {
       const other = r.household_a === caller.householdId ? r.household_b : r.household_a;
-      const dto = await friendDto(other, r.created_at);
+      const dto = await friendDto(other, r.created_at, viaMine.has(other));
       if (dto) friends.push(dto);
     }
     return reply.send({ friends });

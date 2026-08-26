@@ -346,7 +346,11 @@ export default function FamilyPage() {
             </span>
             <span className="flex-1 text-sm">
               <b>{f.petName}</b>
-              <span className="text-inkSoft"> · {f.name}</span>
+              <span className="text-inkSoft"> · with {f.ownerName}</span>
+              <span className="block text-xs text-inkFaint">
+                {f.viaMyLink ? "joined through your link" : "you joined through theirs"} ·{" "}
+                {new Date(f.since).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+              </span>
             </span>
             <button
               type="button"

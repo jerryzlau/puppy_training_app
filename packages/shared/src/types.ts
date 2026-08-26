@@ -190,6 +190,10 @@ export interface FriendDto {
   species: Species;
   petBreed: string | null;
   petPhotoUrl: string | null;
+  /** the friend household's owner display name */
+  ownerName: string;
+  /** true when they joined through a link YOUR household created */
+  viaMyLink: boolean;
   /** friendship created_at */
   since: string;
 }
