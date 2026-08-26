@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import type { EntryDto } from "@biru/shared";
 import { Polaroid, NoteCard, Stamp } from "@/components/scrapbook";
 
@@ -24,7 +25,17 @@ export function friendlyDate(iso: string): string {
 
 export function EntryCard({ entry }: { entry: EntryDto }) {
   const authorColor = entry.authorColor === "blue" ? "text-sky" : "text-wood";
-  const cover = entry.photos[0];
+  // Flip through the photos right on the card; the card itself stays a link.
+  const [idx, setIdx] = useState(0);
+  const many = entry.photos.length > 1;
+  const cover = entry.photos[Math.min(idx, entry.photos.length - 1)];
+
+  const flip = (e: React.MouseEvent, delta: number) => {
+    // keep the surrounding <Link> from navigating
+    e.preventDefault();
+    e.stopPropagation();
+    setIdx((i) => (i + delta + entry.photos.length) % entry.photos.length);
+  };
 
   return (
     <Link href={`/diary/${entry.id}`} className="block mb-8 active:opacity-80">
@@ -34,12 +45,44 @@ export function EntryCard({ entry }: { entry: EntryDto }) {
             seed={entry.id}
             caption={`${entry.title ?? "a little moment"} · ${friendlyDate(entry.entryDate)}`}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={cover.url}
-              alt={entry.title ?? "diary photo"}
-              className="aspect-square w-full object-cover"
-            />
+            <span className="relative block">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={cover.url}
+                alt={entry.title ?? "diary photo"}
+                className="aspect-square w-full object-cover"
+              />
+              {many && (
+                <>
+                  <button
+                    type="button"
+                    onClick={(e) => flip(e, -1)}
+                    aria-label="previous photo"
+                    className="absolute left-0 inset-y-0 w-11 flex items-center justify-start pl-1.5 text-white text-2xl font-bold drop-shadow-[0_1px_2px_rgba(0,0,0,.7)] active:opacity-60"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => flip(e, 1)}
+                    aria-label="next photo"
+                    className="absolute right-0 inset-y-0 w-11 flex items-center justify-end pr-1.5 text-white text-2xl font-bold drop-shadow-[0_1px_2px_rgba(0,0,0,.7)] active:opacity-60"
+                  >
+                    ›
+                  </button>
+                  <span className="absolute bottom-1.5 inset-x-0 flex justify-center gap-1.5" aria-hidden>
+                    {entry.photos.map((ph, i) => (
+                      <span
+                        key={ph.id}
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          i === idx % entry.photos.length ? "bg-white" : "bg-white/45"
+                        } shadow-[0_0_2px_rgba(0,0,0,.6)]`}
+                      />
+                    ))}
+                  </span>
+                </>
+              )}
+            </span>
           </Polaroid>
           {entry.note && (
             <p className="text-sm leading-6 mt-2.5 px-1.5 line-clamp-2">{entry.note}</p>
