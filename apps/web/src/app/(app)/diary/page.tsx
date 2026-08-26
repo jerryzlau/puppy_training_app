@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/session";
-import { type EntryDto } from "@biru/shared";
+import { type EntryDto, type FriendDto } from "@biru/shared";
 import { useCourse, useSpecies, SPECIES_COPY } from "@/lib/course";
 import { EntryCard } from "@/components/EntryCard";
 import { Stamp, SketchButton, Loading, ErrorNote, NoteCard } from "@/components/scrapbook";
@@ -34,6 +34,9 @@ function DiaryFeed() {
   const [friendEntries, setFriendEntries] = useState<EntryDto[]>([]);
   const [friendCursor, setFriendCursor] = useState<string | null>(null);
   const [friendState, setFriendState] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [friends, setFriends] = useState<FriendDto[]>([]);
+  /** null = everyone */
+  const [friendFilter, setFriendFilter] = useState<string | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const [errMsg, setErrMsg] = useState("");
@@ -59,25 +62,45 @@ function DiaryFeed() {
     void load();
   }, [load]);
 
+  const friendFeedUrl = useCallback(
+    (cursor?: string | null) => {
+      const parts = ["scope=friends"];
+      if (friendFilter) parts.push(`household=${friendFilter}`);
+      if (cursor) parts.push(`cursor=${encodeURIComponent(cursor)}`);
+      return `/entries?${parts.join("&")}`;
+    },
+    [friendFilter]
+  );
+
   useEffect(() => {
-    if (view !== "friends" || friendState !== "idle") return;
+    if (view !== "friends") return;
+    let cancelled = false;
     setFriendState("loading");
-    api<Feed>("/entries?scope=friends")
-      .then((feed) => {
+    Promise.all([
+      api<Feed>(friendFeedUrl()),
+      friends.length
+        ? Promise.resolve(null)
+        : api<{ friends: FriendDto[] }>("/friends").catch(() => null),
+    ])
+      .then(([feed, fr]) => {
+        if (cancelled) return;
         setFriendEntries(feed.entries);
         setFriendCursor(feed.nextCursor);
+        if (fr) setFriends(fr.friends);
         setFriendState("ready");
       })
-      .catch(() => setFriendState("error"));
-  }, [view, friendState]);
+      .catch(() => !cancelled && setFriendState("error"));
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view, friendFilter, friendFeedUrl]);
 
   async function loadMoreFriends() {
     if (!friendCursor) return;
     setLoadingMore(true);
     try {
-      const feed = await api<Feed>(
-        `/entries?scope=friends&cursor=${encodeURIComponent(friendCursor)}`
-      );
+      const feed = await api<Feed>(friendFeedUrl(friendCursor));
       setFriendEntries((prev) => [...prev, ...feed.entries]);
       setFriendCursor(feed.nextCursor);
     } finally {
@@ -196,6 +219,58 @@ function DiaryFeed() {
 
       {view === "friends" && (
         <>
+          {friends.length > 0 && (
+            <div className="flex gap-3 overflow-x-auto pb-2 mb-2 px-1 -mx-1" role="tablist" aria-label="filter by friend">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={friendFilter === null}
+                onClick={() => setFriendFilter(null)}
+                className="flex flex-col items-center gap-1 shrink-0 w-[64px]"
+              >
+                <span
+                  className={`w-12 h-12 rounded-full border-2 flex items-center justify-center text-xl bg-white ${
+                    friendFilter === null ? "border-accent shadow-sketchSoft" : "border-ink opacity-70"
+                  }`}
+                  aria-hidden
+                >
+                  🐾
+                </span>
+                <span className={`text-[11px] font-bold truncate w-full text-center ${friendFilter === null ? "text-ink" : "text-inkFaint"}`}>
+                  everyone
+                </span>
+              </button>
+              {friends.map((f) => {
+                const on = friendFilter === f.householdId;
+                return (
+                  <button
+                    key={f.householdId}
+                    type="button"
+                    role="tab"
+                    aria-selected={on}
+                    onClick={() => setFriendFilter(on ? null : f.householdId)}
+                    className="flex flex-col items-center gap-1 shrink-0 w-[64px]"
+                  >
+                    <span
+                      className={`w-12 h-12 rounded-full border-2 overflow-hidden flex items-center justify-center text-xl bg-white ${
+                        on ? "border-accent shadow-sketchSoft" : "border-ink opacity-70"
+                      }`}
+                    >
+                      {f.petPhotoUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={f.petPhotoUrl} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <span aria-hidden>{!f.hasPet ? "🧑" : f.species === "cat" ? "🐱" : "🐶"}</span>
+                      )}
+                    </span>
+                    <span className={`text-[11px] font-bold truncate w-full text-center ${on ? "text-ink" : "text-inkFaint"}`}>
+                      {f.petName}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
           {friendState === "loading" && <Loading label="fetching the neighbourhood…" />}
           {friendState === "error" && <ErrorNote message="couldn't load the friends feed" />}
           {friendState === "ready" && friendEntries.length === 0 && (

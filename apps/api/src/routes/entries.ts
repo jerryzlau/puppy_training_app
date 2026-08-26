@@ -140,11 +140,18 @@ export function entryRoutes(app: FastifyInstance) {
   app.get("/entries", async (req, reply) => {
     const caller = await requireMember(req, reply);
     if (!caller) return;
-    const q = req.query as { cursor?: string; month?: string; scope?: string };
+    const q = req.query as { cursor?: string; month?: string; scope?: string; household?: string };
     const friendsScope = q.scope === "friends";
-    const householdIds = friendsScope
+    let householdIds = friendsScope
       ? [caller.householdId, ...(await friendHouseholdIds(caller.householdId))]
       : [caller.householdId];
+    // optional narrowing to one book — must be your own or a friended one
+    if (friendsScope && q.household) {
+      if (!householdIds.includes(q.household)) {
+        return reply.code(400).send({ error: "not a friend household" });
+      }
+      householdIds = [q.household];
+    }
     let query = db
       .from("diary_entries")
       .select("*")

@@ -51,6 +51,7 @@ async function friendDto(
     householdId: h.id,
     name: h.name,
     petName: h.pet_name ?? h.name,
+    hasPet: Boolean(h.pet_name),
     species: h.species as Species,
     petBreed: h.pet_breed,
     petPhotoUrl,

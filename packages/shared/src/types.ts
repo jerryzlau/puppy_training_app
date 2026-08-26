@@ -187,6 +187,8 @@ export interface FriendDto {
   name: string;
   /** falls back to the household name when there's no pet yet */
   petName: string;
+  /** false while the household has no pet — render a human, not a pet */
+  hasPet: boolean;
   species: Species;
   petBreed: string | null;
   petPhotoUrl: string | null;
