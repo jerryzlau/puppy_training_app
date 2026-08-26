@@ -329,9 +329,10 @@ export default function FamilyPage() {
       ))}
 
       <div className="border-[2.5px] border-dashed border-wood rounded-lg p-4 mt-5 bg-cream">
-        <div className="font-hand text-2xl">✉️ invite someone to the book</div>
+        <div className="font-hand text-2xl">👨‍👩‍👧 add another pawrent</div>
         <p className="text-xs text-inkSoft mt-1 mb-3">
-          they&apos;ll see every page &amp; can tick off lessons with you
+          for people in THIS household — they share your book fully: write pages, tick off
+          lessons, log the routine. (friends with their own pet belong in friend books below)
         </p>
         {inviteLink ? (
           <div>
@@ -351,14 +352,14 @@ export default function FamilyPage() {
             <input
               className="input-line mb-4"
               type="email"
-              placeholder="partner@email.com"
+              placeholder="your partner's email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
             {error && <ErrorNote message={error} />}
             <SketchButton type="submit" disabled={busy || !email}>
-              {busy ? "writing the invite…" : "create invite link"}
+              {busy ? "writing the invite…" : "create a pawrent invite"}
             </SketchButton>
           </form>
         )}
@@ -413,8 +414,8 @@ export default function FamilyPage() {
       <div className="border-[2.5px] border-dashed border-wood rounded-lg p-4 mt-5 bg-cream">
         <div className="font-hand text-2xl">🐾 friend books</div>
         <p className="text-xs text-inkSoft mt-1 mb-3">
-          link books with a friend&apos;s pet — you&apos;ll see each other&apos;s pages in the
-          friends feed &amp; can write in the margins
+          for OTHER households — friends keep their own book; you see each other&apos;s pages
+          in the friends feed &amp; can write in the margins, but never edit each other&apos;s
         </p>
         {friends.map((f) => (
           <DashedRow key={f.householdId}>
