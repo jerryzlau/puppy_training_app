@@ -226,12 +226,11 @@ export function entryRoutes(app: FastifyInstance) {
       (authorRows ?? []).map((m) => [m.user_id, { displayName: m.display_name, color: m.color }])
     );
     const authorHomes = new Map((authorRows ?? []).map((m) => [m.user_id, m.household_id]));
-    const foreignHomes = [
-      ...new Set(
-        [...authorHomes.values(), entry.household_id].filter((h) => h !== caller.householdId)
-      ),
-    ];
-    const badges = await householdsBadgeMap(foreignHomes as string[]);
+    // Badge every involved household. Attribution keys off the ENTRY's
+    // household, not the caller's — filtering out the caller's own household
+    // here would strip the label from their own cross-book comments.
+    const involvedHomes = [...new Set([...authorHomes.values(), entry.household_id])];
+    const badges = await householdsBadgeMap(involvedHomes as string[]);
     const dto = toDto(entry, members, photos, badges, caller.householdId);
     dto.comments = (comments ?? []).map((c): CommentDto => {
       const home = authorHomes.get(c.author_id);
