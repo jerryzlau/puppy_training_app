@@ -40,6 +40,10 @@ export default function FamilyPage() {
   const photoInput = useRef<HTMLInputElement>(null);
   const [friends, setFriends] = useState<FriendDto[]>([]);
   const [petForm, setPetForm] = useState({ species: "dog" as "dog" | "cat", name: "" });
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState("");
+  const [nameBusy, setNameBusy] = useState(false);
+  const [nameError, setNameError] = useState<string | null>(null);
   const [petBusy, setPetBusy] = useState(false);
   const [petError, setPetError] = useState<string | null>(null);
   const [friendLink, setFriendLink] = useState<string | null>(null);
@@ -107,6 +111,28 @@ export default function FamilyPage() {
       setError(err instanceof Error ? err.message : "couldn't create invite");
     } finally {
       setBusy(false);
+    }
+  }
+
+  const isOwner =
+    household?.members.find((m) => m.userId === session?.user.id)?.role === "owner";
+
+  async function saveName() {
+    const next = nameDraft.trim();
+    if (!next || next === household?.name) {
+      setEditingName(false);
+      return;
+    }
+    setNameBusy(true);
+    setNameError(null);
+    try {
+      await api("/households/me", { method: "PATCH", body: { name: next } });
+      await refreshHousehold();
+      setEditingName(false);
+    } catch (err) {
+      setNameError(err instanceof Error ? err.message : "couldn't rename the family");
+    } finally {
+      setNameBusy(false);
     }
   }
 
@@ -236,6 +262,57 @@ export default function FamilyPage() {
         )}
       </p>
       {photoError && <ErrorNote message={photoError} />}
+
+      <div className="flex items-center gap-2 mb-3">
+        {editingName ? (
+          <>
+            <input
+              className="input-line flex-1"
+              value={nameDraft}
+              onChange={(e) => setNameDraft(e.target.value)}
+              maxLength={60}
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter") void saveName();
+                if (e.key === "Escape") setEditingName(false);
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => void saveName()}
+              disabled={nameBusy}
+              className="font-bold text-accent text-sm px-2 py-2 disabled:opacity-40"
+            >
+              {nameBusy ? "…" : "save"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditingName(false)}
+              className="text-inkFaint text-sm px-1 py-2"
+            >
+              cancel
+            </button>
+          </>
+        ) : (
+          <>
+            <span className="font-hand text-2xl">{household?.name}</span>
+            {isOwner && (
+              <button
+                type="button"
+                onClick={() => {
+                  setNameDraft(household?.name ?? "");
+                  setEditingName(true);
+                }}
+                className="text-inkFaint text-sm min-w-[36px] min-h-[36px] flex items-center justify-center"
+                aria-label="rename the family"
+              >
+                ✏️
+              </button>
+            )}
+          </>
+        )}
+      </div>
+      {nameError && <ErrorNote message={nameError} />}
 
       <h2 className="font-hand text-2xl text-wood mb-1">the pack</h2>
       {household?.members.map((m) => (
