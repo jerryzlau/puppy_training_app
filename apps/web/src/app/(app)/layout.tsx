@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/session";
 import { ProgressProvider } from "@/lib/progress";
 import { TabBar } from "@/components/TabBar";
+import { NotificationBell } from "@/components/NotificationBell";
 import { Loading } from "@/components/scrapbook";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -23,6 +24,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <ProgressProvider>
+      <NotificationBell />
       {/* phones: a single 560px column above the tab bar.
           md+: content sits beside the sidebar and is free to grow. */}
       <div className="md:pl-[228px]">

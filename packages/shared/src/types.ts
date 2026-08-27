@@ -207,3 +207,14 @@ export interface FriendInviteDto {
   expiresAt: string;
   createdAt: string;
 }
+
+/** A friend-routine event worth telling the user about (pee/poop watch). */
+export interface RoutineAlertDto {
+  id: string;
+  kind: string;
+  happenedAt: string;
+  householdId: string;
+  petName: string;
+  species: Species;
+  loggedBy: string;
+}

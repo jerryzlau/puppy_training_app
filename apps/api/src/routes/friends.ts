@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import crypto from "node:crypto";
-import type { FriendDto, FriendInviteDto, Species } from "@biru/shared";
+import type { FriendDto, FriendInviteDto, RoutineAlertDto, Species } from "@biru/shared";
 import { requireMember } from "../auth.js";
 import { db, PHOTO_BUCKET, SIGNED_URL_TTL } from "../supabase.js";
 import { friendHouseholdIds, canonicalPair, areFriends } from "../friendships.js";
@@ -176,6 +176,44 @@ export function friendRoutes(app: FastifyInstance) {
       .eq("household_id", caller.householdId);
     if (error) return reply.code(500).send({ error: error.message });
     return reply.send({ ok: true });
+  });
+
+  /** Friend pets' recent bathroom events, newest first — feeds the bell. */
+  app.get("/notifications", async (req, reply) => {
+    const caller = await requireMember(req, reply);
+    if (!caller) return;
+    const friendIds = await friendHouseholdIds(caller.householdId);
+    if (friendIds.length === 0) return reply.send({ alerts: [] });
+    const since = new Date(Date.now() - 7 * 86_400_000).toISOString();
+    const { data, error } = await db
+      .from("routine_items")
+      .select("id, household_id, kind, kind_key, happened_at, created_by")
+      .in("household_id", friendIds)
+      .or("kind_key.ilike.%pee%,kind_key.ilike.%poop%,kind_key.ilike.%potty%")
+      .gte("happened_at", since)
+      .order("happened_at", { ascending: false })
+      .limit(30);
+    if (error) return reply.code(500).send({ error: error.message });
+    const rows = data ?? [];
+    const hhIds = [...new Set(rows.map((r) => r.household_id))];
+    const { data: hh } = await db.from("households").select("id, name, pet_name, species").in("id", hhIds);
+    const badges = new Map((hh ?? []).map((h) => [h.id, { petName: h.pet_name ?? h.name, species: h.species }]));
+    const userIds = [...new Set(rows.map((r) => r.created_by))];
+    const { data: mem } = await db
+      .from("household_members")
+      .select("user_id, display_name")
+      .in("user_id", userIds.length ? userIds : ["00000000-0000-0000-0000-000000000000"]);
+    const names = new Map((mem ?? []).map((m) => [m.user_id, m.display_name]));
+    const alerts: RoutineAlertDto[] = rows.map((r) => ({
+      id: r.id,
+      kind: r.kind,
+      happenedAt: r.happened_at,
+      householdId: r.household_id,
+      petName: badges.get(r.household_id)?.petName ?? "a friend's pet",
+      species: (badges.get(r.household_id)?.species ?? "dog") as Species,
+      loggedBy: names.get(r.created_by) ?? "someone",
+    }));
+    return reply.send({ alerts });
   });
 
   app.get("/friends", async (req, reply) => {
