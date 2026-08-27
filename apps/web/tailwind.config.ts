@@ -19,8 +19,8 @@ export default {
         ruled: "#D8CBB2",
       },
       fontFamily: {
-        hand: ["Caveat", "cursive"],
-        body: ["Kalam", "'Comic Sans MS'", "cursive"],
+        hand: ["var(--font-hand)", "cursive"],
+        body: ["var(--font-body)", "'Comic Sans MS'", "cursive"],
       },
       boxShadow: {
         sketch: "3px 3px 0 #41382C",

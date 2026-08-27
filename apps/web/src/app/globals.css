@@ -4,6 +4,21 @@
 
 :root {
   color-scheme: light;
+  /* handwriting choices — switched by data-font, persisted in localStorage */
+  --font-hand: "Caveat";
+  --font-body: "Kalam";
+}
+html[data-font="tidy"] {
+  --font-hand: "Patrick Hand";
+  --font-body: "Short Stack";
+}
+html[data-font="marker"] {
+  --font-hand: "Permanent Marker";
+  --font-body: "Schoolbell";
+}
+html[data-font="typewriter"] {
+  --font-hand: "Special Elite";
+  --font-body: "Courier Prime";
 }
 
 body {

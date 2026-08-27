@@ -27,11 +27,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         {/* eslint-disable-next-line @next/next/no-page-custom-font */}
         <link
-          href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Kalam:wght@300;400;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Kalam:wght@300;400;700&family=Patrick+Hand&family=Short+Stack&family=Permanent+Marker&family=Schoolbell&family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap"
           rel="stylesheet"
         />
       </head>
       <body>
+        {/* apply the saved font before first paint — client-only preference */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              'try{var f=localStorage.getItem("biru-font");if(f)document.documentElement.dataset.font=f}catch(e){}',
+          }}
+        />
         <ServiceWorker />
         <div className="min-h-dvh relative">
           <SessionProvider>{children}</SessionProvider>

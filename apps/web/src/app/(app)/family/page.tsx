@@ -40,6 +40,27 @@ export default function FamilyPage() {
   const photoInput = useRef<HTMLInputElement>(null);
   const [friends, setFriends] = useState<FriendDto[]>([]);
   const [friendsLoading, setFriendsLoading] = useState(true);
+  const [font, setFont] = useState("classic");
+
+  useEffect(() => {
+    try {
+      setFont(localStorage.getItem("biru-font") ?? "classic");
+    } catch {
+      /* private mode etc. — default stands */
+    }
+  }, []);
+
+  function pickFont(value: string) {
+    setFont(value);
+    try {
+      if (value === "classic") localStorage.removeItem("biru-font");
+      else localStorage.setItem("biru-font", value);
+    } catch {
+      /* storage unavailable — applies for this visit only */
+    }
+    if (value === "classic") delete document.documentElement.dataset.font;
+    else document.documentElement.dataset.font = value;
+  }
   const [petForm, setPetForm] = useState({ species: "dog" as "dog" | "cat", name: "" });
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState("");
@@ -483,6 +504,38 @@ export default function FamilyPage() {
       </div>
 
       <div className="mt-6">
+        <HandLabel>handwriting</HandLabel>
+        <p className="text-xs text-inkSoft mb-2">
+          just for this device — everyone picks their own
+        </p>
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          {(
+            [
+              { value: "classic", label: "classic", hand: "Caveat", body: "Kalam" },
+              { value: "tidy", label: "tidy print", hand: "Patrick Hand", body: "Short Stack" },
+              { value: "marker", label: "big marker", hand: "Permanent Marker", body: "Schoolbell" },
+              { value: "typewriter", label: "typewriter", hand: "Special Elite", body: "Courier Prime" },
+            ] as const
+          ).map((f) => (
+            <button
+              key={f.value}
+              type="button"
+              onClick={() => pickFont(f.value)}
+              aria-pressed={font === f.value}
+              className={`text-left px-3 py-2.5 rounded-lg border-2 bg-white ${
+                font === f.value ? "border-accent shadow-sketchSoft" : "border-ink opacity-70"
+              }`}
+            >
+              <span className="block text-xl leading-tight" style={{ fontFamily: f.hand }}>
+                {f.label}
+              </span>
+              <span className="block text-xs text-inkSoft" style={{ fontFamily: f.body }}>
+                dear diary…
+              </span>
+            </button>
+          ))}
+        </div>
+
         <HandLabel>housekeeping</HandLabel>
         <DashedRow className="text-[14.5px] justify-between">
           <span>📤 print the scrapbook (photo-book pdf)</span>
