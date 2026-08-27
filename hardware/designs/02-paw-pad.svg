@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 560" font-family="Georgia, serif">
+  <rect width="840" height="560" fill="#F7F1E3"/>
+  <text x="40" y="52" font-size="30" fill="#3E3428" font-weight="bold">design 02 · the paw</text>
+  <text x="40" y="78" font-size="15" fill="#8B6F52">Biru's own paw print — toe beans are the buttons · floor / low shelf · USB-C · 110 × 104 × 24 mm</text>
+
+  <!-- ══ front view ══ -->
+  <text x="40" y="130" font-size="13" fill="#A99B85" letter-spacing="2">TOP</text>
+  <g transform="translate(90,150)">
+    <!-- palm pad -->
+    <path d="M 130 250
+             C 40 250 20 190 40 150
+             C 58 116 96 108 130 108
+             C 164 108 202 116 220 150
+             C 240 190 220 250 130 250 Z"
+          fill="#8B6F52" stroke="#3E3428" stroke-width="4"/>
+    <!-- palm emboss: brand -->
+    <text x="130" y="196" font-size="20" text-anchor="middle" fill="#F7F1E3" font-style="italic">biru ♡</text>
+    <circle cx="130" cy="222" r="6" fill="#E8BC55"/>
+    <text x="130" y="243" font-size="9" text-anchor="middle" fill="#F7F1E3">LED</text>
+
+    <!-- three toe-bean buttons -->
+    <g>
+      <ellipse cx="42" cy="70" rx="36" ry="42" fill="#C0533E" stroke="#3E3428" stroke-width="4" transform="rotate(-16 42 70)"/>
+      <text x="36" y="82" font-size="28" text-anchor="middle">💩</text>
+    </g>
+    <g>
+      <ellipse cx="130" cy="42" rx="36" ry="44" fill="#D9A62B" stroke="#3E3428" stroke-width="4"/>
+      <text x="130" y="56" font-size="28" text-anchor="middle">💛</text>
+    </g>
+    <g>
+      <ellipse cx="218" cy="70" rx="36" ry="42" fill="#6E8F5B" stroke="#3E3428" stroke-width="4" transform="rotate(16 218 70)"/>
+      <text x="224" y="82" font-size="28" text-anchor="middle">🍚</text>
+    </g>
+  </g>
+
+  <!-- ══ side profile ══ -->
+  <text x="480" y="130" font-size="13" fill="#A99B85" letter-spacing="2">SIDE</text>
+  <g transform="translate(490,240)">
+    <!-- low dome body -->
+    <path d="M 10 84 C 10 44 60 30 150 30 C 240 30 290 44 290 84 Z" fill="#8B6F52" stroke="#3E3428" stroke-width="4"/>
+    <!-- toe buttons cresting -->
+    <ellipse cx="80" cy="32" rx="34" ry="14" fill="#D46A55" stroke="#3E3428" stroke-width="4"/>
+    <ellipse cx="150" cy="26" rx="34" ry="14" fill="#E8BC55" stroke="#3E3428" stroke-width="4"/>
+    <ellipse cx="220" cy="32" rx="34" ry="14" fill="#85A671" stroke="#3E3428" stroke-width="4"/>
+    <rect x="288" y="66" width="14" height="12" rx="4" fill="#3E3428"/>
+    <text x="322" y="76" font-size="12" fill="#8B6F52">USB-C</text>
+    <line x1="10" y1="100" x2="290" y2="100" stroke="#A99B85" stroke-width="1"/>
+    <text x="150" y="118" font-size="12" fill="#A99B85" text-anchor="middle">110 mm · dome sheds dust · 24 mm at the crown</text>
+  </g>
+
+  <!-- notes -->
+  <g transform="translate(40,440)" font-size="14" fill="#5B4A33">
+    <text y="0" font-weight="bold" fill="#3E3428">why this one</text>
+    <text y="24">· the most personality — a paw where the toe beans log the business the paws do</text>
+    <text y="46">· angled outer toes fall naturally under three human fingers; palm is the brand + LED</text>
+    <text y="68">· conversation piece: guests WILL press it, which is half the point of logging</text>
+    <text y="90" fill="#A67856">tradeoffs: curved lid is the hardest print of the set (gentle overhangs, maybe tree</text>
+    <text y="110" fill="#A67856">  supports) · custom bean-shaped caps mean printed keycaps over standard switches</text>
+  </g>
+</svg>

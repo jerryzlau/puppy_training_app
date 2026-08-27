@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 560" font-family="Georgia, serif">
+  <rect width="840" height="560" fill="#F7F1E3"/>
+  <text x="40" y="52" font-size="30" fill="#3E3428" font-weight="bold">design 03 · the door bar</text>
+  <text x="40" y="78" font-size="15" fill="#8B6F52">a slim light-switch bar beside the door — press on the way out · wall-mounted · 44 × 150 × 18 mm</text>
+
+  <!-- ══ front view (wall context) ══ -->
+  <text x="40" y="130" font-size="13" fill="#A99B85" letter-spacing="2">ON THE WALL</text>
+  <g transform="translate(60,145)">
+    <!-- door frame hint -->
+    <rect x="220" y="0" width="16" height="330" fill="#D8CBB2"/>
+    <rect x="236" y="0" width="120" height="330" fill="#EFE6D0"/>
+    <text x="296" y="170" font-size="12" fill="#A99B85" text-anchor="middle" transform="rotate(90 296 170)">door</text>
+
+    <!-- the bar -->
+    <g transform="translate(90,60)">
+      <rect x="0" y="0" width="88" height="230" rx="14" fill="#FFFFFF" stroke="#3E3428" stroke-width="4"/>
+      <!-- stacked square buttons, MX-style keycaps -->
+      <g>
+        <rect x="16" y="18" width="56" height="56" rx="10" fill="#C0533E" stroke="#3E3428" stroke-width="3.5"/>
+        <text x="44" y="56" font-size="26" text-anchor="middle">💩</text>
+      </g>
+      <g>
+        <rect x="16" y="88" width="56" height="56" rx="10" fill="#D9A62B" stroke="#3E3428" stroke-width="3.5"/>
+        <text x="44" y="126" font-size="26" text-anchor="middle">💛</text>
+      </g>
+      <g>
+        <rect x="16" y="158" width="56" height="56" rx="10" fill="#6E8F5B" stroke="#3E3428" stroke-width="3.5"/>
+        <text x="44" y="196" font-size="26" text-anchor="middle">🍚</text>
+      </g>
+      <!-- LED slit at the bottom -->
+      <rect x="30" y="220" width="28" height="4" rx="2" fill="#C0533E"/>
+    </g>
+    <text x="134" y="320" font-size="12" fill="#A99B85" text-anchor="middle">command-strip or 2 screws · light-switch height</text>
+  </g>
+
+  <!-- ══ side profile ══ -->
+  <text x="480" y="130" font-size="13" fill="#A99B85" letter-spacing="2">SIDE</text>
+  <g transform="translate(520,160)">
+    <!-- wall -->
+    <rect x="0" y="0" width="10" height="280" fill="#D8CBB2"/>
+    <!-- bar hugging the wall -->
+    <rect x="10" y="30" width="26" height="230" rx="8" fill="#FFFFFF" stroke="#3E3428" stroke-width="4"/>
+    <!-- keycaps barely proud -->
+    <rect x="36" y="48" width="12" height="56" rx="5" fill="#D46A55" stroke="#3E3428" stroke-width="3"/>
+    <rect x="36" y="118" width="12" height="56" rx="5" fill="#E8BC55" stroke="#3E3428" stroke-width="3"/>
+    <rect x="36" y="188" width="12" height="56" rx="5" fill="#85A671" stroke="#3E3428" stroke-width="3"/>
+    <!-- usb-c exits the bottom -->
+    <rect x="16" y="260" width="12" height="10" rx="3" fill="#3E3428"/>
+    <path d="M 22 270 C 22 292 60 288 60 306" fill="none" stroke="#3E3428" stroke-width="3"/>
+    <text x="76" y="308" font-size="12" fill="#8B6F52">USB-C runs down the trim</text>
+    <line x1="52" y1="30" x2="52" y2="104" stroke="#A99B85" stroke-width="1"/>
+    <text x="60" y="70" font-size="12" fill="#A99B85">18 mm off the wall</text>
+  </g>
+
+  <!-- notes -->
+  <g transform="translate(40,470)" font-size="14" fill="#5B4A33">
+    <text y="0" font-weight="bold" fill="#3E3428">why this one</text>
+    <text y="24">· lives where the events happen — you press 💩 with the leash already in your hand</text>
+    <text y="46">· slimmest and cheapest print of the set; MX switches + printed square keycaps, zero supports</text>
+    <text y="68">· vertical stack reads like a tiny light switch — visitors understand it instantly</text>
+    <text y="88" fill="#A67856">tradeoffs: needs a wall spot near power (or the v2 battery) · food button lives by the door</text>
+    <text y="108" fill="#A67856">  rather than the bowl — or pair it with a future single-button puck at feeding station</text>
+  </g>
+</svg>

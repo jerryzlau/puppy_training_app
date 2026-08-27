@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 560" font-family="Georgia, serif">
+  <rect width="840" height="560" fill="#F7F1E3"/>
+  <!-- title block -->
+  <text x="40" y="52" font-size="30" fill="#3E3428" font-weight="bold">design 01 · the polaroid pad</text>
+  <text x="40" y="78" font-size="15" fill="#8B6F52">a scrapbook polaroid you can press · desk / floor · USB-C · 92 × 74 × 26 mm</text>
+
+  <!-- ══ front view ══ -->
+  <text x="40" y="130" font-size="13" fill="#A99B85" letter-spacing="2">FRONT</text>
+  <g transform="translate(60,150)">
+    <!-- polaroid body: white frame like the app's photo cards, slight tilt -->
+    <g transform="rotate(-2 160 130)">
+      <rect x="0" y="0" width="320" height="260" rx="10" fill="#FFFFFF" stroke="#3E3428" stroke-width="4"/>
+      <!-- inner "photo" area holds the buttons -->
+      <rect x="18" y="18" width="284" height="170" rx="6" fill="#EFE6D0" stroke="#D8CBB2" stroke-width="2"/>
+      <!-- three round buttons -->
+      <g>
+        <circle cx="70" cy="103" r="40" fill="#C0533E" stroke="#3E3428" stroke-width="4"/>
+        <circle cx="70" cy="99" r="34" fill="#D46A55"/>
+        <text x="70" y="112" font-size="30" text-anchor="middle">💩</text>
+      </g>
+      <g>
+        <circle cx="160" cy="103" r="40" fill="#D9A62B" stroke="#3E3428" stroke-width="4"/>
+        <circle cx="160" cy="99" r="34" fill="#E8BC55"/>
+        <text x="160" y="112" font-size="30" text-anchor="middle">💛</text>
+      </g>
+      <g>
+        <circle cx="250" cy="103" r="40" fill="#6E8F5B" stroke="#3E3428" stroke-width="4"/>
+        <circle cx="250" cy="99" r="34" fill="#85A671"/>
+        <text x="250" y="112" font-size="30" text-anchor="middle">🍚</text>
+      </g>
+      <!-- polaroid caption strip -->
+      <text x="160" y="228" font-size="26" text-anchor="middle" fill="#5B4A33" font-style="italic">biru's buttons ♡</text>
+      <!-- status LED as a little heart dot -->
+      <circle cx="296" cy="236" r="6" fill="#C0533E"/>
+      <text x="296" y="252" font-size="9" text-anchor="middle" fill="#A99B85">LED</text>
+      <!-- washi tape on top edge, like the app's cards -->
+      <rect x="120" y="-12" width="80" height="24" fill="#E8D48A" opacity="0.85" transform="rotate(-3 160 0)"/>
+    </g>
+  </g>
+
+  <!-- ══ side profile ══ -->
+  <text x="480" y="130" font-size="13" fill="#A99B85" letter-spacing="2">SIDE</text>
+  <g transform="translate(490,240)">
+    <rect x="0" y="40" width="300" height="46" rx="8" fill="#FFFFFF" stroke="#3E3428" stroke-width="4"/>
+    <!-- button domes poking above -->
+    <ellipse cx="70" cy="40" rx="40" ry="16" fill="#D46A55" stroke="#3E3428" stroke-width="4"/>
+    <ellipse cx="150" cy="40" rx="40" ry="16" fill="#E8BC55" stroke="#3E3428" stroke-width="4"/>
+    <ellipse cx="230" cy="40" rx="40" ry="16" fill="#85A671" stroke="#3E3428" stroke-width="4"/>
+    <!-- usb-c -->
+    <rect x="296" y="56" width="14" height="12" rx="4" fill="#3E3428"/>
+    <text x="330" y="66" font-size="12" fill="#8B6F52">USB-C</text>
+    <!-- feet -->
+    <rect x="18" y="86" width="30" height="8" rx="4" fill="#8B6F52"/>
+    <rect x="252" y="86" width="30" height="8" rx="4" fill="#8B6F52"/>
+    <text x="150" y="116" font-size="12" fill="#A99B85" text-anchor="middle">rubber feet · 26 mm tall · buttons proud of the deck</text>
+    <!-- dims -->
+    <line x1="0" y1="14" x2="300" y2="14" stroke="#A99B85" stroke-width="1"/>
+    <text x="150" y="8" font-size="12" fill="#A99B85" text-anchor="middle">92 mm</text>
+  </g>
+
+  <!-- notes -->
+  <g transform="translate(40,460)" font-size="14" fill="#5B4A33">
+    <text y="0" font-weight="bold" fill="#3E3428">why this one</text>
+    <text y="24">· it IS the app — a pressable polaroid, caption strip and washi tape included</text>
+    <text y="46">· big 40 mm domed buttons, unmissable for guests and half-asleep humans</text>
+    <text y="68">· flat print, no supports · two prints (white frame + colored caps) or paint the caps</text>
+    <text y="90" fill="#A67856">tradeoff: widest footprint of the three · desk/floor only, not wall-mountable</text>
+  </g>
+</svg>
