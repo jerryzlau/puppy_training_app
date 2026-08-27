@@ -13,6 +13,7 @@ import {
 } from "@biru/shared";
 import { HandLabel, SketchButton, ErrorNote, Loading, Stamp } from "@/components/scrapbook";
 import { RoutineCalendar } from "@/components/RoutineCalendar";
+import { RoutineForecast } from "@/components/RoutineForecast";
 
 /** "14:05" for a datetime-local input, in the browser's own zone. */
 function clockValue(d: Date): string {
@@ -39,7 +40,7 @@ export default function RoutinePage() {
   const { household } = useSession();
   const today = useMemo(() => localDay(new Date()), []);
   const [day, setDay] = useState(today);
-  const [view, setView] = useState<"day" | "calendar">("day");
+  const [view, setView] = useState<"day" | "calendar" | "forecast">("day");
   const [items, setItems] = useState<RoutineItemDto[]>([]);
   const [kinds, setKinds] = useState<RoutineKindDto[]>([]);
   const [patterns, setPatterns] = useState<RoutinePatternDto[]>([]);
@@ -177,6 +178,7 @@ export default function RoutinePage() {
           [
             { value: "day", label: "📄 the day" },
             { value: "calendar", label: "🗓️ history" },
+            { value: "forecast", label: "🔮 forecast" },
           ] as const
         ).map((t) => (
           <button
@@ -194,6 +196,8 @@ export default function RoutinePage() {
           </button>
         ))}
       </div>
+
+      {view === "forecast" && <RoutineForecast />}
 
       {view === "calendar" && (
         <div className="mt-3">

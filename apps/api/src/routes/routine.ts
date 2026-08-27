@@ -95,6 +95,28 @@ export function routineRoutes(app: FastifyInstance) {
     });
   });
 
+  /** Pee & poop timestamps for the last 14 days — the forecast tab's data. */
+  app.get("/routine/bathroom", async (req, reply) => {
+    const caller = await requireMember(req, reply);
+    if (!caller) return;
+    const since = new Date(Date.now() - 14 * 86_400_000).toISOString();
+    const { data, error } = await db
+      .from("routine_items")
+      .select("kind_key, happened_at")
+      .eq("household_id", caller.householdId)
+      .or("kind_key.ilike.%pee%,kind_key.ilike.%poop%")
+      .gte("happened_at", since)
+      .order("happened_at", { ascending: true });
+    if (error) return reply.code(500).send({ error: error.message });
+    const pee: string[] = [];
+    const poop: string[] = [];
+    for (const r of data ?? []) {
+      if (/poop/.test(r.kind_key)) poop.push(r.happened_at);
+      else pee.push(r.happened_at);
+    }
+    return reply.send({ windowDays: 14, pee, poop });
+  });
+
   /** Titles used before, most-used first — the quick-add chips. */
   app.get("/routine/kinds", async (req, reply) => {
     const caller = await requireMember(req, reply);
