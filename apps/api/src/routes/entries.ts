@@ -65,13 +65,22 @@ async function photosDto(entryIds: string[]): Promise<Map<string, PhotoDto[]>> {
     .select("id, entry_id, storage_path, caption, position")
     .in("entry_id", entryIds)
     .order("position");
+  const rows = data ?? [];
+  if (rows.length === 0) return new Map();
+  // one batch round-trip for the whole page (was one createSignedUrl call per photo)
+  const { data: signed } = await db.storage
+    .from(PHOTO_BUCKET)
+    .createSignedUrls(rows.map((p) => p.storage_path), SIGNED_URL_TTL);
+  const urlByPath = new Map((signed ?? []).map((s) => [s.path, s.signedUrl]));
   const out = new Map<string, PhotoDto[]>();
-  for (const p of data ?? []) {
-    const { data: signed } = await db.storage
-      .from(PHOTO_BUCKET)
-      .createSignedUrl(p.storage_path, SIGNED_URL_TTL);
+  for (const p of rows) {
     const list = out.get(p.entry_id) ?? [];
-    list.push({ id: p.id, url: signed?.signedUrl ?? "", caption: p.caption, position: p.position });
+    list.push({
+      id: p.id,
+      url: urlByPath.get(p.storage_path) ?? "",
+      caption: p.caption,
+      position: p.position,
+    });
     out.set(p.entry_id, list);
   }
   return out;
@@ -177,9 +186,11 @@ export function entryRoutes(app: FastifyInstance) {
     const rows = data ?? [];
     const monthMode = !friendsScope && Boolean(q.month);
     const page = monthMode ? rows : rows.slice(0, PAGE_SIZE);
-    const members = await membersMap(householdIds);
-    const photos = await photosDto(page.map((e) => e.id));
-    const badges = friendsScope ? await householdsBadgeMap(householdIds) : undefined;
+    const [members, photos, badges] = await Promise.all([
+      membersMap(householdIds),
+      photosDto(page.map((e) => e.id)),
+      friendsScope ? householdsBadgeMap(householdIds) : Promise.resolve(undefined),
+    ]);
     const entries = page.map((e) => toDto(e, members, photos, badges, caller.householdId));
     const nextCursor =
       !monthMode && rows.length > PAGE_SIZE
@@ -219,12 +230,14 @@ export function entryRoutes(app: FastifyInstance) {
     const readable = await loadReadableEntry(caller, id);
     if (!readable) return reply.code(404).send({ error: "not found" });
     const { entry } = readable;
-    const photos = await photosDto([id]);
-    const { data: comments } = await db
-      .from("entry_comments")
-      .select("id, author_id, body, created_at")
-      .eq("entry_id", id)
-      .order("created_at");
+    const [photos, { data: comments }] = await Promise.all([
+      photosDto([id]),
+      db
+        .from("entry_comments")
+        .select("id, author_id, body, created_at")
+        .eq("entry_id", id)
+        .order("created_at"),
+    ]);
     // Resolve ALL authors (entry + comments) directly by user id, not via
     // friendship — historical comments stay attributed after an unfriend.
     const authorIds = [entry.author_id, ...(comments ?? []).map((c) => c.author_id)];

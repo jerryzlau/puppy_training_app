@@ -80,7 +80,7 @@ export function progressRoutes(app: FastifyInstance) {
   app.get("/progress/stats", async (req, reply) => {
     const caller = await requireMember(req, reply);
     if (!caller) return;
-    const [{ data: checks }, { data: members }, { data: entryDates }] = await Promise.all([
+    const [{ data: checks }, { data: members }, { data: entryDates }, species] = await Promise.all([
       db
         .from("course_progress")
         .select("task_id, checked_by, checked_at")
@@ -95,8 +95,8 @@ export function progressRoutes(app: FastifyInstance) {
         .eq("household_id", caller.householdId)
         .order("created_at", { ascending: false })
         .limit(400),
+      householdSpecies(caller.householdId),
     ]);
-    const species = await householdSpecies(caller.householdId);
     const manifest = COURSE_MANIFESTS[species];
     const checkedSet = new Set((checks ?? []).map((c) => c.task_id));
     const rollup = courseRollup(manifest, checkedSet);

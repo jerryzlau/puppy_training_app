@@ -50,6 +50,8 @@ export function EntryCard({ entry }: { entry: EntryDto }) {
               <img
                 src={cover.url}
                 alt={entry.title ?? "diary photo"}
+                loading="lazy"
+                decoding="async"
                 className="aspect-square w-full object-cover"
               />
               {many && (
