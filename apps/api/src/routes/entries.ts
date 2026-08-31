@@ -149,7 +149,15 @@ export function entryRoutes(app: FastifyInstance) {
   app.get("/entries", async (req, reply) => {
     const caller = await requireMember(req, reply);
     if (!caller) return;
-    const q = req.query as { cursor?: string; month?: string; scope?: string; household?: string };
+    const q = req.query as {
+      cursor?: string;
+      month?: string;
+      scope?: string;
+      household?: string;
+      limit?: string;
+    };
+    // clients may ask for a smaller first page sized to their viewport
+    const pageSize = Math.min(30, Math.max(1, Number.parseInt(q.limit ?? "", 10) || PAGE_SIZE));
     const friendsScope = q.scope === "friends";
     let householdIds = friendsScope
       ? [caller.householdId, ...(await friendHouseholdIds(caller.householdId))]
@@ -174,7 +182,7 @@ export function entryRoutes(app: FastifyInstance) {
         new Date(Date.UTC(+q.month.slice(0, 4), +q.month.slice(5, 7), 1)).toISOString().slice(0, 10)
       );
     } else {
-      query = query.limit(PAGE_SIZE + 1);
+      query = query.limit(pageSize + 1);
       if (q.cursor) {
         // cursor = "entryDate|createdAt"
         const [d, c] = q.cursor.split("|");
@@ -185,7 +193,7 @@ export function entryRoutes(app: FastifyInstance) {
     if (error) return reply.code(500).send({ error: error.message });
     const rows = data ?? [];
     const monthMode = !friendsScope && Boolean(q.month);
-    const page = monthMode ? rows : rows.slice(0, PAGE_SIZE);
+    const page = monthMode ? rows : rows.slice(0, pageSize);
     const [members, photos, badges] = await Promise.all([
       membersMap(householdIds),
       photosDto(page.map((e) => e.id)),
@@ -193,7 +201,7 @@ export function entryRoutes(app: FastifyInstance) {
     ]);
     const entries = page.map((e) => toDto(e, members, photos, badges, caller.householdId));
     const nextCursor =
-      !monthMode && rows.length > PAGE_SIZE
+      !monthMode && rows.length > pageSize
         ? `${page[page.length - 1].entry_date}|${page[page.length - 1].created_at}`
         : null;
     return reply.send({ entries, nextCursor });

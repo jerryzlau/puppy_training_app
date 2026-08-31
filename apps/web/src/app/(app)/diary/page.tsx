@@ -21,6 +21,15 @@ interface Stats {
   streakDays: number;
 }
 
+/** First page sized to roughly one screenful of cards (plus a buffer row);
+ *  later pages use the server default. Cursor pagination makes the sizes compose. */
+function initialPageSize(): number {
+  if (typeof window === "undefined") return 15;
+  const columns = window.innerWidth >= 1024 ? 2 : 1; // lg: 2-col grid
+  const rows = Math.ceil(window.innerHeight / 360) + 1; // ~photo card height
+  return Math.min(15, Math.max(4, columns * rows));
+}
+
 function DiaryFeed() {
   const params = useSearchParams();
   const { household } = useSession();
@@ -45,7 +54,7 @@ function DiaryFeed() {
   const load = useCallback(async () => {
     try {
       const [feed, s] = await Promise.all([
-        api<Feed>("/entries"),
+        api<Feed>(`/entries?limit=${initialPageSize()}`),
         api<Stats>("/progress/stats").catch(() => null),
       ]);
       setEntries(feed.entries);
@@ -67,6 +76,7 @@ function DiaryFeed() {
       const parts = ["scope=friends"];
       if (friendFilter) parts.push(`household=${friendFilter}`);
       if (cursor) parts.push(`cursor=${encodeURIComponent(cursor)}`);
+      else parts.push(`limit=${initialPageSize()}`);
       return `/entries?${parts.join("&")}`;
     },
     [friendFilter]
