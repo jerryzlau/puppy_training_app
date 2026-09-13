@@ -255,3 +255,18 @@ export interface DeviceDto {
   lastSeenAt: string | null;
   createdAt: string;
 }
+
+/* ── live events (SSE from GET /events) ──────────────────────────────────── */
+
+/** Something changed in the household's routine — pushed to every open tab. */
+export type HouseholdEvent =
+  | {
+      type: "routine.added";
+      item: RoutineItemDto;
+      /** "device" when a Biru Button logged it, "member" for a person in the app */
+      source: "device" | "member";
+    }
+  | { type: "routine.updated"; item: RoutineItemDto }
+  | { type: "routine.removed"; id: string; day: string }
+  /** a friend household logged a bathroom event — the 🔔 should refresh */
+  | { type: "bulletin"; householdId: string; kind: string; happenedAt: string };

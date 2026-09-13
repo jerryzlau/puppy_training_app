@@ -12,6 +12,8 @@ import {
 } from "@biru/shared";
 import { requireMember } from "../auth.js";
 import { db } from "../supabase.js";
+import { publish } from "../events.js";
+import { friendHouseholdIds } from "../friendships.js";
 
 // Biru Buttons — see hardware/PLAN.md §3–5. A device holds a long-lived token
 // (only its hash is stored here) that can do exactly one thing: log pee/poop/
@@ -220,13 +222,35 @@ export function deviceRoutes(app: FastifyInstance) {
         device_id: device.id,
         press_id: pressId,
       })
-      .select("id")
+      .select("id, note")
       .single();
     if (error) {
       // unique press_id violation from a concurrent retry → treat as duplicate
       if (error.code === "23505") return reply.code(200).send({ duplicate: true });
       return reply.code(500).send({ error: error.message });
     }
-    return reply.code(201).send({ id: data.id, day, happenedAt: happened.toISOString() });
+    reply.code(201).send({ id: data.id, day, happenedAt: happened.toISOString() });
+
+    // Live updates — after the response so the button never waits on fan-out.
+    const [{ data: member }, friendIds] = await Promise.all([
+      db.from("household_members").select("display_name").eq("user_id", device.created_by).maybeSingle(),
+      kind === "food" ? Promise.resolve([] as string[]) : friendHouseholdIds(device.household_id),
+    ]);
+    publish(device.household_id, {
+      type: "routine.added",
+      source: "device",
+      item: {
+        id: data.id,
+        day,
+        kind: label,
+        note: null,
+        happenedAt: happened.toISOString(),
+        createdBy: device.created_by,
+        createdByName: member?.display_name ?? "someone",
+        viaDevice: true,
+      },
+    });
+    for (const h of friendIds)
+      publish(h, { type: "bulletin", householdId: device.household_id, kind: label, happenedAt: happened.toISOString() });
   });
 }

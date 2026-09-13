@@ -1,11 +1,13 @@
 "use client";
 
 // Bell in the top strip of every app page: friend pets' bathroom news.
-// Polls /notifications; "seen" state is per-device (localStorage), so the
+// Polls /notifications (and refreshes instantly on a live `bulletin` event
+// when a friend's button logs pee/poop); "seen" state is per-device (localStorage), so the
 // badge counts only events newer than the last time the dropdown was opened.
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api";
+import { useHouseholdEvents } from "@/lib/events";
 import type { RoutineAlertDto } from "@biru/shared";
 
 const SEEN_KEY = "biru-notif-seen";
@@ -45,6 +47,13 @@ export function NotificationBell() {
         /* the bell is never worth an error state */
       });
   }, []);
+
+  useHouseholdEvents(
+    (ev) => {
+      if (ev.type === "bulletin") load();
+    },
+    load
+  );
 
   useEffect(() => {
     load();

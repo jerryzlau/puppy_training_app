@@ -8,6 +8,7 @@ import { progressRoutes } from "./routes/progress.js";
 import { routineRoutes } from "./routes/routine.js";
 import { friendRoutes } from "./routes/friends.js";
 import { deviceRoutes } from "./routes/devices.js";
+import { eventRoutes, listenerCount } from "./events.js";
 
 const app = Fastify({ logger: true });
 
@@ -23,7 +24,7 @@ await app.register(cors, {
   credentials: true,
 });
 
-app.get("/healthz", async () => ({ ok: true, service: "biru-api" }));
+app.get("/healthz", async () => ({ ok: true, service: "biru-api", liveTabs: listenerCount() }));
 
 householdRoutes(app);
 inviteRoutes(app);
@@ -32,6 +33,7 @@ progressRoutes(app);
 routineRoutes(app);
 friendRoutes(app);
 deviceRoutes(app);
+eventRoutes(app);
 
 app
   .listen({ port: env.port, host: "0.0.0.0" })

@@ -11,6 +11,7 @@ import {
 } from "@biru/shared";
 import { requireMember } from "../auth.js";
 import { db } from "../supabase.js";
+import { publish } from "../events.js";
 
 const PATTERN_DAYS = 21;
 const MAX_ITEMS_PER_DAY = 40;
@@ -207,7 +208,9 @@ export function routineRoutes(app: FastifyInstance) {
       .single();
     if (error || !data) return reply.code(500).send({ error: error?.message ?? "insert failed" });
     const names = await membersMap(caller.householdId);
-    return reply.code(201).send(toDto(data as Row, names));
+    const item = toDto(data as Row, names);
+    publish(caller.householdId, { type: "routine.added", item, source: "member" });
+    return reply.code(201).send(item);
   });
 
   app.patch("/routine/:id", async (req, reply) => {
@@ -236,19 +239,24 @@ export function routineRoutes(app: FastifyInstance) {
     if (error) return reply.code(500).send({ error: error.message });
     if (!data) return reply.code(404).send({ error: "not found" });
     const names = await membersMap(caller.householdId);
-    return reply.send(toDto(data as Row, names));
+    const item = toDto(data as Row, names);
+    publish(caller.householdId, { type: "routine.updated", item });
+    return reply.send(item);
   });
 
   app.delete("/routine/:id", async (req, reply) => {
     const caller = await requireMember(req, reply);
     if (!caller) return;
     const { id } = req.params as { id: string };
-    const { error } = await db
+    const { data, error } = await db
       .from("routine_items")
       .delete()
       .eq("id", id)
-      .eq("household_id", caller.householdId);
+      .eq("household_id", caller.householdId)
+      .select("id, day")
+      .maybeSingle();
     if (error) return reply.code(500).send({ error: error.message });
+    if (data) publish(caller.householdId, { type: "routine.removed", id: data.id, day: data.day });
     return reply.send({ ok: true });
   });
 }

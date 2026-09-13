@@ -3,10 +3,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/session";
+import { useHouseholdEvents } from "@/lib/events";
 import {
   formatMinutes,
   localDay,
   minutesPastMidnight,
+  type HouseholdEvent,
   type RoutineItemDto,
   type RoutineKindDto,
   type RoutinePatternDto,
@@ -89,6 +91,39 @@ export default function RoutinePage() {
   }, [loadSide]);
 
   /**
+   * Live updates (a Biru Button press, a partner's quick-add) arrive over
+   * SSE and are applied in place. Adds are keyed by id so the same row can
+   * arrive twice — via the POST response and via the stream — harmlessly.
+   */
+  const byTime = (a: RoutineItemDto, b: RoutineItemDto) => a.happenedAt.localeCompare(b.happenedAt);
+  const live = useHouseholdEvents(
+    (ev: HouseholdEvent) => {
+      if (ev.type === "bulletin") return; // the 🔔 handles friend news
+      if (ev.type === "routine.added" || ev.type === "routine.updated") {
+        const it = ev.item;
+        setItems((prev) => {
+          const rest = prev.filter((i) => i.id !== it.id);
+          return it.day === day ? [...rest, it].sort(byTime) : rest;
+        });
+        if (ev.type === "routine.added" && ev.source === "device") setFlash(`🔘 ${it.kind.toLowerCase()} logged by the button`);
+      } else if (ev.type === "routine.removed") {
+        setItems((prev) => prev.filter((i) => i.id !== ev.id));
+      }
+      void loadSide(); // chips, patterns, forecast, calendar catch up
+    },
+    () => {
+      void loadDay(day); // the stream was down for a bit — reload the day
+      void loadSide();
+    }
+  );
+  const [flash, setFlash] = useState<string | null>(null);
+  useEffect(() => {
+    if (!flash) return;
+    const t = setTimeout(() => setFlash(null), 4000);
+    return () => clearTimeout(t);
+  }, [flash]);
+
+  /**
    * Adds an item optimistically so the row appears the instant you submit,
    * rather than after the POST and two reloads have all come back. The
    * placeholder carries a temp id and renders dimmed until the server
@@ -118,6 +153,7 @@ export default function RoutinePage() {
       // swap the placeholder for the real row in place — no flash, no reload
       setItems((prev) =>
         prev
+          .filter((i) => i.id !== saved.id || i.id === tempId)
           .map((i) => (i.id === tempId ? saved : i))
           .sort((a, b) => a.happenedAt.localeCompare(b.happenedAt))
       );
@@ -170,7 +206,23 @@ export default function RoutinePage() {
 
   return (
     <main className="px-5 pt-12">
-      <h1 className="font-hand text-[38px] leading-none px-1">{petName ? `${petName}\u2019s Routine` : "Routine"} ⏰</h1>
+      <div className="flex items-end justify-between px-1">
+        <h1 className="font-hand text-[38px] leading-none">{petName ? `${petName}\u2019s Routine` : "Routine"} ⏰</h1>
+        <span
+          className={`text-[11px] font-bold mb-1 ${live === "live" ? "text-accent" : "text-inkFaint"}`}
+          title={live === "live" ? "button presses show up here instantly" : "reconnecting to live updates…"}
+        >
+          {live === "live" ? "● live" : live === "offline" ? "○ reconnecting" : "○ connecting"}
+        </span>
+      </div>
+      {flash && (
+        <div
+          role="status"
+          className="mt-3 mx-1 px-3 py-2 rounded-lg border-2 border-ink bg-white shadow-sketchSoft text-sm font-bold -rotate-[0.5deg]"
+        >
+          {flash}
+        </div>
+      )}
 
       {/* view tabs */}
       <div className="flex gap-2 mt-3 px-1 md:max-w-[440px]">
