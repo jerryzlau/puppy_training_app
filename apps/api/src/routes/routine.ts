@@ -23,6 +23,7 @@ interface Row {
   note: string | null;
   happened_at: string;
   created_by: string;
+  device_id?: string | null;
 }
 
 async function membersMap(householdId: string): Promise<Map<string, string>> {
@@ -40,6 +41,7 @@ const toDto = (r: Row, names: Map<string, string>): RoutineItemDto => ({
   note: r.note,
   happenedAt: r.happened_at,
   createdBy: r.created_by,
+  viaDevice: Boolean(r.device_id),
   createdByName: names.get(r.created_by) ?? "someone",
 });
 
@@ -54,7 +56,7 @@ export function routineRoutes(app: FastifyInstance) {
     }
     const { data, error } = await db
       .from("routine_items")
-      .select("id, day, kind, kind_key, note, happened_at, created_by")
+      .select("id, day, kind, kind_key, note, happened_at, created_by, device_id")
       .eq("household_id", caller.householdId)
       .eq("day", q.day)
       .order("happened_at", { ascending: true });
@@ -201,7 +203,7 @@ export function routineRoutes(app: FastifyInstance) {
         happened_at: happenedAt,
         created_by: caller.userId,
       })
-      .select("id, day, kind, kind_key, note, happened_at, created_by")
+      .select("id, day, kind, kind_key, note, happened_at, created_by, device_id")
       .single();
     if (error || !data) return reply.code(500).send({ error: error?.message ?? "insert failed" });
     const names = await membersMap(caller.householdId);
@@ -229,7 +231,7 @@ export function routineRoutes(app: FastifyInstance) {
       .update(patch)
       .eq("id", id)
       .eq("household_id", caller.householdId)
-      .select("id, day, kind, kind_key, note, happened_at, created_by")
+      .select("id, day, kind, kind_key, note, happened_at, created_by, device_id")
       .maybeSingle();
     if (error) return reply.code(500).send({ error: error.message });
     if (!data) return reply.code(404).send({ error: "not found" });

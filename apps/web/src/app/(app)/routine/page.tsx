@@ -338,7 +338,7 @@ export default function RoutinePage() {
               <b className="text-[15px]">{it.kind}</b>
               {it.note && <span className="block text-sm text-inkSoft whitespace-pre-line">{it.note}</span>}
               <span className="font-hand text-base text-inkFaint">
-                {saving ? "saving…" : `— ${it.createdByName}`}
+                {saving ? "saving…" : it.viaDevice ? `— 🔘 ${it.createdByName}'s button` : `— ${it.createdByName}`}
               </span>
             </span>
             <button

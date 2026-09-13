@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 import { uploadDogPhoto } from "@/lib/photos";
 import { CropModal } from "@/components/CropModal";
 import { useSession } from "@/lib/session";
-import type { FriendDto } from "@biru/shared";
+import type { FriendDto, DeviceDto } from "@biru/shared";
 import {
   Stamp,
   SketchButton,
@@ -23,6 +23,16 @@ interface Invite {
   status: string;
   token: string;
   created_at: string;
+}
+
+/** "3 min ago" / "2 h ago" / "4 d ago" */
+function relativeTime(iso: string): string {
+  const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60_000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins} min ago`;
+  const h = Math.round(mins / 60);
+  if (h < 48) return `${h} h ago`;
+  return `${Math.round(h / 24)} d ago`;
 }
 
 export default function FamilyPage() {
@@ -72,9 +82,15 @@ export default function FamilyPage() {
   const [friendCopied, setFriendCopied] = useState(false);
   const [friendBusy, setFriendBusy] = useState(false);
   const [friendError, setFriendError] = useState<string | null>(null);
+  const [devices, setDevices] = useState<DeviceDto[]>([]);
+  const [deviceBusy, setDeviceBusy] = useState(false);
+  const [deviceError, setDeviceError] = useState<string | null>(null);
 
   useEffect(() => {
     api<Invite[]>("/invites").then(setInvites).catch(() => {});
+    api<{ devices: DeviceDto[] }>("/devices")
+      .then((r) => setDevices(r.devices))
+      .catch(() => {});
     api<{ friends: FriendDto[] }>("/friends")
       .then((r) => setFriends(r.friends))
       .catch(() => {})
@@ -194,6 +210,30 @@ export default function FamilyPage() {
     if (!friendLink) return;
     await navigator.clipboard.writeText(friendLink);
     setFriendCopied(true);
+  }
+
+  async function addDevice() {
+    setDeviceBusy(true);
+    setDeviceError(null);
+    try {
+      const d = await api<DeviceDto>("/devices", { method: "POST", body: {} });
+      setDevices((prev) => [d, ...prev]);
+    } catch (err) {
+      setDeviceError(err instanceof Error ? err.message : "couldn't add the gadget");
+    } finally {
+      setDeviceBusy(false);
+    }
+  }
+
+  async function revokeDevice(d: DeviceDto) {
+    if (!window.confirm(`forget "${d.name}"? it stops logging immediately.`)) return;
+    setDevices((prev) => prev.filter((x) => x.id !== d.id)); // optimistic
+    try {
+      await api(`/devices/${d.id}`, { method: "DELETE" });
+    } catch {
+      const r = await api<{ devices: DeviceDto[] }>("/devices").catch(() => null);
+      if (r) setDevices(r.devices);
+    }
   }
 
   async function unfriend(f: FriendDto) {
@@ -501,6 +541,57 @@ export default function FamilyPage() {
             </SketchButton>
           </div>
         )}
+      </div>
+
+      <div className="border-[2.5px] border-dashed border-wood rounded-lg p-4 mt-5 bg-cream">
+        <div className="font-hand text-2xl">🔘 buttons &amp; gadgets</div>
+        <p className="text-xs text-inkSoft mt-1 mb-3">
+          physical buttons that write pee / poop / food straight into the routine. add one here,
+          then type the pairing code into the button&apos;s setup — it&apos;s good for 15 minutes.
+        </p>
+        {devices.map((d) => (
+          <DashedRow key={d.id}>
+            <span
+              className="w-9 h-9 rounded-full border-2 border-ink bg-white flex items-center justify-center text-lg shrink-0"
+              aria-hidden
+            >
+              🔘
+            </span>
+            <span className="flex-1 text-sm">
+              <b>{d.name}</b>
+              {d.claimCode ? (
+                <span className="block mt-1">
+                  <span className="text-xs text-inkSoft">pairing code </span>
+                  <span className="font-mono text-xl font-bold tracking-[0.25em] bg-white border border-ruled rounded px-2 py-0.5">
+                    {d.claimCode}
+                  </span>
+                </span>
+              ) : (
+                <span className="block text-xs text-inkFaint">
+                  {d.claimedAt
+                    ? d.lastSeenAt
+                      ? `last seen ${relativeTime(d.lastSeenAt)}`
+                      : "paired, never heard from"
+                    : "pairing code expired — forget it and add again"}
+                </span>
+              )}
+            </span>
+            <button
+              type="button"
+              onClick={() => void revokeDevice(d)}
+              className="text-inkFaint text-sm min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2"
+              aria-label={`forget ${d.name}`}
+            >
+              ✕
+            </button>
+          </DashedRow>
+        ))}
+        <div className="mt-2">
+          {deviceError && <ErrorNote message={deviceError} />}
+          <SketchButton variant="ghost" onClick={addDevice} disabled={deviceBusy}>
+            {deviceBusy ? "making a code…" : "add a button pad"}
+          </SketchButton>
+        </div>
       </div>
 
       <div className="mt-6">

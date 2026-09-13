@@ -158,6 +158,8 @@ export interface RoutineItemDto {
   happenedAt: string;
   createdBy: string;
   createdByName: string;
+  /** logged by a physical button (Biru Buttons) rather than a person */
+  viaDevice?: boolean;
 }
 
 /** A title you've used before — the quick-add chips, most-used first. */
@@ -217,4 +219,39 @@ export interface RoutineAlertDto {
   petName: string;
   species: Species;
   loggedBy: string;
+}
+
+/* ── devices (Biru Buttons) ──────────────────────────────────────────────── */
+
+export const CreateDeviceSchema = z.object({
+  name: z.string().min(1).max(40).optional(),
+});
+
+export const ClaimDeviceSchema = z.object({
+  claimCode: z.string().min(4).max(12),
+});
+
+/** Kinds a button may log — server-controlled allowlist (PLAN.md §4). */
+export const DEVICE_KINDS = ["pee", "poop", "food"] as const;
+export type DeviceKind = (typeof DEVICE_KINDS)[number];
+/** How a device kind is written into the book (matches the chips/bell/forecast). */
+export const DEVICE_KIND_LABEL: Record<DeviceKind, string> = { pee: "Pee", poop: "Poop", food: "Food" };
+
+export const IngestRoutineSchema = z.object({
+  kind: z.enum(DEVICE_KINDS),
+  pressId: z.string().uuid(),
+  /** unix seconds of the press; null when the device clock wasn't synced yet */
+  pressedAt: z.number().int().nullable().optional(),
+});
+export type IngestRoutineInput = z.infer<typeof IngestRoutineSchema>;
+
+export interface DeviceDto {
+  id: string;
+  name: string;
+  /** set only while the device is unpaired and the code hasn't expired */
+  claimCode: string | null;
+  claimExpiresAt: string | null;
+  claimedAt: string | null;
+  lastSeenAt: string | null;
+  createdAt: string;
 }
