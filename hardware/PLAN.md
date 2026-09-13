@@ -99,7 +99,9 @@ Server side (`POST /ingest/routine`, device auth — **not** `requireMember`):
 
 1. Hash the presented token, look up the device → household; reject revoked.
 2. Validate `kind ∈ {pee, poop, food}` (server-controlled allowlist).
-3. Dedupe on `pressId` — retries after a timeout can't double-log.
+3. Dedupe on `pressId` — retries after a timeout can't double-log. Then
+   debounce: the same kind already in the book within ±1 minute (from any
+   button or a phone) → 200, no second row.
 4. Compute `day` server-side with the existing `localDay()` helper (the
    device never does timezone math).
 5. Insert `routine_items` with `kind` = "Pee"/"Poop"/"Food" (matching the

@@ -49,6 +49,8 @@ board's flash (NVS). It never lives in a file.
    itself on boot — remove the line afterwards, codes are single-use.)
 4. Click the button. `1 click = Pee`, `2 quick clicks = Poop`, each POSTed with
    the unix time of the click; the Routine tab shows it as `🔘 Jerry's button`.
+   Pressing the same thing again within a minute is debounced server-side:
+   the board still gets a 200 (one long blink) but no second row is written.
 
 Un-pair: hold the button 10 s, or type `reset`. Revoke from the server side
 with ✕ on the Family page — the token dies immediately.

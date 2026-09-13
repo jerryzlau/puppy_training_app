@@ -22,6 +22,9 @@ import { friendHouseholdIds } from "../friendships.js";
 const CLAIM_TTL_MIN = 15;
 const MAX_DEVICES = 10;
 const MAX_PRESSES_PER_DAY = 100;
+// The same kind logged again within this window is the same event: a nervous
+// double press, a second button, or a partner tapping the chip at the same time.
+const DEBOUNCE_MS = 60_000;
 // unambiguous alphabet: no 0/O/1/I
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
@@ -200,6 +203,22 @@ export function deviceRoutes(app: FastifyInstance) {
       if (age > -5 * 60_000 && age < 7 * 86_400_000) happened = t;
     }
     const day = localDay(happened, HOUSEHOLD_TZ);
+    const label = DEVICE_KIND_LABEL[kind];
+
+    // debounce: an identical kind within a minute (either direction) is
+    // acknowledged but not written twice
+    const { data: recent } = await db
+      .from("routine_items")
+      .select("id, happened_at")
+      .eq("household_id", device.household_id)
+      .eq("kind_key", routineKindKey(label))
+      .gte("happened_at", new Date(happened.getTime() - DEBOUNCE_MS).toISOString())
+      .lte("happened_at", new Date(happened.getTime() + DEBOUNCE_MS).toISOString())
+      .order("happened_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (recent)
+      return reply.code(200).send({ id: recent.id, duplicate: true, debounced: true, happenedAt: recent.happened_at });
 
     const { count } = await db
       .from("routine_items")
@@ -209,7 +228,6 @@ export function deviceRoutes(app: FastifyInstance) {
     if ((count ?? 0) >= MAX_PRESSES_PER_DAY)
       return reply.code(429).send({ error: "too many presses today" });
 
-    const label = DEVICE_KIND_LABEL[kind];
     const { data, error } = await db
       .from("routine_items")
       .insert({
