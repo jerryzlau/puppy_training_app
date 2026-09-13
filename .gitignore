@@ -9,3 +9,6 @@ dist/
 .turbo/
 coverage/
 biru-app.tar.gz
+.vercel
+supabase/.temp/
+hardware/firmware/.pio/
