@@ -7,7 +7,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "@/lib/api";
-import { dailyCounts, forecastNext, formatMinutes, minutesPastMidnight } from "@biru/shared";
+import { HOUSEHOLD_TZ, dailyCounts, forecastNext, formatMinutes, localDay, minutesPastMidnight } from "@biru/shared";
 import { Loading, ErrorNote, NoteCard } from "@/components/scrapbook";
 
 const SERIES = [
@@ -42,6 +42,14 @@ function ForecastCard({
 }) {
   const f = forecastNext(times, windowDays);
   const overdue = f.nextAt !== null && new Date(f.nextAt).getTime() < Date.now();
+  const tomorrow = f.nextAt !== null && localDay(f.nextAt, HOUSEHOLD_TZ) !== localDay(new Date(), HOUSEHOLD_TZ);
+  // Two regimes (see forecastNext): overnight the puppy sleeps, so the first
+  // one of the day is predicted from when the first one *usually* is; after
+  // that it's the last one plus the usual daytime gap.
+  const detail =
+    f.mode === "first"
+      ? `first of the day · usually ~${formatMinutes(f.medianFirstMinutes ?? 0)}, then every ~${ago(f.medianIntervalMinutes ?? 0)}`
+      : `every ~${ago(f.medianIntervalMinutes ?? 0)} during the day · first usually ~${formatMinutes(f.medianFirstMinutes ?? 0)}`;
   return (
     <div className="flex-1 bg-white border-2 border-ink rounded-lg px-3.5 py-3 shadow-sketchSoft">
       <div className="text-sm font-bold flex items-center gap-1.5">
@@ -51,10 +59,12 @@ function ForecastCard({
       {f.nextAt ? (
         <>
           <div className="font-hand text-3xl leading-tight mt-1">
-            {overdue ? "any time now" : `~${formatMinutes(minutesPastMidnight(f.nextAt))}`}
+            {overdue
+              ? "any time now"
+              : `~${formatMinutes(minutesPastMidnight(f.nextAt))}${tomorrow ? " tomorrow" : ""}`}
           </div>
           <div className="text-xs text-inkSoft mt-0.5">
-            every ~{ago(f.medianIntervalMinutes ?? 0)} · {f.avgPerDay.toFixed(1)}×/day
+            {detail} · {f.avgPerDay.toFixed(1)}×/day
           </div>
         </>
       ) : (

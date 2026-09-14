@@ -55,16 +55,46 @@ describe("bathroom forecast", () => {
     expect(f.count).toBe(2);
   });
 
-  it("predicts last event + median gap", () => {
-    // gaps: 240m, 240m, 720m (overnight) → median 240m
-    const f = forecastNext([
-      "2026-08-27T08:00:00Z",
-      "2026-08-27T12:00:00Z",
-      "2026-08-27T16:00:00Z",
-      "2026-08-28T04:00:00Z",
-    ]);
-    expect(f.medianIntervalMinutes).toBe(240);
-    expect(f.nextAt).toBe("2026-08-28T08:00:00.000Z");
+  // A puppy's fortnight: up ~7am, then every ~3h, last one ~10pm.
+  // (EDT: local = UTC-4, so 7am local = 11:00Z)
+  const days = ["2026-08-24", "2026-08-25", "2026-08-26"];
+  const history = days.flatMap((d) => [
+    `${d}T11:00:00Z`, // 7:00am
+    `${d}T14:00:00Z`, // 10:00am
+    `${d}T17:00:00Z`, // 1:00pm
+    `${d}T20:00:00Z`, // 4:00pm
+    `${d}T23:00:00Z`, // 7:00pm
+  ]);
+  // an outlier first-of-day and a late one, to show medians shrug them off
+  history.push("2026-08-27T13:30:00Z", "2026-08-27T16:00:00Z", "2026-08-27T19:00:00Z"); // 9:30am, noon, 3pm
+
+  it("measures the daytime gap from same-day events only (overnight excluded)", () => {
+    const f = forecastNext(history, 14, new Date("2026-08-27T20:00:00Z"), TZ);
+    expect(f.medianIntervalMinutes).toBe(180); // never the 12 h overnight gap
+    expect(f.medianFirstMinutes).toBe(7 * 60); // 7:00am
+    expect(f.medianLastMinutes).toBe(19 * 60); // 7:00pm
+  });
+
+  it("during the day: last event + the daytime gap", () => {
+    // last was 3:00pm on the 27th → next ~6:00pm
+    const f = forecastNext(history, 14, new Date("2026-08-27T20:00:00Z"), TZ);
+    expect(f.mode).toBe("daytime");
+    expect(f.nextAt).toBe("2026-08-27T22:00:00.000Z");
+  });
+
+  it("before anything today: the usual first-of-day time, not last + gap", () => {
+    // 5:30am on the 28th, nothing logged yet → today at 7:00am
+    const f = forecastNext(history, 14, new Date("2026-08-28T09:30:00Z"), TZ);
+    expect(f.mode).toBe("first");
+    expect(f.nextAt).toBe("2026-08-28T11:00:00.000Z");
+  });
+
+  it("after the usual bedtime: tomorrow's first, not 1am", () => {
+    // last one at 9:30pm on the 27th; +3h would be 12:30am
+    const late = [...history, "2026-08-28T01:30:00Z"];
+    const f = forecastNext(late, 14, new Date("2026-08-28T02:00:00Z"), TZ);
+    expect(f.mode).toBe("first");
+    expect(f.nextAt).toBe("2026-08-28T11:00:00.000Z");
   });
 
   it("counts events into local days including empty ones", () => {

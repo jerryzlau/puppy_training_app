@@ -74,28 +74,119 @@ export function summarizePattern(
 export interface RoutineForecast {
   /** predicted next event; null with fewer than 3 observations */
   nextAt: string | null;
-  /** median minutes between consecutive events */
+  /**
+   * How nextAt was made. "first": the next event is the first of a day (the
+   * puppy is asleep or hasn't gone yet), so it's the typical first-of-day time.
+   * "daytime": there's already been one today, so it's the last event plus the
+   * typical gap between same-day events. null when there's no prediction.
+   */
+  mode: "first" | "daytime" | null;
+  /** median minutes between consecutive events on the same local day */
   medianIntervalMinutes: number | null;
+  /** median time-of-day (minutes past local midnight) of each day's first event */
+  medianFirstMinutes: number | null;
+  /** median time-of-day of each day's last event — the "bedtime" cutoff */
+  medianLastMinutes: number | null;
   /** events per day over the observed window */
   avgPerDay: number;
   count: number;
 }
 
+/** Gap between a "last" time-of-day and a prediction after which we assume the
+ *  puppy is down for the night and the next one is tomorrow's first. */
+const BEDTIME_SLACK_MIN = 90;
+
+function atLocalMinutes(day: string, minutes: number, tz: string): Date {
+  // Find the instant that is `minutes` past midnight on `day` in `tz`.
+  // Start from noon UTC on that date and correct by the observed local offset.
+  const [y, m, d] = day.split("-").map(Number);
+  const guess = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
+  const localNoon = minutesPastMidnight(guess, tz);
+  const shiftedDay = localDay(guess, tz) === day ? 0 : localDay(guess, tz) < day ? 1 : -1;
+  return new Date(guess.getTime() + (minutes - localNoon + shiftedDay * 1440) * 60_000);
+}
+
+function nextLocalDay(day: string): string {
+  const [y, m, d] = day.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10);
+}
+
 /**
- * Forecast the next event from its history: median gap between consecutive
- * events (median shrugs off the long overnight gaps) added to the most recent
- * one. Deliberately simple and stated as an estimate, not a promise.
+ * Forecast the next event from its history, in two regimes:
+ *
+ * - Nothing logged yet today → the next one is the first of the day. Puppies
+ *   sleep through the night, so that gap has nothing to do with daytime
+ *   frequency: predict the typical (median) time-of-day of each day's first
+ *   event instead.
+ * - Something logged today → last event + the typical gap between same-day
+ *   events (overnight gaps are excluded from that median). If that lands past
+ *   the typical last-of-day time, assume bedtime and predict tomorrow's first.
+ *
+ * Deliberately simple and stated as an estimate, not a promise.
  */
-export function forecastNext(times: (string | Date)[], windowDays = 14): RoutineForecast {
+export function forecastNext(
+  times: (string | Date)[],
+  windowDays = 14,
+  now: Date = new Date(),
+  tz: string = HOUSEHOLD_TZ
+): RoutineForecast {
   const ms = times.map((t) => new Date(t).getTime()).sort((a, b) => a - b);
   const count = ms.length;
   const avgPerDay = count / windowDays;
-  if (count < 3) return { nextAt: null, medianIntervalMinutes: null, avgPerDay, count };
-  const gaps: number[] = [];
-  for (let i = 1; i < ms.length; i++) gaps.push((ms[i] - ms[i - 1]) / 60_000);
-  const med = median(gaps.map(Math.round));
-  const nextAt = new Date(ms[ms.length - 1] + med * 60_000).toISOString();
-  return { nextAt, medianIntervalMinutes: med, avgPerDay, count };
+  const none: RoutineForecast = {
+    nextAt: null,
+    mode: null,
+    medianIntervalMinutes: null,
+    medianFirstMinutes: null,
+    medianLastMinutes: null,
+    avgPerDay,
+    count,
+  };
+  if (count < 3) return none;
+
+  // group by local day, in order
+  const byDay = new Map<string, number[]>();
+  for (const t of ms) {
+    const d = localDay(new Date(t), tz);
+    const arr = byDay.get(d);
+    if (arr) arr.push(t);
+    else byDay.set(d, [t]);
+  }
+  const firsts: number[] = [];
+  const lasts: number[] = [];
+  const dayGaps: number[] = [];
+  for (const arr of byDay.values()) {
+    firsts.push(minutesPastMidnight(new Date(arr[0]), tz));
+    lasts.push(minutesPastMidnight(new Date(arr[arr.length - 1]), tz));
+    for (let i = 1; i < arr.length; i++) dayGaps.push(Math.round((arr[i] - arr[i - 1]) / 60_000));
+  }
+  const medianFirstMinutes = median(firsts);
+  const medianLastMinutes = median(lasts);
+  // fall back to all gaps when no day has two events yet
+  const allGaps: number[] = [];
+  for (let i = 1; i < ms.length; i++) allGaps.push(Math.round((ms[i] - ms[i - 1]) / 60_000));
+  const medianIntervalMinutes = median(dayGaps.length ? dayGaps : allGaps);
+
+  const today = localDay(now, tz);
+  const last = ms[ms.length - 1];
+  const lastDay = localDay(new Date(last), tz);
+  const base = { medianIntervalMinutes, medianFirstMinutes, medianLastMinutes, avgPerDay, count };
+
+  if (lastDay !== today) {
+    // asleep / not yet up: today's first, at the usual first-of-day time
+    return { ...base, mode: "first", nextAt: atLocalMinutes(today, medianFirstMinutes, tz).toISOString() };
+  }
+  const next = last + medianIntervalMinutes * 60_000;
+  const nextDay = localDay(new Date(next), tz);
+  const pastBedtime = nextDay !== today || minutesPastMidnight(new Date(next), tz) > medianLastMinutes + BEDTIME_SLACK_MIN;
+  if (pastBedtime) {
+    return {
+      ...base,
+      mode: "first",
+      nextAt: atLocalMinutes(nextLocalDay(today), medianFirstMinutes, tz).toISOString(),
+    };
+  }
+  return { ...base, mode: "daytime", nextAt: new Date(next).toISOString() };
 }
 
 /** Events per local day for the last `days` days, oldest first (chart series). */
@@ -107,7 +198,7 @@ export function dailyCounts(
 ): { day: string; count: number }[] {
   const byDay = new Map<string, number>();
   for (const t of times) {
-    const d = localDay(t, tz);
+    const d = localDay(new Date(t), tz);
     byDay.set(d, (byDay.get(d) ?? 0) + 1);
   }
   const out: { day: string; count: number }[] = [];
