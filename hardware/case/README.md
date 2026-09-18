@@ -1,5 +1,7 @@
 # Door bar — printable case (design 03)
 
+> The two-button **switch plate** (design 03 of the two-button concepts) lives in [`switch-plate/`](switch-plate/).
+
 Parametric OpenSCAD for the chosen design. Everything derives from
 `config.scad`; regenerate STLs and previews with `./render.sh`.
 

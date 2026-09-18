@@ -16,4 +16,4 @@ printed disc under the clear dome, or an inlay on a printed cap.
 Sheets are generated from `_sheet.py` (SVG → PNG via headless Chrome, so
 the emoji render). Edit and re-run `python3 _sheet.py`.
 
-Pick one and the next step is parametric OpenSCAD in `../../case/`.
+Design 3 was picked → parametric OpenSCAD + STLs in `../../case/switch-plate/`.
