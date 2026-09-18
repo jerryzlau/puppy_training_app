@@ -26,7 +26,13 @@ module poop2d() {
 }
 module poop_holes2d() {
   scale(emoji_scale) {
-    for (s = [-1, 1]) translate([s * 5.4, -4.2]) circle(2.9);   // eyes
+    // eyes: white = hole, pupil = brown left standing. The pupil sits low
+    // enough to overlap the eye's rim so it stays joined to the body
+    // (no floating islands in the inlay).
+    for (s = [-1, 1]) translate([s * 5.4, -4.2]) difference() {
+      circle(2.9);
+      translate([0, -1.7]) circle(1.6);
+    }
     // smile: crescent under the eyes
     intersection() {
       difference() {
