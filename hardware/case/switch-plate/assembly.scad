@@ -22,8 +22,29 @@ module cap_in_place(i) {
   }
 }
 
-color(cream) face_part();
+show_face = true;      // -D show_face=false for the "inside" preview
+show_boards = false;   // placeholder ESP32-C3 SuperMini + MX switches
+
+if (show_face) color(cream) face_part();
 // back plate lives at the wall end, towers pointing forward (this flip also
 // mirrors x, which is why back.scad puts the ESP rail at -esp_x)
 color([0.85, 0.85, 0.85]) translate([0, 0, plate_d]) rotate([0, 180, 0]) back_part();
-for (i = [0, 1]) cap_in_place(i);
+show_caps = true;
+if (show_caps) for (i = [0, 1]) cap_in_place(i);
+
+// --- placeholders, preview only ---
+module mx_switch() {                     // body below the plate + stem above
+  color([0.2, 0.2, 0.2]) translate([0, 0, -mx_body/2 + mx_plate]) cube([15.6, 15.6, mx_body - 0.1], center = true);
+  color([0.2, 0.2, 0.2]) translate([0, 0, mx_plate]) linear_extrude(stem_top) square(4, center = true);
+}
+if (show_boards) {
+  esp_y = -plate_h/2 + wall + esp_gap + esp_l/2;
+  // board: face coords, sits on the back plate (z = plate_d - back_t), USB-C at the bottom edge
+  translate([esp_x, esp_y, plate_d - back_t - 1]) {
+    color([0.1, 0.35, 0.2]) translate([0, 0, 0.5]) cube([esp_w - 0.6, esp_l - 0.6, 1], center = true);
+    color([0.75, 0.75, 0.78]) translate([0, -esp_l/2 + 3.5, -1.6]) cube([8.9, 7.3, 3.2], center = true);  // USB-C
+    color([0.85, 0.85, 0.85]) translate([0, 1, -1.5]) cube([13, 15, 3], center = true);              // ESP32-C3 can
+  }
+  // switches on the towers: plate top is at z = plate_d - back_t - tower_h
+  for (y = cap_centres) translate([0, y, plate_d - back_t - tower_h]) mirror([0, 0, 1]) mx_switch();
+}

@@ -26,6 +26,22 @@ Glue the inlays into the recess (a dab of CA). Suggested colours: caps in
 cream or white, drops in blue, poop in brown — the eyes/smile then come out
 cream automatically.
 
+## Electronics
+
+Sized for the **ESP32-C3 SuperMini** (18 × 23.5 mm) — not the big
+ESP-WROOM-32 devkit from the breadboard stage, which is 28 × 55 mm and won't
+fit. The board sits in a low rail on the back plate beside the lower switch,
+USB-C pointing down; the plug exits through a notch in the bottom of the
+shell (`usb_z` lines up with the connector when the board lies flat on the
+plate). 17 mm of depth between plate and front skin, 7 mm of it clear above
+the board even under the cap skirt.
+
+![inside](preview/inside.png)
+
+Wiring: each switch's two pins → one GPIO + GND (the towers have wire slots
+on both sides, the lower one opens toward the board); LED → GPIO through a
+resistor, behind the slot at the bottom right. Power over USB-C.
+
 ## How it goes together
 
 ```

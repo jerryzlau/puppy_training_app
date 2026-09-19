@@ -17,6 +17,7 @@ done
 # previews (assembly is preview-only, colours need --preview)
 openscad --preview --imgsize=800,900 --camera=0,0,0,180,0,180,330 --projection=o -o preview/assembly-front.png assembly.scad
 openscad --preview --imgsize=900,1000 --camera=0,0,0,215,0,200,320 -o preview/assembly-angle.png assembly.scad
+openscad --preview -D show_face=false -D show_caps=false -D show_boards=true --imgsize=900,800 --camera=0,-25,8,215,0,200,240 -o preview/inside.png assembly.scad
 openscad --render --imgsize=800,700 --camera=0,0,11,30,0,30,330 -o preview/face.png face.scad
 openscad --render --imgsize=800,700 --camera=0,0,8,35,0,30,330 -o preview/back.png back.scad
 openscad --render -D 'kind="poop"' --imgsize=600,500 --camera=0,0,0,160,0,20,150 -o preview/cap-poop.png cap.scad
