@@ -28,19 +28,25 @@ cream automatically.
 
 ## Electronics
 
-Sized for the **ESP32-C3 SuperMini** (18 × 23.5 mm) — not the big
-ESP-WROOM-32 devkit from the breadboard stage, which is 28 × 55 mm and won't
-fit. The board sits in a low rail on the back plate beside the lower switch,
-USB-C pointing down; the plug exits through a notch in the bottom of the
-shell (`usb_z` lines up with the connector when the board lies flat on the
-plate). 17 mm of depth between plate and front skin, 7 mm of it clear above
-the board even under the cap skirt.
+`board` in `config.scad` picks the bay:
+
+- **`"devkit32"` (default)** — the 38-pin ESP-WROOM-32 devkit (Hosyond
+  ESP-32S and friends, ~55 × 28 mm). It lies flat across the middle of the
+  plate between the two switch towers, behind the cap guide tubes, so
+  nothing collides even with the caps pressed. **Cut the header pins flush**
+  (side cutters, leave ~1 mm stubs) — with full pins it's too tall. The
+  micro-USB exits through a notch in the **side** of the plate;
+  `usb_side = 1` puts the cable on your left as you face it, `-1` right.
+  The four bosses move up/down beside the caps to make room.
+- **`"c3"`** — ESP32-C3 SuperMini (18 × 23.5 mm) in a rail beside the lower
+  switch, USB-C out the **bottom**. Tidier if you ever swap boards.
 
 ![inside](preview/inside.png)
 
-Wiring: each switch's two pins → one GPIO + GND (the towers have wire slots
-on both sides, the lower one opens toward the board); LED → GPIO through a
-resistor, behind the slot at the bottom right. Power over USB-C.
+Wiring (both boards): each switch has two pins → one to a GPIO, one to GND;
+the firmware uses `INPUT_PULLUP`, no resistor. The towers have wire slots
+on both sides. LED → GPIO through a ~220 Ω resistor, behind the slot at the
+bottom right. Power over USB.
 
 ## How it goes together
 

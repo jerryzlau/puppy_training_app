@@ -37,7 +37,14 @@ module mx_switch() {                     // body below the plate + stem above
   color([0.2, 0.2, 0.2]) translate([0, 0, -mx_body/2 + mx_plate]) cube([15.6, 15.6, mx_body - 0.1], center = true);
   color([0.2, 0.2, 0.2]) translate([0, 0, mx_plate]) linear_extrude(stem_top) square(4, center = true);
 }
-if (show_boards) {
+if (show_boards && board == "devkit32") {
+  // devkit lying flat on its cut pin stubs, USB end toward usb_side
+  z0 = plate_d - back_t - dk_stub;                     // board underside
+  translate([0, 0, z0 - dk_t/2]) color([0.1, 0.35, 0.2]) cube([dk_l, dk_w, dk_t], center = true);
+  translate([usb_side * (dk_l/2 - 3), 0, z0 - dk_t - 1.4]) color([0.75, 0.75, 0.78]) cube([6, 8, 2.8], center = true);   // micro-USB
+  translate([-usb_side * (dk_l/2 - 13), 0, z0 - dk_t - 1.6]) color([0.85, 0.85, 0.85]) cube([25.5, 18, 3.2], center = true);  // WROOM-32 can
+}
+if (show_boards && board == "c3") {
   esp_y = -plate_h/2 + wall + esp_gap + esp_l/2;
   // board: face coords, sits on the back plate (z = plate_d - back_t), USB-C at the bottom edge
   translate([esp_x, esp_y, plate_d - back_t - 1]) {
@@ -45,6 +52,6 @@ if (show_boards) {
     color([0.75, 0.75, 0.78]) translate([0, -esp_l/2 + 3.5, -1.6]) cube([8.9, 7.3, 3.2], center = true);  // USB-C
     color([0.85, 0.85, 0.85]) translate([0, 1, -1.5]) cube([13, 15, 3], center = true);              // ESP32-C3 can
   }
-  // switches on the towers: plate top is at z = plate_d - back_t - tower_h
-  for (y = cap_centres) translate([0, y, plate_d - back_t - tower_h]) mirror([0, 0, 1]) mx_switch();
 }
+if (show_boards)   // switches on the towers: plate top is at z = plate_d - back_t - tower_h
+  for (y = cap_centres) translate([0, y, plate_d - back_t - tower_h]) mirror([0, 0, 1]) mx_switch();

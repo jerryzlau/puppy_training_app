@@ -46,7 +46,9 @@ module face_part() difference() {
   for (y = cap_centres) translate([0, y, -1]) linear_extrude(wall + 2) rrect(well, well, well_r);
   // LED light pipe
   translate([led_pos[0], led_pos[1], -1]) linear_extrude(wall + 2) square([led_slot_w, led_slot_h], center = true);
-  // USB-C through the bottom wall
-  translate([esp_x, -plate_h/2 + wall/2, usb_z]) cube([usb_w, wall + 2, usb_h], center = true);
+  if (board == "c3")   // USB-C through the bottom wall
+    translate([esp_x, -plate_h/2 + wall/2, usb_z]) cube([usb_w, wall + 2, usb_h], center = true);
+  else                 // micro-USB through the side wall
+    translate([usb_side * (plate_w/2 - wall/2), 0, dk_usb_z]) cube([wall + 2, dk_usb_w, dk_usb_h], center = true);
 }
 face_part();

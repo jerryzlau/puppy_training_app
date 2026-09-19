@@ -25,16 +25,23 @@ module tower() {
   }
 }
 
-// low rail around the ESP32-C3 SuperMini (USB-C toward the bottom wall).
-// x is negated: this part is seen from the other side than face.scad.
+// low rail around the board. x is negated throughout: this part is seen
+// from the other side than face.scad.
 esp_y = -plate_h/2 + wall + esp_gap + esp_l/2;
+module rail(w, l) {
+  linear_extrude(rail_h + 0.01) difference() {
+    square([w + 2*(rail_clr + rail_t), l + 2*(rail_clr + rail_t)], center = true);
+    square([w + 2*rail_clr, l + 2*rail_clr], center = true);
+  }
+}
 module esp_rail() {
-  clr = 0.3;
-  translate([-esp_x, esp_y, back_t - 0.01]) linear_extrude(rail_h + 0.01)
-    difference() {
-      square([esp_w + 2*(clr + rail_t), esp_l + 2*(clr + rail_t)], center = true);
-      square([esp_w + 2*clr, esp_l + 2*clr], center = true);
-    }
+  if (board == "c3")
+    translate([-esp_x, esp_y, back_t - 0.01]) rail(esp_w, esp_l);
+  else translate([0, 0, back_t - 0.01]) difference() {
+    rail(dk_l, dk_w);
+    // open on the USB end so the plug can reach the connector
+    translate([-usb_side * (dk_l/2 + rail_t), 0, -1]) cube([2*rail_t + 2, dk_usb_w + 2, rail_h + 3], center = true);
+  }
 }
 
 module back_part() difference() {

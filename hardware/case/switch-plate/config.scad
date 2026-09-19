@@ -59,7 +59,28 @@ led_slot_w = 16;
 led_slot_h = 3;
 led_pos = [20, -(plate_h/2 - 5.5)];
 
-/* ── electronics (ESP32-C3 SuperMini on the back plate) ──────── */
+/* ── electronics ─────────────────────────────────────────────── */
+// board = "devkit32": 38-pin ESP-WROOM-32 devkit (Hosyond ESP-32S etc.), lying
+//         flat between the two switches with its header pins cut short;
+//         micro-USB out the SIDE of the plate.
+// board = "c3": ESP32-C3 SuperMini in a rail beside the lower switch, USB-C
+//         out the BOTTOM.
+board = "devkit32";
+rail_t = 1.2;
+rail_h = 3.5;
+rail_clr = 0.3;
+
+// devkit32 — measure yours: 38-pin DevKitC clones are ~55 × 28 mm
+dk_l = 55;             // along x (USB on one short end)
+dk_w = 28;             // along y
+dk_stub = 1.0;         // header pin stubs left after cutting → board sits this high
+dk_t = 1.6;
+usb_side = 1;          // +1: cable exits on your LEFT as you face the plate, -1: right
+dk_usb_w = 12;         // micro-USB plug overmould clearance (across y)
+dk_usb_h = 8;          // (across z)
+dk_usb_z = (plate_d - back_t) - dk_stub - dk_t - 1.4;   // plug centre from the front face
+
+// c3 — ESP32-C3 SuperMini
 esp_w = 18.5;          // across (x)
 esp_l = 23.5;          // along the plate (y), USB-C at the bottom end
 esp_t = 5;
@@ -68,14 +89,15 @@ esp_gap = 0.6;         // board bottom edge from the inner wall
 usb_w = 9.4;
 usb_h = 3.6;
 usb_z = 17;            // plug centre from the front face (face coords)
-rail_t = 1.2;
-rail_h = 2.5;
 
 /* ── mounting ────────────────────────────────────────────────── */
 m3_insert_d = 4.0;
 m3_clear_d  = 3.4;
 boss_d = m3_insert_d + 2*wall;
-boss_pos = [[29.5, 0], [-29.5, 0], [0, 58], [0, -58]];
+// the devkit lies across the middle, so its bosses move up/down beside the caps
+boss_pos = board == "devkit32"
+  ? [[29.5, 48], [-29.5, 48], [29.5, -48], [-29.5, -48]]
+  : [[29.5, 0], [-29.5, 0], [0, 58], [0, -58]];
 keyhole_screw_d = 4.2;
 keyhole_slot_d  = 2.4;
 keyhole_slot_l  = 5;
