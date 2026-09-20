@@ -15,9 +15,10 @@ pio device monitor       # serial log, Ctrl+C to exit (close it before uploading
 | `c3` | ESP32-C3 SuperMini | the enclosure build |
 | `wroom32-live` | as `wroom32`, real API on Railway | production — presses land in the book |
 
-Breadboard pins (classic ESP32): **pee = GPIO25, poop = GPIO26** (C3 SuperMini:
+Breadboard pins (30-pin ESP32 devkit): **pee = D18, poop = D19** (C3 SuperMini:
 GPIO3 / GPIO4), each button between its GPIO and GND (internal pull-ups, no
-resistors). One press = one event; the LED blinks once for pee, twice for poop.
+resistors). Both pins are on the 3V3/GND side of the board — the side that
+leaves a free breadboard column beside the pins. One press = one event; the LED blinks once for pee, twice for poop.
 Illuminated buttons: LED pair to VIN (5 V) + GND. Onboard blue LED = GPIO 2.
 
 ## Never touch the live database while testing hardware
@@ -48,7 +49,7 @@ board's flash (NVS). It never lives in a file.
    `/devices/claim`, saves the token, and the LED goes solid for a second.
    (Alternative: `#define BIRU_CLAIM_CODE "K7F3QM"` in `secrets.h` and it pairs
    itself on boot — remove the line afterwards, codes are single-use.)
-4. Press a button — 💦 on GPIO25 logs Pee, 💩 on GPIO26 logs Poop — each POSTed
+4. Press a button — 💦 on D18 logs Pee, 💩 on D19 logs Poop — each POSTed
    with the unix time of the press; the Routine tab shows it as `🔘 Jerry's button`.
    Pressing the same thing again within a minute is debounced server-side:
    the board still gets a 200 (one long blink) but no second row is written.

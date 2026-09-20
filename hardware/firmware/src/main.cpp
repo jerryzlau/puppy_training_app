@@ -1,5 +1,5 @@
 // Biru Buttons — breadboard firmware.
-// TWO buttons, one per kind: GPIO25 = pee (💦), GPIO26 = poop (💩). Each button
+// TWO buttons, one per kind: GPIO18 = pee (💦), GPIO19 = poop (💩). Each button
 // sits between its GPIO and GND (internal pull-up, pressed = LOW); one press =
 // one event. Each press is POSTed to BIRU_API_URL (platformio.ini; the local mock by
 // default) with the unix time of the click. Presses are queued in RAM and sent by
@@ -27,14 +27,15 @@
 
 static const int LED_PIN = 2;       // onboard blue LED
 
-// One button per kind. Classic ESP32 devkit: 25 and 26 are neighbours on the
-// left header. On the ESP32-C3 SuperMini use 3 and 4 instead.
+// One button per kind. 30-pin ESP32 devkit: D18 and D19 are neighbours on the
+// 3V3/GND side of the board, which is the side with a free breadboard column
+// beside the pins. On the ESP32-C3 SuperMini use 3 and 4 instead.
 #if CONFIG_IDF_TARGET_ESP32C3
 static const int PEE_PIN = 3;
 static const int POOP_PIN = 4;
 #else
-static const int PEE_PIN = 25;
-static const int POOP_PIN = 26;
+static const int PEE_PIN = 18;
+static const int POOP_PIN = 19;
 #endif
 
 static const uint32_t DEBOUNCE_MS = 30;
