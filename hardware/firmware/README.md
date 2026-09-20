@@ -15,8 +15,9 @@ pio device monitor       # serial log, Ctrl+C to exit (close it before uploading
 | `c3` | ESP32-C3 SuperMini | the enclosure build |
 | `wroom32-live` | as `wroom32`, real API on Railway | production — presses land in the book |
 
-Breadboard pins (classic ESP32): **poop = GPIO25, pee = GPIO26, food = GPIO27**,
-each button between its GPIO and GND (internal pull-ups, no resistors).
+Breadboard pins (classic ESP32): **pee = GPIO25, poop = GPIO26** (C3 SuperMini:
+GPIO3 / GPIO4), each button between its GPIO and GND (internal pull-ups, no
+resistors). One press = one event; the LED blinks once for pee, twice for poop.
 Illuminated buttons: LED pair to VIN (5 V) + GND. Onboard blue LED = GPIO 2.
 
 ## Never touch the live database while testing hardware
@@ -47,15 +48,15 @@ board's flash (NVS). It never lives in a file.
    `/devices/claim`, saves the token, and the LED goes solid for a second.
    (Alternative: `#define BIRU_CLAIM_CODE "K7F3QM"` in `secrets.h` and it pairs
    itself on boot — remove the line afterwards, codes are single-use.)
-4. Click the button. `1 click = Pee`, `2 quick clicks = Poop`, each POSTed with
-   the unix time of the click; the Routine tab shows it as `🔘 Jerry's button`.
+4. Press a button — 💦 on GPIO25 logs Pee, 💩 on GPIO26 logs Poop — each POSTed
+   with the unix time of the press; the Routine tab shows it as `🔘 Jerry's button`.
    Pressing the same thing again within a minute is debounced server-side:
    the board still gets a 200 (one long blink) but no second row is written.
 
-Un-pair: hold the button 10 s, or type `reset`. Revoke from the server side
+Un-pair: hold either button 10 s, or type `reset`. Revoke from the server side
 with ✕ on the Family page — the token dies immediately.
 
-Serial commands: `1`, `2` (simulate clicks), `claim <code>`, `reset`.
+Serial commands: `1` (pee), `2` (poop) simulate a press, `claim <code>`, `reset`.
 
 ### TLS
 

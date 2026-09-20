@@ -1,6 +1,7 @@
 // Biru Buttons — breadboard firmware.
-// ONE button on GPIO25 decoded by click count: 1 click = pee, 2 quick clicks = poop.
-// Each decoded press is POSTed to BIRU_API_URL (platformio.ini; the local mock by
+// TWO buttons, one per kind: GPIO25 = pee (💦), GPIO26 = poop (💩). Each button
+// sits between its GPIO and GND (internal pull-up, pressed = LOW); one press =
+// one event. Each press is POSTed to BIRU_API_URL (platformio.ini; the local mock by
 // default) with the unix time of the click. Presses are queued in RAM and sent by
 // a background task on the other core, so the button stays responsive while WiFi
 // or the request is slow. Nothing here touches a database directly.
@@ -8,7 +9,7 @@
 // Pairing (PLAN.md §3): the device token lives in NVS. With no token the board
 // is UNPAIRED — it trades a claim code (from the Family page) for a token via
 // POST /devices/claim. The code comes from BIRU_CLAIM_CODE in secrets.h or is
-// typed into the serial monitor as `claim K7F3QM`. Hold the button 10 s (or
+// typed into the serial monitor as `claim K7F3QM`. Hold either button 10 s (or
 // type `reset`) to forget the token and pair again.
 #include <Arduino.h>
 #include <WiFi.h>
@@ -25,16 +26,24 @@
 #endif
 
 static const int LED_PIN = 2;       // onboard blue LED
-static const int BUTTON_PIN = 25;
+
+// One button per kind. Classic ESP32 devkit: 25 and 26 are neighbours on the
+// left header. On the ESP32-C3 SuperMini use 3 and 4 instead.
+#if CONFIG_IDF_TARGET_ESP32C3
+static const int PEE_PIN = 3;
+static const int POOP_PIN = 4;
+#else
+static const int PEE_PIN = 25;
+static const int POOP_PIN = 26;
+#endif
 
 static const uint32_t DEBOUNCE_MS = 30;
-static const uint32_t MULTI_CLICK_MS = 400;
 static const size_t QUEUE_LEN = 32;
 
 struct Press {
   char kind[6];       // "pee" | "poop"
   char pressId[37];   // uuid v4 string
-  time_t pressedAt;   // unix seconds of the FIRST click, 0 = clock not synced yet
+  time_t pressedAt;   // unix seconds of the press, 0 = clock not synced yet
 };
 
 static QueueHandle_t pressQueue;
@@ -176,20 +185,20 @@ static void senderTask(void*) {
   }
 }
 
-// ---------- button (runs on loop) ----------
+// ---------- buttons (run on loop) ----------
 
-static bool down = false;
-static uint32_t lastEdge = 0;
-static uint8_t clicks = 0;
-static uint32_t lastRelease = 0;
-static time_t gestureStart = 0;  // unix time at the first click of the gesture
+struct Button {
+  const char* kind;   // "pee" | "poop"
+  int pin;
+  bool down;
+  uint32_t lastEdge;
+  time_t pressedAt;   // unix time when it went down
+};
 
-static void emit(uint8_t n) {
-  const char* kind = n == 1 ? "pee" : n == 2 ? "poop" : nullptr;
-  if (!kind) {
-    Serial.printf("button: ignored %u clicks\n", n);
-    return;
-  }
+static Button buttons[] = {{"pee", PEE_PIN, false, 0, 0}, {"poop", POOP_PIN, false, 0, 0}};
+
+// Queue one press of `kind`, stamped `at` (0 = clock not synced, server time).
+static void emit(const char* kind, time_t at) {
   if (deviceToken.isEmpty()) {
     Serial.printf("button: %s ignored — UNPAIRED (type `claim <code>` from the Family page)\n", kind);
     blink(4, 60, 60);
@@ -198,20 +207,40 @@ static void emit(uint8_t n) {
   Press p{};
   strncpy(p.kind, kind, sizeof(p.kind) - 1);
   uuid4(p.pressId);
-  p.pressedAt = gestureStart;
-  Serial.printf("button: %s (%u click%s) at %lu -> queued\n", kind, n, n == 1 ? "" : "s",
-                (unsigned long)p.pressedAt);
+  p.pressedAt = at;
+  Serial.printf("button: %s at %lu -> queued\n", kind, (unsigned long)p.pressedAt);
   if (xQueueSend(pressQueue, &p, 0) != pdTRUE) Serial.println("button: queue full, dropped");
-  blink(n, 80, 80);  // echo the click count
+  blink(strcmp(kind, "poop") == 0 ? 2 : 1, 80, 80);  // 1 blink = pee, 2 = poop
+}
+
+// Debounced press/release for one button. A press is logged on release so a
+// 10 s hold can turn into "un-pair" without also logging an event.
+static void pollButton(Button& b, uint32_t now) {
+  bool raw = digitalRead(b.pin) == LOW;
+  if (raw != b.down && now - b.lastEdge > DEBOUNCE_MS) {
+    b.down = raw;
+    b.lastEdge = now;
+    if (b.down) {
+      b.pressedAt = clockSynced() ? time(nullptr) : 0;
+    } else {
+      emit(b.kind, b.pressedAt);
+    }
+  }
+  if (b.down && now - b.lastEdge > RESET_HOLD_MS) {
+    forgetDevice();
+    while (digitalRead(b.pin) == LOW) delay(10);  // the release afterwards is not a press
+    b.down = false;
+    b.lastEdge = millis();
+  }
 }
 
 void setup() {
   Serial.begin(115200);
   pinMode(LED_PIN, OUTPUT);
-  pinMode(BUTTON_PIN, INPUT_PULLUP);
+  for (Button& b : buttons) pinMode(b.pin, INPUT_PULLUP);
   delay(300);
   Serial.println();
-  Serial.printf("biru buttons: ready — 1 click = pee, 2 clicks = poop -> %s\n", BIRU_API_URL);
+  Serial.printf("biru buttons: ready — pee = GPIO%d, poop = GPIO%d -> %s\n", PEE_PIN, POOP_PIN, BIRU_API_URL);
   prefs.begin("biru", false);
   deviceToken = prefs.getString("token", "");
 #if BIRU_MOCK
@@ -230,13 +259,13 @@ void setup() {
     if (deviceToken.isEmpty())
       Serial.println("UNPAIRED: add a button pad on the Family page, then type `claim <code>` here");
   } else {
-    Serial.println("paired (token in flash). `reset` or hold the button 10 s to un-pair.");
+    Serial.println("paired (token in flash). `reset` or hold a button 10 s to un-pair.");
   }
 }
 
 void loop() {
   uint32_t now = millis();
-  // serial: `1`/`2` simulate clicks, `claim K7F3QM` pairs, `reset` un-pairs
+  // serial: `1`/`2` simulate the pee/poop button, `claim K7F3QM` pairs, `reset` un-pairs
   static String line;
   while (Serial.available()) {
     int c = Serial.read();
@@ -244,9 +273,9 @@ void loop() {
     if (c == '\n') {
       line.trim();
       if (line == "1" || line == "2") {
-        gestureStart = clockSynced() ? time(nullptr) : 0;
-        Serial.printf("serial: simulated %s click(s)\n", line.c_str());
-        emit(line[0] - '0');
+        const char* kind = line == "1" ? "pee" : "poop";
+        Serial.printf("serial: simulated %s press\n", kind);
+        emit(kind, clockSynced() ? time(nullptr) : 0);
       } else if (line.startsWith("claim ")) {
         String code = line.substring(6);
         code.trim();
@@ -255,29 +284,13 @@ void loop() {
       } else if (line == "reset") {
         forgetDevice();
       } else if (line.length()) {
-        Serial.println("commands: 1 | 2 | claim <code> | reset");
+        Serial.println("commands: 1 (pee) | 2 (poop) | claim <code> | reset");
       }
       line = "";
     } else if (line.length() < 40) {
       line += (char)c;
     }
   }
-  bool raw = digitalRead(BUTTON_PIN) == LOW;
-  if (raw != down && now - lastEdge > DEBOUNCE_MS) {
-    down = raw;
-    lastEdge = now;
-    if (down && clicks == 0) gestureStart = clockSynced() ? time(nullptr) : 0;
-    if (!down) { clicks++; lastRelease = now; }
-  }
-  // held 10 s → forget the token (re-pair). The release afterwards is not a click.
-  if (down && now - lastEdge > RESET_HOLD_MS) {
-    forgetDevice();
-    while (digitalRead(BUTTON_PIN) == LOW) delay(10);
-    down = false; clicks = 0; lastEdge = millis();
-  }
-  if (clicks > 0 && !down && now - lastRelease > MULTI_CLICK_MS) {
-    emit(clicks);
-    clicks = 0;
-  }
+  for (Button& b : buttons) pollButton(b, now);
   delay(5);
 }
