@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Mock of the Biru Buttons server endpoints — for hardware testing only.
 
-Speaks the same protocol as PLAN.md §3/§4 (POST /devices/claim, POST /ingest/routine)
+Speaks the same protocol as PLAN.md §3/§4 (POST /devices/claim, POST /ingest/routine,
+GET /ingest/today)
 but touches NO database: it just prints every request. Point the firmware at
 http://<this laptop's LAN ip>:8081 and every press lands here instead of the book.
 
@@ -33,6 +34,17 @@ def lan_ip() -> str:
         s.close()
 
 
+def today() -> dict:
+    """Today's tally (laptop-local day) — same shape as GET /ingest/today on the real API."""
+    day = time.strftime("%Y-%m-%d")
+    out = {"day": day, "pee": 0, "poop": 0, "food": 0}
+    for p in presses:
+        at = p["pressedAt"] or p["receivedAt"]
+        if time.strftime("%Y-%m-%d", time.localtime(at)) == day:
+            out[p["kind"]] += 1
+    return out
+
+
 class Handler(BaseHTTPRequestHandler):
     def _json(self, code: int, body: dict) -> None:
         raw = json.dumps(body).encode()
@@ -50,6 +62,10 @@ class Handler(BaseHTTPRequestHandler):
             return {}
 
     def do_GET(self):  # noqa: N802
+        if self.path == "/ingest/today":
+            if not self.headers.get("Authorization", "").startswith("Device "):
+                return self._json(401, {"error": "missing device token"})
+            return self._json(200, today())
         if self.path == "/health":
             return self._json(200, {"ok": True, "mock": True, "presses": len(presses)})
         if self.path == "/presses":
@@ -75,14 +91,14 @@ class Handler(BaseHTTPRequestHandler):
             pid = body.get("pressId")
             if pid in seen_press_ids:
                 print(f"  DUPE   {kind}  pressId={pid} (already logged, 200 not 201)")
-                return self._json(200, {"ok": True, "duplicate": True})
+                return self._json(200, {"ok": True, "duplicate": True, "today": today()})
             if pid:
                 seen_press_ids.add(pid)
             at = body.get("pressedAt")
             when = time.strftime("%H:%M:%S", time.localtime(at)) if at else "server-time"
-            presses.append({"kind": kind, "pressId": pid, "pressedAt": at})
+            presses.append({"kind": kind, "pressId": pid, "pressedAt": at, "receivedAt": time.time()})
             print(f"  PRESS  {kind:<5} at {when}  pressId={pid}")
-            return self._json(201, {"ok": True})
+            return self._json(201, {"ok": True, "today": today()})
 
         self._json(404, {"error": "not found"})
 

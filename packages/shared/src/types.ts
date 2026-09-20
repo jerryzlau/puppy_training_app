@@ -245,6 +245,15 @@ export const IngestRoutineSchema = z.object({
 });
 export type IngestRoutineInput = z.infer<typeof IngestRoutineSchema>;
 
+/** Today's tally for a device's household — what the button pad's screen shows. */
+export interface DeviceTodayDto {
+  /** local calendar day (HOUSEHOLD_TZ), YYYY-MM-DD */
+  day: string;
+  pee: number;
+  poop: number;
+  food: number;
+}
+
 export interface DeviceDto {
   id: string;
   name: string;

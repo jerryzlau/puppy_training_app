@@ -9,6 +9,7 @@ import {
   localDay,
   HOUSEHOLD_TZ,
   type DeviceDto,
+  type DeviceTodayDto,
 } from "@biru/shared";
 import { requireMember } from "../auth.js";
 import { db } from "../supabase.js";
@@ -85,6 +86,23 @@ async function requireDevice(req: FastifyRequest, reply: FastifyReply): Promise<
     return null;
   }
   return row;
+}
+
+/** Everything logged today (by anyone — app or device) for the household. */
+async function todayCounts(householdId: string): Promise<DeviceTodayDto> {
+  const day = localDay(new Date(), HOUSEHOLD_TZ);
+  const { data } = await db
+    .from("routine_items")
+    .select("kind_key")
+    .eq("household_id", householdId)
+    .eq("day", day);
+  const out: DeviceTodayDto = { day, pee: 0, poop: 0, food: 0 };
+  for (const r of (data ?? []) as { kind_key: string }[]) {
+    if (r.kind_key === routineKindKey(DEVICE_KIND_LABEL.pee)) out.pee++;
+    else if (r.kind_key === routineKindKey(DEVICE_KIND_LABEL.poop)) out.poop++;
+    else if (r.kind_key === routineKindKey(DEVICE_KIND_LABEL.food)) out.food++;
+  }
+  return out;
 }
 
 export function deviceRoutes(app: FastifyInstance) {
@@ -176,6 +194,15 @@ export function deviceRoutes(app: FastifyInstance) {
     return reply.code(201).send({ deviceToken: token, deviceId: row.id, name: row.name });
   });
 
+  // What the pad's screen shows. Polled every few minutes; the press response
+  // carries the same shape so the screen updates the instant a button is hit.
+  app.get("/ingest/today", async (req, reply) => {
+    const device = await requireDevice(req, reply);
+    if (!device) return;
+    void db.from("devices").update({ last_seen_at: new Date().toISOString() }).eq("id", device.id).then(() => {});
+    return reply.send(await todayCounts(device.household_id));
+  });
+
   // The press path (PLAN.md §4).
   app.post("/ingest/routine", async (req, reply) => {
     const device = await requireDevice(req, reply);
@@ -193,7 +220,8 @@ export function deviceRoutes(app: FastifyInstance) {
       .select("id")
       .eq("press_id", pressId)
       .maybeSingle();
-    if (existing) return reply.code(200).send({ id: existing.id, duplicate: true });
+    if (existing)
+      return reply.code(200).send({ id: existing.id, duplicate: true, today: await todayCounts(device.household_id) });
 
     // Trust the device clock only if it's plausible (synced, not in the future, <7 days old).
     let happened = new Date();
@@ -218,7 +246,13 @@ export function deviceRoutes(app: FastifyInstance) {
       .limit(1)
       .maybeSingle();
     if (recent)
-      return reply.code(200).send({ id: recent.id, duplicate: true, debounced: true, happenedAt: recent.happened_at });
+      return reply.code(200).send({
+        id: recent.id,
+        duplicate: true,
+        debounced: true,
+        happenedAt: recent.happened_at,
+        today: await todayCounts(device.household_id),
+      });
 
     const { count } = await db
       .from("routine_items")
@@ -247,7 +281,12 @@ export function deviceRoutes(app: FastifyInstance) {
       if (error.code === "23505") return reply.code(200).send({ duplicate: true });
       return reply.code(500).send({ error: error.message });
     }
-    reply.code(201).send({ id: data.id, day, happenedAt: happened.toISOString() });
+    reply.code(201).send({
+      id: data.id,
+      day,
+      happenedAt: happened.toISOString(),
+      today: await todayCounts(device.household_id),
+    });
 
     // Live updates — after the response so the button never waits on fan-out.
     const [{ data: member }, friendIds] = await Promise.all([

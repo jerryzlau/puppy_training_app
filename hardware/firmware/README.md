@@ -21,6 +21,11 @@ resistors). Both pins are on the 3V3/GND side of the board — the side that
 leaves a free breadboard column beside the pins. One press = one event; the LED blinks once for pee, twice for poop.
 Illuminated buttons: LED pair to VIN (5 V) + GND. Onboard blue LED = GPIO 2.
 
+Optional screen — 0.96" SSD1306 OLED, I2C address 0x3C: **GND → GND rail,
+VCC → 3V3, SCL → D22, SDA → D21** (C3: SDA 5 / SCL 6). Shows today's 💦 / 💩
+tally: `GET /ingest/today` on boot and every 5 min, plus the tally that comes
+back with every press. Boots fine with no screen attached.
+
 ## Never touch the live database while testing hardware
 
 `apps/api/.env` points at the **hosted** Supabase, so a local `pnpm dev:api`
