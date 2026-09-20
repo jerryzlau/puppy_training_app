@@ -22,7 +22,7 @@ leaves a free breadboard column beside the pins. One press = one event; the LED 
 Illuminated buttons: LED pair to VIN (5 V) + GND. Onboard blue LED = GPIO 2.
 
 Optional screen — 0.96" SSD1306 OLED, I2C address 0x3C: **GND → GND rail,
-VCC → 3V3, SCL → D22, SDA → D21** (C3: SDA 5 / SCL 6). Shows today's 💦 / 💩
+VCC → 3V3, SCL → D22, SDA → D21** (C3: SDA 5 / SCL 6). Shows today's pee / poop
 tally: `GET /ingest/today` on boot and every 5 min, plus the tally that comes
 back with every press. Boots fine with no screen attached.
 

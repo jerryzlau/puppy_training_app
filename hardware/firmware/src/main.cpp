@@ -280,28 +280,16 @@ static void senderTask(void*) {
 static Adafruit_SSD1306 oled(128, 64, &Wire, -1);
 static bool hasScreen = false;
 
-// 💦 as a droplet: a triangle on a circle, plus a small shine.
-static void drawDrop(int x, int y) {
-  oled.fillTriangle(x + 8, y, x + 1, y + 10, x + 15, y + 10, SSD1306_WHITE);
-  oled.fillCircle(x + 8, y + 11, 7, SSD1306_WHITE);
-  oled.fillCircle(x + 5, y + 11, 1, SSD1306_BLACK);
-}
-
-// 💩 as three stacked blobs with two eyes.
-static void drawPoop(int x, int y) {
-  oled.fillCircle(x + 8, y + 15, 8, SSD1306_WHITE);
-  oled.fillCircle(x + 8, y + 9, 6, SSD1306_WHITE);
-  oled.fillCircle(x + 8, y + 4, 4, SSD1306_WHITE);
-  oled.fillCircle(x + 9, y + 1, 2, SSD1306_WHITE);
-  oled.fillCircle(x + 6, y + 12, 1, SSD1306_BLACK);
-  oled.fillCircle(x + 11, y + 12, 1, SSD1306_BLACK);
-}
-
-static void drawCount(int x, int count) {
-  oled.setTextSize(3);  // 18x24 px digits: room for two per side
-  oled.setCursor(x, 26);
-  if (count < 0) oled.print("-");
-  else oled.print(count);
+// One tally row: the word on the left, its count right-aligned, 12x16 px text.
+static void drawRow(int y, const char* label, int count) {
+  oled.setTextSize(2);
+  oled.setCursor(0, y);
+  oled.print(label);
+  char n[8];
+  if (count < 0) strcpy(n, "-");                    // not fetched yet
+  else snprintf(n, sizeof n, "%d", count);
+  oled.setCursor(128 - 12 * strlen(n), y);
+  oled.print(n);
 }
 
 static void render() {
@@ -324,8 +312,8 @@ static void render() {
     oled.print(hm);
   }
 
-  drawDrop(2, 26);   drawCount(22, todayPee);
-  drawPoop(68, 26);  drawCount(88, todayPoop);
+  drawRow(14, "pee", todayPee);
+  drawRow(34, "poop", todayPoop);
 
   // footer: status
   const char* msg = "";
