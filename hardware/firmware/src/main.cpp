@@ -139,11 +139,13 @@ static int postJson(const char* path, const String& body, const char* token, Str
   http.setTimeout(10000);
   http.addHeader("Content-Type", "application/json");
   if (token && *token) http.addHeader("Authorization", String("Device ") + token);
+  uint32_t t0 = millis();
   int code = http.POST(body);
   String resp = http.getString();
   http.end();
   // responses handed back to the caller (the claim) can hold the token — don't log them
-  Serial.printf("http: POST %s %s -> %d %s\n", path, body.c_str(), code, out ? "" : resp.c_str());
+  Serial.printf("http: POST %s %s -> %d %s (%lu ms)\n", path, body.c_str(), code, out ? "" : resp.c_str(),
+                (unsigned long)(millis() - t0));
   if (out) *out = resp;
   return code;
 }
@@ -160,10 +162,11 @@ static int getJson(const char* path, String* out) {
   if (!ok) return -1;
   http.setTimeout(10000);
   http.addHeader("Authorization", String("Device ") + deviceToken);
+  uint32_t t0 = millis();
   int code = http.GET();
   *out = http.getString();
   http.end();
-  Serial.printf("http: GET %s -> %d %s\n", path, code, out->c_str());
+  Serial.printf("http: GET %s -> %d %s (%lu ms)\n", path, code, out->c_str(), (unsigned long)(millis() - t0));
   return code;
 }
 
@@ -395,23 +398,30 @@ void setup() {
   pinMode(LED_PIN, OUTPUT);
   for (Button& b : buttons) pinMode(b.pin, INPUT_PULLUP);
   Wire.begin(I2C_SDA, I2C_SCL);
-  hasScreen = oled.begin(SSD1306_SWITCHCAPVCC, OLED_ADDR);
-  if (hasScreen) render(); else Serial.println("screen: no SSD1306 at 0x3C (running without one)");
+  // begin() doesn't check the bus (it only fails on malloc) — probe for an ACK first.
+  Wire.beginTransmission(OLED_ADDR);
+  hasScreen = Wire.endTransmission() == 0 && oled.begin(SSD1306_SWITCHCAPVCC, OLED_ADDR);
+  if (hasScreen) render();
   delay(300);
   Serial.println();
   Serial.printf("biru buttons: ready — pee = GPIO%d, poop = GPIO%d -> %s\n", PEE_PIN, POOP_PIN, BIRU_API_URL);
+  Serial.println(hasScreen ? "screen: SSD1306 found at 0x3C" : "screen: no SSD1306 at 0x3C (running without one)");
   prefs.begin("biru", false);
   deviceToken = prefs.getString("token", "");
 #if BIRU_MOCK
   if (deviceToken.isEmpty()) deviceToken = BIRU_DEVICE_TOKEN;  // the mock accepts anything
 #endif
   pressQueue = xQueueCreate(QUEUE_LEN, sizeof(Press));
-  // network work on core 0; the Arduino loop (button polling) stays on core 1
-  xTaskCreatePinnedToCore(senderTask, "sender", 8192, nullptr, 1, nullptr, 0);
   // connect eagerly so the first press doesn't wait on WiFi
   setStatus(ST_WIFI);
   render();
   ensureWifi();
+  // Network work on its own task, pinned to core 1 alongside the Arduino loop (which
+  // keeps polling buttons — the two time-slice). NOT core 0: the TLS handshake with
+  // Railway's ECDSA P-384 chain is ~6 s of pure CPU on an ESP32, and on core 0 that
+  // starves the idle task the task watchdog checks -> reboot mid-request.
+  // Started only now so its first /ingest/today doesn't race the WiFi/NTP bring-up above.
+  xTaskCreatePinnedToCore(senderTask, "sender", 12288, nullptr, 1, nullptr, 1);
   // local time for the screen's clock (the API decides the day; this is cosmetic)
   setenv("TZ", "EST5EDT,M3.2.0,M11.1.0", 1);
   tzset();
