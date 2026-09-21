@@ -45,7 +45,7 @@ static const int POOP_PIN = 19;
 static const int I2C_SDA = 21, I2C_SCL = 22;   // the devkit's default I2C pins
 #endif
 static const uint8_t OLED_ADDR = 0x3C;
-static const uint32_t TODAY_REFRESH_MS = 5 * 60 * 1000;
+static const uint32_t TODAY_REFRESH_MS = 15 * 1000;  // re-read the tally (edits/deletes in the app)
 
 static const uint32_t DEBOUNCE_MS = 30;
 static const size_t QUEUE_LEN = 32;
@@ -115,6 +115,7 @@ static bool ensureWifi() {
     return false;
   }
   Serial.printf("wifi: connected, ip %s\n", WiFi.localIP().toString().c_str());
+  WiFi.setSleep(false);  // USB-powered; modem sleep adds ~1 s of latency per request
   if (!clockSynced()) {
     configTime(0, 0, "pool.ntp.org", "time.google.com");
     Serial.print("time: syncing");
@@ -124,25 +125,50 @@ static bool ensureWifi() {
   return true;
 }
 
-// POST a JSON body to BIRU_API_URL + path. token (may be null) goes in the
-// Authorization header. Returns the HTTP status (negative = transport error) and
-// leaves the response body in *out when given.
-static int postJson(const char* path, const String& body, const char* token, String* out) {
+// ---------- HTTP: one connection, kept open ----------
+//
+// Railway's ECDSA chain costs the ESP32 ~6 s of CPU per TLS handshake, so we
+// keep a single HTTPS connection alive between requests (HTTP keep-alive) and
+// pay that once. A press or a tally poll on the warm connection takes ~0.2 s.
+// If the server has dropped the idle connection, the request fails once with a
+// transport error; we then close our side and retry, which reconnects.
+
+static WiFiClient plainClient;
+static WiFiClientSecure tlsClient;
+static HTTPClient http;
+static SemaphoreHandle_t httpLock;  // the claim command runs on the loop task
+
+// body == nullptr → GET, else POST. Returns the HTTP status (negative = transport
+// error) and leaves the response body in *out when given.
+static int request(const char* path, const String* body, const char* token, String* out) {
   String url = String(BIRU_API_URL) + path;
-  HTTPClient http;
-  WiFiClient plain;
-  WiFiClientSecure tls;
   bool https = url.startsWith("https://");
-  if (https) tls.setCACert(BIRU_CA_BUNDLE);  // pinned ISRG roots (PLAN.md §6)
-  bool ok = https ? http.begin(tls, url) : http.begin(plain, url);
-  if (!ok) { Serial.println("http: bad url"); return -1; }
-  http.setTimeout(10000);
-  http.addHeader("Content-Type", "application/json");
-  if (token && *token) http.addHeader("Authorization", String("Device ") + token);
+  WiFiClient& client = https ? (WiFiClient&)tlsClient : plainClient;
+  if (https) tlsClient.setCACert(BIRU_CA_BUNDLE);  // pinned ISRG roots (PLAN.md §6)
+  xSemaphoreTake(httpLock, portMAX_DELAY);
+  int code = -1;
+  for (int attempt = 0; attempt < 2 && code < 0; attempt++) {
+    if (attempt) client.stop();                    // stale keep-alive: reconnect
+    http.setReuse(true);
+    if (!http.begin(client, url)) { Serial.println("http: bad url"); break; }
+    http.setTimeout(10000);
+    if (body) http.addHeader("Content-Type", "application/json");
+    if (token && *token) http.addHeader("Authorization", String("Device ") + token);
+    code = body ? http.POST(*body) : http.GET();
+    if (code > 0 && out) *out = http.getString();
+    http.end();                                    // keeps the socket open for reuse
+  }
+  xSemaphoreGive(httpLock);
+  return code;
+}
+
+// POST a JSON body to BIRU_API_URL + path. token (may be null) goes in the
+// Authorization header. Returns the HTTP status and leaves the response body
+// in *out when given.
+static int postJson(const char* path, const String& body, const char* token, String* out) {
+  String resp;
   uint32_t t0 = millis();
-  int code = http.POST(body);
-  String resp = http.getString();
-  http.end();
+  int code = request(path, &body, token, &resp);
   // responses handed back to the caller (the claim) can hold the token — don't log them
   Serial.printf("http: POST %s %s -> %d %s (%lu ms)\n", path, body.c_str(), code, out ? "" : resp.c_str(),
                 (unsigned long)(millis() - t0));
@@ -152,20 +178,8 @@ static int postJson(const char* path, const String& body, const char* token, Str
 
 // GET BIRU_API_URL + path with the device token. Returns the HTTP status.
 static int getJson(const char* path, String* out) {
-  String url = String(BIRU_API_URL) + path;
-  HTTPClient http;
-  WiFiClient plain;
-  WiFiClientSecure tls;
-  bool https = url.startsWith("https://");
-  if (https) tls.setCACert(BIRU_CA_BUNDLE);
-  bool ok = https ? http.begin(tls, url) : http.begin(plain, url);
-  if (!ok) return -1;
-  http.setTimeout(10000);
-  http.addHeader("Authorization", String("Device ") + deviceToken);
   uint32_t t0 = millis();
-  int code = http.GET();
-  *out = http.getString();
-  http.end();
+  int code = request(path, nullptr, deviceToken.c_str(), out);
   Serial.printf("http: GET %s -> %d %s (%lu ms)\n", path, code, out->c_str(), (unsigned long)(millis() - t0));
   return code;
 }
@@ -413,6 +427,7 @@ void setup() {
 #if BIRU_MOCK
   if (deviceToken.isEmpty()) deviceToken = BIRU_DEVICE_TOKEN;  // the mock accepts anything
 #endif
+  httpLock = xSemaphoreCreateMutex();
   pressQueue = xQueueCreate(QUEUE_LEN, sizeof(Press));
   // connect eagerly so the first press doesn't wait on WiFi
   setStatus(ST_WIFI);
