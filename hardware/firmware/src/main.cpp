@@ -292,6 +292,18 @@ static void drawRow(int y, const char* label, int count) {
   oled.print(n);
 }
 
+// Look for the OLED and bring it up. Adafruit's begin() doesn't check the bus (it
+// only fails on malloc), so ask for an ACK first. Called at boot and, while no
+// screen is attached, every few seconds from loop — so plugging one in just works.
+static bool probeScreen() {
+  Wire.beginTransmission(OLED_ADDR);
+  if (Wire.endTransmission() != 0) return false;
+  if (!oled.begin(SSD1306_SWITCHCAPVCC, OLED_ADDR)) return false;
+  hasScreen = true;
+  screenDirty = true;
+  return true;
+}
+
 static void render() {
   if (!hasScreen) return;
   screenDirty = false;
@@ -386,10 +398,12 @@ void setup() {
   pinMode(LED_PIN, OUTPUT);
   for (Button& b : buttons) pinMode(b.pin, INPUT_PULLUP);
   Wire.begin(I2C_SDA, I2C_SCL);
-  // begin() doesn't check the bus (it only fails on malloc) — probe for an ACK first.
-  Wire.beginTransmission(OLED_ADDR);
-  hasScreen = Wire.endTransmission() == 0 && oled.begin(SSD1306_SWITCHCAPVCC, OLED_ADDR);
-  if (hasScreen) render();
+  if (!probeScreen()) {  // help wiring: list whatever does answer on the bus
+    for (uint8_t a = 8; a < 120; a++) {
+      Wire.beginTransmission(a);
+      if (Wire.endTransmission() == 0) Serial.printf("i2c: device at 0x%02X\n", a);
+    }
+  }
   delay(300);
   Serial.println();
   Serial.printf("biru buttons: ready — pee = GPIO%d, poop = GPIO%d -> %s\n", PEE_PIN, POOP_PIN, BIRU_API_URL);
@@ -459,6 +473,11 @@ void loop() {
   for (Button& b : buttons) pollButton(b, now);
   // "logged!" / "couldn't send" linger 3 s, then back to the plain tally
   if ((status == ST_SENT || status == ST_FAILED) && now - statusSince > 3000) setStatus(ST_OK);
+  static uint32_t lastProbe = 0;
+  if (!hasScreen && now - lastProbe > 3000) {
+    lastProbe = now;
+    if (probeScreen()) Serial.println("screen: SSD1306 plugged in");
+  }
   if (screenDirty) render();
   delay(5);
 }
