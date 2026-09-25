@@ -11,7 +11,7 @@ Companion to [PLAN.md](PLAN.md) (the buttons). Plan only; nothing built yet.
 ## 1. Shape
 
 ```
-Raspberry Pi Zero 2 W + Camera Module 3           your Mac (same WiFi)                 Railway
+Raspberry Pi 5 + Camera Module 3                  your Mac (same WiFi)                 Railway
 ┌──────────────────────────────┐   MJPEG over LAN   ┌────────────────────────────┐   HTTPS   ┌──────────┐
 │ picamera2 → HTTP MJPEG server│ ─────────────────▶ │ tools/watcher/ (Python)     │ ────────▶ │ /ingest  │
 │ 640×480 @ 10 fps, ~3 Mbit/s  │  pull, not push    │ 1 motion gate (frame diff)  │  device   │ /routine │
@@ -30,16 +30,20 @@ Raspberry Pi Zero 2 W + Camera Module 3           your Mac (same WiFi)          
 - **The watcher is just another device** to the API — claimed from the Family
   page like a button pad, holding its own device token.
 
-## 2. Bill of materials (~US$70)
+## 2. Bill of materials (~US$145, PiShop.us prices Sept 2026)
 
-| Part | ~Cost | Notes |
+Pi 5 over a Zero 2 W: double the price, but it can run the motion + dog gates
+itself later (§8 step 6), so watching won't depend on the Mac staying awake.
+
+| Part | Cost | Notes |
 |---|---|---|
-| Raspberry Pi Zero 2 W | $15 | quad-core, 512 MB, 2.4 GHz WiFi, BLE. Enough to encode 640×480 MJPEG all day |
-| Camera Module 3 **Wide** | $35 | 120° field of view covers a pen/room from one corner; standard (75°) only if it looks straight down at a pad. **NoIR** variant + an IR illuminator if the room is dark at night |
-| Pi Zero camera cable (15-pin → 22-pin, ~15 cm) | $3 | **Camera Module 3 ships with the full-size cable, which does not fit the Zero.** The official Zero case includes this cable + a camera lid — the easiest route |
-| Official Pi Zero case (camera lid) | $6 | or any printed mount; the lens needs a rigid, repeatable view |
-| microSD 16–32 GB (A1) | $8 | Raspberry Pi OS Lite (64-bit, Bookworm) |
-| 5 V ⎓ 2.5 A micro-USB supply | $8 | the camera + WiFi under load browns out weaker phone chargers |
+| Raspberry Pi 5, 2 GB | $65 | 2 GB is plenty for streaming + the gates; the classifier stays on the Mac either way |
+| Official Pi 5 case | $11 | has the temperature-controlled fan the Pi 5 needs under sustained load (replaces the active cooler) and a side slot for the ribbon cable |
+| 27 W USB-C PD supply | $13 | a 5 V/3 A one boots it but caps USB accessory current; not worth saving $5 |
+| Camera Module 3 **Wide** | $38.50 | 120° field of view covers a pen/room from one corner; standard (75°) only if it looks straight down at a pad. **NoIR** variant + an IR illuminator if the room is dark at night |
+| Camera cable for Pi 5, 500 mm | ~$4 | **Camera Module 3 ships with the 15-pin cable, which does not fit the Pi 5's 22-pin port.** 500 mm lets the camera sit high in the corner with the Pi on a shelf below |
+| Camera Module 3 case or printed mount | ~$4 | the Pi case doesn't hold the camera; the lens needs a rigid, repeatable view |
+| microSD 32 GB (A1) | ~$8 | Raspberry Pi OS Lite (64-bit, Bookworm) |
 | (optional) 850 nm IR illuminator | $10 | only with NoIR; 940 nm is invisible but the sensor is half as sensitive |
 
 Mounting: high in a corner, looking down across the pen/pad area, fixed. A
@@ -51,8 +55,8 @@ Raspberry Pi OS Lite, headless: WiFi + SSH set in Imager, hostname `birucam`.
 
 - `stream.py` — picamera2 → `multipart/x-mixed-replace` MJPEG on `:8080/stream`
   (the standard picamera2 example, ~60 lines), plus `/snapshot.jpg` and a bare
-  `/` page for checking the view in a browser. 640×480 @ 10 fps: the Zero 2 W
-  does this at ~15 % CPU and ~3 Mbit/s. Autofocus locked once at boot
+  `/` page for checking the view in a browser. 640×480 @ 10 fps is a rounding
+  error for the Pi 5 (~3 Mbit/s on the wire). Autofocus locked once at boot
   (continuous AF hunts on a static scene).
 - `birucam.service` — systemd unit so it comes up on power.
 - `install.sh` — apt packages (`python3-picamera2`), copies the two files,
@@ -133,9 +137,9 @@ strip is part of an event.
 3. Server + app: schema, snapshot upload, unconfirmed cards, ✓/✗.
 4. Pi arrives: `install.sh`, mount it, point the watcher at `birucam.local`.
 5. Live: claim the camera on the Family page; watch a day; tune thresholds.
-6. Later: local classifier from the confirmations; run the watcher on the Pi
-   itself (Zero 2 W can manage the gates; the classifier needs a Pi 5 or the
-   Mac) so the Mac doesn't have to stay awake.
+6. Later: local classifier from the confirmations; move the watcher onto the
+   Pi 5 itself (it handles the gates; the LLM classifier still calls out) so
+   the Mac doesn't have to stay awake.
 
 ## 9. Risks & open questions
 
@@ -148,6 +152,6 @@ strip is part of an event.
   if the puppy sleeps where it pees.
 - **Two dogs / a cat** in frame: YOLO finds "a dog", not *this* dog. Fine for
   one puppy; a second animal needs an ID step.
-- **Pi Zero 2 W WiFi** is 2.4 GHz only and modest; keep the Pi within a room
-  or two of the router. If the stream stutters, drop to 8 fps before dropping
-  resolution — the classifier wants pixels more than frames.
+- **WiFi**: if the stream stutters, drop to 8 fps before dropping resolution —
+  the classifier wants pixels more than frames. The Pi 5 has 5 GHz, so put it
+  on the same band as the Mac.
