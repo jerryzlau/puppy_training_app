@@ -6,6 +6,9 @@ event to the household's book the moment they're pressed. One press = one
 
 This is the plan only. No web/app code changes yet.
 
+Sibling project: [CAM-PLAN.md](CAM-PLAN.md) — a Pi camera that logs pee/poop
+by itself, as unconfirmed entries.
+
 ---
 
 ## 1. The shape of the thing
