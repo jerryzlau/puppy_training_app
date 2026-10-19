@@ -37,10 +37,20 @@ module rail(w, l) {
 module esp_rail() {
   if (board == "c3")
     translate([-esp_x, esp_y, back_t - 0.01]) rail(esp_w, esp_l);
-  else translate([0, 0, back_t - 0.01]) difference() {
+  else translate([0, dk_y, back_t - 0.01]) difference() {
     rail(dk_l, dk_w);
     // open on the USB end so the plug can reach the connector
     translate([-usb_side * (dk_l/2 + rail_t), 0, -1]) cube([2*rail_t + 2, dk_usb_w + 2, rail_h + 3], center = true);
+  }
+}
+
+// posts that clamp the OLED PCB against the face's glass ledge, stopping
+// 0.2 short; a short pin on each drops into the module's M2 hole.
+oled_post_h = plate_d - back_t - wall - oled_glass_t - oled_pcb_t - 0.2;
+module oled_posts() {
+  for (h = oled_holes) translate([-h[0], oled_y + h[1], back_t - 0.01]) {
+    cylinder(d = oled_post_d, h = oled_post_h + 0.01);
+    cylinder(d = oled_pin_d, h = oled_post_h + oled_pin_h);
   }
 }
 
@@ -51,6 +61,7 @@ module back_part() difference() {
       linear_extrude(back_t) rrect(pw, ph, pr);
       for (y = cap_centres) translate([0, y, 0]) tower();
       esp_rail();
+      oled_posts();
     }
   }
   // countersunk M3 into the bosses

@@ -15,7 +15,7 @@ pio device monitor       # serial log, Ctrl+C to exit (close it before uploading
 | `c3` | ESP32-C3 SuperMini | the enclosure build |
 | `wroom32-live` | as `wroom32`, real API on Railway | production — presses land in the book |
 
-Breadboard pins (30-pin ESP32 devkit): **pee = D18, poop = D19** (C3 SuperMini:
+Full breadboard layout: [../BREADBOARD.md](../BREADBOARD.md). Breadboard pins (30-pin ESP32 devkit): **pee = D18, poop = D19** (C3 SuperMini:
 GPIO3 / GPIO4), each button between its GPIO and GND (internal pull-ups, no
 resistors). Both pins are on the 3V3/GND side of the board — the side that
 leaves a free breadboard column beside the pins. One press = one event; the LED blinks once for pee, twice for poop.

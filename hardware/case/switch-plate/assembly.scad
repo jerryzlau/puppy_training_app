@@ -23,7 +23,7 @@ module cap_in_place(i) {
 }
 
 show_face = true;      // -D show_face=false for the "inside" preview
-show_boards = false;   // placeholder ESP32-C3 SuperMini + MX switches
+show_boards = false;   // placeholder ESP32 board + MX switches (+ OLED, always shown)
 
 if (show_face) color(cream) face_part();
 // back plate lives at the wall end, towers pointing forward (this flip also
@@ -40,9 +40,11 @@ module mx_switch() {                     // body below the plate + stem above
 if (show_boards && board == "devkit32") {
   // devkit lying flat on its cut pin stubs, USB end toward usb_side
   z0 = plate_d - back_t - dk_stub;                     // board underside
-  translate([0, 0, z0 - dk_t/2]) color([0.1, 0.35, 0.2]) cube([dk_l, dk_w, dk_t], center = true);
-  translate([usb_side * (dk_l/2 - 3), 0, z0 - dk_t - 1.4]) color([0.75, 0.75, 0.78]) cube([6, 8, 2.8], center = true);   // micro-USB
-  translate([-usb_side * (dk_l/2 - 13), 0, z0 - dk_t - 1.6]) color([0.85, 0.85, 0.85]) cube([25.5, 18, 3.2], center = true);  // WROOM-32 can
+  translate([0, dk_y, 0]) {
+    translate([0, 0, z0 - dk_t/2]) color([0.1, 0.35, 0.2]) cube([dk_l, dk_w, dk_t], center = true);
+    translate([usb_side * (dk_l/2 - 3.5), 0, z0 - dk_t - 1.6]) color([0.75, 0.75, 0.78]) cube([7.3, 8.9, 3.2], center = true);   // USB-C
+    translate([-usb_side * (dk_l/2 - 13), 0, z0 - dk_t - 1.6]) color([0.85, 0.85, 0.85]) cube([25.5, 18, 3.2], center = true);  // WROOM-32 can
+  }
 }
 if (show_boards && board == "c3") {
   esp_y = -plate_h/2 + wall + esp_gap + esp_l/2;
@@ -55,3 +57,11 @@ if (show_boards && board == "c3") {
 }
 if (show_boards)   // switches on the towers: plate top is at z = plate_d - back_t - tower_h
   for (y = cap_centres) translate([0, y, plate_d - back_t - tower_h]) mirror([0, 0, 1]) mx_switch();
+
+// OLED module: glass against the inside of the front skin, PCB behind it,
+// lit pixel area so the front previews read as a screen. Seen from the front.
+translate([0, oled_y, wall]) {
+  color([0.12, 0.23, 0.56]) translate([0, 0, oled_glass_t + oled_pcb_t/2]) cube([oled_pcb[0], oled_pcb[1], oled_pcb_t], center = true);
+  color([0.05, 0.06, 0.1]) translate([0, oled_glass_y, oled_glass_t/2 + 0.05]) cube([oled_glass[0], oled_glass[1], oled_glass_t - 0.1], center = true);
+  color([0.55, 0.78, 1.0]) translate([0, oled_win_y, 0.05]) cube([oled_aa[0], oled_aa[1], 0.1], center = true);
+}
