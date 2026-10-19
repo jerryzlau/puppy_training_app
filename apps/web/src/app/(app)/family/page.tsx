@@ -83,7 +83,8 @@ export default function FamilyPage() {
   const [friendBusy, setFriendBusy] = useState(false);
   const [friendError, setFriendError] = useState<string | null>(null);
   const [devices, setDevices] = useState<DeviceDto[]>([]);
-  const [deviceBusy, setDeviceBusy] = useState(false);
+  // which "add" button is waiting on a code (both stay disabled meanwhile)
+  const [deviceBusy, setDeviceBusy] = useState<DeviceDto["type"] | null>(null);
   const [deviceError, setDeviceError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -213,7 +214,7 @@ export default function FamilyPage() {
   }
 
   async function addDevice(type: DeviceDto["type"] = "button_pad") {
-    setDeviceBusy(true);
+    setDeviceBusy(type);
     setDeviceError(null);
     try {
       const d = await api<DeviceDto>("/devices", { method: "POST", body: { type } });
@@ -221,7 +222,7 @@ export default function FamilyPage() {
     } catch (err) {
       setDeviceError(err instanceof Error ? err.message : "couldn't add the gadget");
     } finally {
-      setDeviceBusy(false);
+      setDeviceBusy(null);
     }
   }
 
@@ -590,11 +591,11 @@ export default function FamilyPage() {
         <div className="mt-2">
           {deviceError && <ErrorNote message={deviceError} />}
           <div className="flex flex-wrap gap-2">
-            <SketchButton variant="ghost" onClick={() => void addDevice("button_pad")} disabled={deviceBusy}>
-              {deviceBusy ? "making a code…" : "add a button pad"}
+            <SketchButton variant="ghost" onClick={() => void addDevice("button_pad")} disabled={!!deviceBusy}>
+              {deviceBusy === "button_pad" ? "making a code…" : "add a button pad"}
             </SketchButton>
-            <SketchButton variant="ghost" onClick={() => void addDevice("camera")} disabled={deviceBusy}>
-              {deviceBusy ? "making a code…" : "add a camera"}
+            <SketchButton variant="ghost" onClick={() => void addDevice("camera")} disabled={!!deviceBusy}>
+              {deviceBusy === "camera" ? "making a code…" : "add a camera"}
             </SketchButton>
           </div>
         </div>
