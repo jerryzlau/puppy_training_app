@@ -123,7 +123,12 @@ to grade any classifier change against real history.
 
 ## 7. Privacy
 
-Video never leaves the LAN. What leaves the Mac: cropped, gated strips to the
+The **live view** (Routine → 📷 live) is the one exception to "the stream
+stays on the LAN": the Pi relays frames through the API to logged-in
+household members (never friends), and only while one of them has the tab
+open. Nothing is stored. See `cam/README.md`.
+
+Otherwise, video never leaves the LAN. What leaves the Mac: cropped, gated strips to the
 vision API (a few hundred small images a day of a dog), and one snapshot per
 logged event to your own Supabase bucket. The Ollama variant sends nothing
 anywhere. No recording is kept beyond the rolling in-memory window unless a

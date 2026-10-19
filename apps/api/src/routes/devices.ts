@@ -10,6 +10,7 @@ import {
   HOUSEHOLD_TZ,
   type DeviceDto,
   type DeviceTodayDto,
+  type DeviceType,
 } from "@biru/shared";
 import { requireMember } from "../auth.js";
 import { db } from "../supabase.js";
@@ -29,10 +30,11 @@ const DEBOUNCE_MS = 60_000;
 // unambiguous alphabet: no 0/O/1/I
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
-interface DeviceRow {
+export interface DeviceRow {
   id: string;
   household_id: string;
   name: string;
+  type: DeviceType;
   claim_code: string | null;
   claim_expires_at: string | null;
   claimed_at: string | null;
@@ -43,7 +45,7 @@ interface DeviceRow {
 }
 
 const DEVICE_COLS =
-  "id, household_id, name, claim_code, claim_expires_at, claimed_at, created_by, last_seen_at, revoked_at, created_at";
+  "id, household_id, name, type, claim_code, claim_expires_at, claimed_at, created_by, last_seen_at, revoked_at, created_at";
 
 const hashToken = (token: string) => crypto.createHash("sha256").update(token).digest("hex");
 
@@ -59,6 +61,7 @@ const toDto = (r: DeviceRow): DeviceDto => {
   return {
     id: r.id,
     name: r.name,
+    type: r.type,
     claimCode: unpaired ? r.claim_code : null,
     claimExpiresAt: unpaired ? r.claim_expires_at : null,
     claimedAt: r.claimed_at,
@@ -68,7 +71,7 @@ const toDto = (r: DeviceRow): DeviceDto => {
 };
 
 /** Device-token auth for the ingest path. Not requireMember: the device is not a user. */
-async function requireDevice(req: FastifyRequest, reply: FastifyReply): Promise<DeviceRow | null> {
+export async function requireDevice(req: FastifyRequest, reply: FastifyReply): Promise<DeviceRow | null> {
   const header = req.headers.authorization ?? "";
   const [scheme, token] = header.split(" ");
   if (scheme !== "Device" || !token) {
@@ -135,7 +138,8 @@ export function deviceRoutes(app: FastifyInstance) {
       .from("devices")
       .insert({
         household_id: caller.householdId,
-        name: parsed.data.name?.trim() || "button pad",
+        type: parsed.data.type ?? "button_pad",
+        name: parsed.data.name?.trim() || (parsed.data.type === "camera" ? "camera" : "button pad"),
         claim_code: claimCode(),
         claim_expires_at: new Date(Date.now() + CLAIM_TTL_MIN * 60_000).toISOString(),
         created_by: caller.userId,

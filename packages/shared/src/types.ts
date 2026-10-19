@@ -223,8 +223,13 @@ export interface RoutineAlertDto {
 
 /* ── devices (Biru Buttons) ──────────────────────────────────────────────── */
 
+/** What a device is: a button pad logs presses, a camera streams a live view (CAM-PLAN.md). */
+export const DEVICE_TYPES = ["button_pad", "camera"] as const;
+export type DeviceType = (typeof DEVICE_TYPES)[number];
+
 export const CreateDeviceSchema = z.object({
   name: z.string().min(1).max(40).optional(),
+  type: z.enum(DEVICE_TYPES).optional(),
 });
 
 export const ClaimDeviceSchema = z.object({
@@ -257,6 +262,7 @@ export interface DeviceTodayDto {
 export interface DeviceDto {
   id: string;
   name: string;
+  type: DeviceType;
   /** set only while the device is unpaired and the code hasn't expired */
   claimCode: string | null;
   claimExpiresAt: string | null;

@@ -1,0 +1,16 @@
+[Unit]
+Description=Biru Cam MJPEG stream (:8080)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+# install.sh replaces @USER@ with the account that ran it
+User=@USER@
+Group=video
+EnvironmentFile=-/etc/default/birucam
+ExecStart=/usr/bin/python3 /opt/birucam/stream.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

@@ -8,6 +8,7 @@ import {
   formatMinutes,
   localDay,
   minutesPastMidnight,
+  type DeviceDto,
   type HouseholdEvent,
   type RoutineItemDto,
   type RoutineKindDto,
@@ -16,6 +17,7 @@ import {
 import { HandLabel, SketchButton, ErrorNote, Loading, Stamp } from "@/components/scrapbook";
 import { RoutineCalendar } from "@/components/RoutineCalendar";
 import { RoutineForecast } from "@/components/RoutineForecast";
+import { CamLive } from "@/components/CamLive";
 
 /** "14:05" for a datetime-local input, in the browser's own zone. */
 function clockValue(d: Date): string {
@@ -42,7 +44,9 @@ export default function RoutinePage() {
   const { household } = useSession();
   const today = useMemo(() => localDay(new Date()), []);
   const [day, setDay] = useState(today);
-  const [view, setView] = useState<"day" | "calendar" | "forecast">("day");
+  const [view, setView] = useState<"day" | "calendar" | "forecast" | "live">("day");
+  // a paired Biru Cam, if the household has one — its live view gets a tab
+  const [camera, setCamera] = useState<DeviceDto | null>(null);
   const [items, setItems] = useState<RoutineItemDto[]>([]);
   const [kinds, setKinds] = useState<RoutineKindDto[]>([]);
   const [patterns, setPatterns] = useState<RoutinePatternDto[]>([]);
@@ -89,6 +93,12 @@ export default function RoutinePage() {
   useEffect(() => {
     void loadSide();
   }, [loadSide]);
+
+  useEffect(() => {
+    api<{ devices: DeviceDto[] }>("/devices")
+      .then((r) => setCamera(r.devices.find((d) => d.type === "camera" && d.claimedAt) ?? null))
+      .catch(() => setCamera(null));
+  }, []);
 
   /**
    * Live updates (a Biru Button press, a partner's quick-add) arrive over
@@ -231,6 +241,7 @@ export default function RoutinePage() {
             { value: "day", label: "📄 the day" },
             { value: "calendar", label: "🗓️ history" },
             { value: "forecast", label: "🔮 forecast" },
+            ...(camera ? [{ value: "live", label: "📷 live" } as const] : []),
           ] as const
         ).map((t) => (
           <button
@@ -250,6 +261,8 @@ export default function RoutinePage() {
       </div>
 
       {view === "forecast" && <RoutineForecast />}
+
+      {view === "live" && camera && <CamLive deviceId={camera.id} />}
 
       {view === "calendar" && (
         <div className="mt-3">

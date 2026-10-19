@@ -212,11 +212,11 @@ export default function FamilyPage() {
     setFriendCopied(true);
   }
 
-  async function addDevice() {
+  async function addDevice(type: DeviceDto["type"] = "button_pad") {
     setDeviceBusy(true);
     setDeviceError(null);
     try {
-      const d = await api<DeviceDto>("/devices", { method: "POST", body: {} });
+      const d = await api<DeviceDto>("/devices", { method: "POST", body: { type } });
       setDevices((prev) => [d, ...prev]);
     } catch (err) {
       setDeviceError(err instanceof Error ? err.message : "couldn't add the gadget");
@@ -546,8 +546,9 @@ export default function FamilyPage() {
       <div className="border-[2.5px] border-dashed border-wood rounded-lg p-4 mt-5 bg-cream">
         <div className="font-hand text-2xl">🔘 buttons &amp; gadgets</div>
         <p className="text-xs text-inkSoft mt-1 mb-3">
-          physical buttons that write pee / poop / food straight into the routine. add one here,
-          then type the pairing code into the button&apos;s setup — it&apos;s good for 15 minutes.
+          physical buttons that write pee / poop / food straight into the routine, and cameras
+          you can watch live from the routine page. add one here, then type the pairing code into
+          its setup — it&apos;s good for 15 minutes.
         </p>
         {devices.map((d) => (
           <DashedRow key={d.id}>
@@ -555,7 +556,7 @@ export default function FamilyPage() {
               className="w-9 h-9 rounded-full border-2 border-ink bg-white flex items-center justify-center text-lg shrink-0"
               aria-hidden
             >
-              🔘
+              {d.type === "camera" ? "📷" : "🔘"}
             </span>
             <span className="flex-1 text-sm">
               <b>{d.name}</b>
@@ -588,9 +589,14 @@ export default function FamilyPage() {
         ))}
         <div className="mt-2">
           {deviceError && <ErrorNote message={deviceError} />}
-          <SketchButton variant="ghost" onClick={addDevice} disabled={deviceBusy}>
-            {deviceBusy ? "making a code…" : "add a button pad"}
-          </SketchButton>
+          <div className="flex flex-wrap gap-2">
+            <SketchButton variant="ghost" onClick={() => void addDevice("button_pad")} disabled={deviceBusy}>
+              {deviceBusy ? "making a code…" : "add a button pad"}
+            </SketchButton>
+            <SketchButton variant="ghost" onClick={() => void addDevice("camera")} disabled={deviceBusy}>
+              {deviceBusy ? "making a code…" : "add a camera"}
+            </SketchButton>
+          </div>
         </div>
       </div>
 
