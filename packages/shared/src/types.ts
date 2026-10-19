@@ -160,6 +160,12 @@ export interface RoutineItemDto {
   createdByName: string;
   /** logged by a physical button (Biru Buttons) rather than a person */
   viaDevice?: boolean;
+  /** false while a camera-detected entry waits for a member's ✓ (CAM-PLAN.md §5) */
+  confirmed?: boolean;
+  /** signed URL of the camera's snapshot of the moment, when there is one */
+  snapshotUrl?: string | null;
+  /** the classifier's confidence (0–1) for camera entries */
+  confidence?: number | null;
 }
 
 /** A title you've used before — the quick-add chips, most-used first. */
@@ -223,6 +229,16 @@ export interface RoutineAlertDto {
 
 /* ── devices (Biru Buttons) ──────────────────────────────────────────────── */
 
+/** A Biru Cam "maybe a pee/poop" moment: 4 crops of the dog + one full frame (base64 JPEG). */
+export const CamCandidateSchema = z.object({
+  /** unix seconds when the dog settled */
+  startedAt: z.number().int(),
+  stillSeconds: z.number().min(0).max(600),
+  crops: z.array(z.string().min(100).max(400_000)).min(1).max(6),
+  snapshot: z.string().min(100).max(600_000),
+});
+export type CamCandidateInput = z.infer<typeof CamCandidateSchema>;
+
 /** What a device is: a button pad logs presses, a camera streams a live view (CAM-PLAN.md). */
 export const DEVICE_TYPES = ["button_pad", "camera"] as const;
 export type DeviceType = (typeof DEVICE_TYPES)[number];
@@ -278,8 +294,8 @@ export type HouseholdEvent =
   | {
       type: "routine.added";
       item: RoutineItemDto;
-      /** "device" when a Biru Button logged it, "member" for a person in the app */
-      source: "device" | "member";
+      /** "device" when a Biru Button logged it, "camera" when the Biru Cam spotted it, "member" for a person */
+      source: "device" | "camera" | "member";
     }
   | { type: "routine.updated"; item: RoutineItemDto }
   | { type: "routine.removed"; id: string; day: string }

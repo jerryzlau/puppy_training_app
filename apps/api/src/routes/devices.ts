@@ -16,6 +16,7 @@ import { requireMember } from "../auth.js";
 import { db } from "../supabase.js";
 import { publish } from "../events.js";
 import { friendHouseholdIds } from "../friendships.js";
+import { ROUTINE_COLS, routineDtos } from "./routine.js";
 
 // Biru Buttons — see hardware/PLAN.md §3–5. A device holds a long-lived token
 // (only its hash is stored here) that can do exactly one thing: log pee/poop/
@@ -98,7 +99,8 @@ async function todayCounts(householdId: string): Promise<DeviceTodayDto> {
     .from("routine_items")
     .select("kind_key")
     .eq("household_id", householdId)
-    .eq("day", day);
+    .eq("day", day)
+    .eq("confirmed", true);
   const out: DeviceTodayDto = { day, pee: 0, poop: 0, food: 0 };
   for (const r of (data ?? []) as { kind_key: string }[]) {
     if (r.kind_key === routineKindKey(DEVICE_KIND_LABEL.pee)) out.pee++;
@@ -241,7 +243,7 @@ export function deviceRoutes(app: FastifyInstance) {
     // acknowledged but not written twice
     const { data: recent } = await db
       .from("routine_items")
-      .select("id, happened_at")
+      .select("id, happened_at, confirmed")
       .eq("household_id", device.household_id)
       .eq("kind_key", routineKindKey(label))
       .gte("happened_at", new Date(happened.getTime() - DEBOUNCE_MS).toISOString())
@@ -249,6 +251,19 @@ export function deviceRoutes(app: FastifyInstance) {
       .order("happened_at", { ascending: false })
       .limit(1)
       .maybeSingle();
+    if (recent && !recent.confirmed) {
+      // the camera already spotted this one — the press is the ✓
+      const { data: row } = await db
+        .from("routine_items")
+        .update({ confirmed: true })
+        .eq("id", recent.id)
+        .select(ROUTINE_COLS)
+        .maybeSingle();
+      if (row) {
+        const [item] = await routineDtos([row], device.household_id);
+        publish(device.household_id, { type: "routine.updated", item });
+      }
+    }
     if (recent)
       return reply.code(200).send({
         id: recent.id,

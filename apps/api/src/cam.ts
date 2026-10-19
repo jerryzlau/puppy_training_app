@@ -1,8 +1,13 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { ServerResponse } from "node:http";
+import crypto from "node:crypto";
+import { CamCandidateSchema, DEVICE_KIND_LABEL, routineKindKey, localDay, HOUSEHOLD_TZ } from "@biru/shared";
 import { requireMember } from "./auth.js";
-import { db } from "./supabase.js";
+import { db, PHOTO_BUCKET } from "./supabase.js";
+import { publish } from "./events.js";
+import { classifierReady, classifyStrip } from "./classify.js";
 import { requireDevice, type DeviceRow } from "./routes/devices.js";
+import { ROUTINE_COLS, routineDtos } from "./routes/routine.js";
 
 // Biru Cam live view: the Pi relays JPEG frames through here to household
 // members' browsers, and only while someone is watching (CAM-PLAN.md §7).
@@ -20,6 +25,12 @@ const MAX_FRAME_BYTES = 512 * 1024;
 const FRESH_MS = 2_000; // a new viewer gets the last frame at once if it's this recent
 const SLOW_VIEWER_BYTES = 1024 * 1024; // skip frames for a viewer this far behind
 const SEEN_EVERY_MS = 30_000;
+
+// pee/poop detection (CAM-PLAN.md §4): the Pi sends still spells, Claude judges
+const MIN_CONFIDENCE = 0.6; // below this a "pee"/"poop" verdict isn't logged
+const SAME_EVENT_MS = 2 * 60_000; // same kind already in the book this close → same event
+const MAX_CANDIDATES_PER_HOUR = 60;
+const candidateTimes = new Map<string, number[]>();
 
 interface Cam {
   viewers: Set<ServerResponse>;
@@ -107,6 +118,73 @@ export function camRoutes(app: FastifyInstance) {
     c.frameAt = Date.now();
     for (const res of c.viewers) if (res.writableLength < SLOW_VIEWER_BYTES) writeFrame(res, frame);
     return reply.send({ watching: c.viewers.size > 0 });
+  });
+
+  // A still spell from the Pi → "pee, poop, or neither?" → maybe an unconfirmed entry.
+  app.post("/ingest/cam/candidate", { bodyLimit: 4 * 1024 * 1024 }, async (req, reply) => {
+    const device = await requireCamera(req, reply);
+    if (!device) return;
+    const parsed = CamCandidateSchema.safeParse(req.body);
+    if (!parsed.success) return reply.code(400).send({ error: parsed.error.flatten() });
+    const now = Date.now();
+    const recent = (candidateTimes.get(device.id) ?? []).filter((t) => now - t < 3_600_000);
+    if (recent.length >= MAX_CANDIDATES_PER_HOUR) return reply.code(429).send({ error: "too many candidates this hour" });
+    candidateTimes.set(device.id, [...recent, now]);
+    if (!classifierReady()) return reply.code(503).send({ error: "classifier not configured (ANTHROPIC_API_KEY)" });
+
+    let verdict;
+    try {
+      verdict = await classifyStrip(parsed.data.crops);
+    } catch (err) {
+      req.log.error({ err }, "cam classify failed");
+      return reply.code(502).send({ error: "classifier unavailable" });
+    }
+    req.log.info({ device: device.id, verdict, still: parsed.data.stillSeconds }, "cam verdict");
+    if (!verdict || verdict.label === "neither" || verdict.confidence < MIN_CONFIDENCE)
+      return reply.send({ label: verdict?.label ?? "unknown", confidence: verdict?.confidence ?? null, logged: false });
+
+    // when the dog settled, if the Pi's clock is plausible
+    let happened = new Date(parsed.data.startedAt * 1000);
+    if (Math.abs(now - happened.getTime()) > 10 * 60_000) happened = new Date(now);
+    const label = DEVICE_KIND_LABEL[verdict.label];
+    const { data: dupe } = await db
+      .from("routine_items")
+      .select("id")
+      .eq("household_id", device.household_id)
+      .eq("kind_key", routineKindKey(label))
+      .gte("happened_at", new Date(happened.getTime() - SAME_EVENT_MS).toISOString())
+      .lte("happened_at", new Date(happened.getTime() + SAME_EVENT_MS).toISOString())
+      .limit(1)
+      .maybeSingle();
+    if (dupe) return reply.send({ ...verdict, logged: false, duplicate: true });
+
+    const id = crypto.randomUUID();
+    const path = `${device.household_id}/routine/${id}.jpg`;
+    const { error: upErr } = await db.storage
+      .from(PHOTO_BUCKET)
+      .upload(path, Buffer.from(parsed.data.snapshot, "base64"), { contentType: "image/jpeg" });
+    const { data: row, error } = await db
+      .from("routine_items")
+      .insert({
+        id,
+        household_id: device.household_id,
+        day: localDay(happened, HOUSEHOLD_TZ),
+        kind: label,
+        kind_key: routineKindKey(label),
+        note: verdict.posture.slice(0, 200),
+        happened_at: happened.toISOString(),
+        created_by: device.created_by,
+        device_id: device.id,
+        confirmed: false,
+        snapshot_path: upErr ? null : path,
+        confidence: verdict.confidence,
+      })
+      .select(ROUTINE_COLS)
+      .single();
+    if (error || !row) return reply.code(500).send({ error: error?.message ?? "insert failed" });
+    const [item] = await routineDtos([row], device.household_id);
+    publish(device.household_id, { type: "routine.added", item, source: "camera" });
+    return reply.code(201).send({ ...verdict, logged: true, id });
   });
 
   app.get("/cam/:id/stream", async (req, reply) => {

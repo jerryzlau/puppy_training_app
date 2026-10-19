@@ -189,6 +189,7 @@ export function friendRoutes(app: FastifyInstance) {
       .from("routine_items")
       .select("id, household_id, kind, kind_key, happened_at, created_by")
       .in("household_id", friendIds)
+      .eq("confirmed", true) // camera guesses ring nobody's bell until a ✓
       .or("kind_key.ilike.%pee%,kind_key.ilike.%poop%,kind_key.ilike.%potty%")
       .gte("happened_at", since)
       .order("happened_at", { ascending: false })

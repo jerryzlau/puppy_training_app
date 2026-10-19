@@ -9,6 +9,12 @@ user="${SUDO_USER:-$USER}"
 
 sudo apt-get install -y python3-picamera2
 sudo install -D -m 755 stream.py /opt/birucam/stream.py
+sudo install -m 644 detect.py watch.py /opt/birucam/
+size=$(grep -oP '^BIRUCAM_DETECT_SIZE=\K\d+' /etc/default/birucam 2>/dev/null || echo 416)
+sudo install -D -m 644 -t "/opt/birucam/models/yolo11n_ncnn_$size" models/yolo11n_ncnn_$size/model.ncnn.*
+# the detector's runtime: ncnn from pip, beside apt's picamera2 and numpy
+[ -x /opt/birucam/venv/bin/python ] || sudo python3 -m venv --system-site-packages /opt/birucam/venv
+sudo /opt/birucam/venv/bin/pip install -q ncnn
 sudo install -d -o "$user" -m 700 /var/lib/birucam   # the device token lives here
 sed "s/@USER@/$user/" birucam.service | sudo tee /etc/systemd/system/birucam.service >/dev/null
 if [ ! -f /etc/default/birucam ]; then

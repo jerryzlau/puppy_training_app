@@ -116,6 +116,8 @@ export default function RoutinePage() {
           return it.day === day ? [...rest, it].sort(byTime) : rest;
         });
         if (ev.type === "routine.added" && ev.source === "device") setFlash(`🔘 ${it.kind.toLowerCase()} logged by the button`);
+        if (ev.type === "routine.added" && ev.source === "camera")
+          setFlash(`📷 the camera thinks that was a ${it.kind.toLowerCase()} — ✓ or ✗ it below`);
       } else if (ev.type === "routine.removed") {
         setItems((prev) => prev.filter((i) => i.id !== ev.id));
       }
@@ -195,6 +197,17 @@ export default function RoutinePage() {
     setNote("");
     setFormOpen(false);
     await addItem(title, noteText, at);
+  }
+
+  /** ✓ on a camera guess: it now counts for the forecast and friends' bells. */
+  async function confirm(id: string) {
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, confirmed: true } : i))); // optimistic
+    try {
+      await api(`/routine/${id}/confirm`, { method: "POST" });
+      await loadSide();
+    } catch {
+      await loadDay(day);
+    }
   }
 
   async function remove(id: string) {
@@ -389,22 +402,48 @@ export default function RoutinePage() {
       {state === "ready" &&
         items.map((it) => {
           const saving = pending.has(it.id);
+          const viaCamera = it.confidence != null; // only camera entries carry a confidence
+          const unsure = it.confirmed === false;
           return (
           <div
             key={it.id}
             className={`flex gap-3 items-start py-3 px-1 border-b-[1.5px] border-dashed border-ruled ${
               saving ? "opacity-55" : ""
-            }`}
+            } ${unsure ? "bg-white rounded-lg border-2 border-solid border-ink shadow-sketchSoft px-2 my-2" : ""}`}
           >
             <span className="font-hand text-xl text-accent w-[72px] shrink-0 tabular-nums">
               {formatMinutes(minutesPastMidnight(it.happenedAt))}
             </span>
             <span className="flex-1">
-              <b className="text-[15px]">{it.kind}</b>
+              <b className="text-[15px]">
+                {unsure ? `🐕 looks like a ${it.kind.toLowerCase()}?` : it.kind}
+              </b>
               {it.note && <span className="block text-sm text-inkSoft whitespace-pre-line">{it.note}</span>}
-              <span className="font-hand text-base text-inkFaint">
-                {saving ? "saving…" : it.viaDevice ? `— 🔘 ${it.createdByName}'s button` : `— ${it.createdByName}`}
+              {it.snapshotUrl && (
+                // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
+                <img
+                  src={it.snapshotUrl}
+                  alt={`camera snapshot: ${it.kind.toLowerCase()}`}
+                  className={`mt-2 rounded border-2 border-ink ${unsure ? "w-full max-w-[320px]" : "w-24"}`}
+                />
+              )}
+              <span className="block font-hand text-base text-inkFaint">
+                {saving
+                  ? "saving…"
+                  : viaCamera
+                    ? `— 📷 the camera${it.confidence != null ? ` · ${Math.round(it.confidence * 100)}% sure` : ""}`
+                    : it.viaDevice
+                      ? `— 🔘 ${it.createdByName}'s button`
+                      : `— ${it.createdByName}`}
               </span>
+              {unsure && (
+                <span className="flex gap-2 mt-2">
+                  <SketchButton onClick={() => void confirm(it.id)}>✓ yes</SketchButton>
+                  <SketchButton variant="ghost" onClick={() => void remove(it.id)}>
+                    ✗ no
+                  </SketchButton>
+                </span>
+              )}
             </span>
             <button
               type="button"

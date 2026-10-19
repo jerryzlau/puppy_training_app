@@ -26,6 +26,7 @@ import http.client
 import io
 import json
 import os
+import queue
 import socket
 import sys
 import threading
@@ -51,6 +52,15 @@ ROTATE = int(os.environ.get("BIRUCAM_ROTATE", 0))  # the ISP flips only; 90° is
 API_URL = os.environ.get("BIRUCAM_API_URL", "")  # empty: LAN stream only, no relay
 RELAY_FPS = float(os.environ.get("BIRUCAM_RELAY_FPS", 10))
 RELAY_IN_FLIGHT = int(os.environ.get("BIRUCAM_RELAY_IN_FLIGHT", 3))  # parallel frame uploads
+# Vision (VISION-PLAN.md): YOLO11n on the CPU finds the dog; watch.py sends
+# still spells to the API, which asks Claude "pee, poop, or neither?".
+DETECT = os.environ.get("BIRUCAM_DETECT", "on") == "on"
+DETECT_FPS = float(os.environ.get("BIRUCAM_DETECT_FPS", 5))
+DETECT_SIZE = int(os.environ.get("BIRUCAM_DETECT_SIZE", 416))
+DETECT_MIN_CONF = float(os.environ.get("BIRUCAM_DETECT_MIN_CONF", 0.35))
+DETECT_CLASSES = tuple(os.environ.get("BIRUCAM_DETECT_CLASSES", "dog,cat,person").split(","))
+
+detections = {"t": 0, "boxes": [], "presence": {}}  # latest pass, served at /detections
 TOKEN_FILE = os.environ.get("BIRUCAM_TOKEN_FILE", "/var/lib/birucam/device_token")
 
 PAGE = f"""<!doctype html><html><head><meta charset="utf-8">
@@ -89,6 +99,8 @@ class Handler(server.BaseHTTPRequestHandler):
                 self._send(503, "text/plain", b"camera not ready\n")
             else:
                 self._send(200, "image/jpeg", frame)
+        elif self.path == "/detections":
+            self._send(200, "application/json", json.dumps(detections).encode())
         elif self.path == "/stream":
             self.send_response(200)
             self.send_header("Cache-Control", "no-cache, private")
@@ -227,6 +239,60 @@ def relay():
             backoff = min(backoff * 2, 60)
 
 
+def detect_loop(candidates):
+    """Run YOLO on the newest frame DETECT_FPS times a second; feed dogs to the watcher."""
+    import simplejpeg
+    from detect import Detector, Tracker
+    from watch import Watcher
+
+    det = Detector(size=DETECT_SIZE, classes=DETECT_CLASSES, min_conf=DETECT_MIN_CONF)
+    tracker = Tracker()
+    watcher = Watcher(candidates.put)
+    print(f"detect: YOLO11n {DETECT_SIZE}px, {DETECT_FPS} fps, classes {','.join(DETECT_CLASSES)}", flush=True)
+    while True:
+        started = time.monotonic()
+        jpeg = frames.frame
+        if jpeg is not None:
+            # DCT-scaled decode: half size straight out of the JPEG, nearly free
+            rgb = simplejpeg.decode_jpeg(jpeg, colorspace="RGB", min_width=WIDTH // 2, min_height=HEIGHT // 2)
+            tracked = tracker.update(det(rgb), started)
+            detections.update(t=time.time(), boxes=[b.json() for b in tracked],
+                              presence={k: round(v) for k, v in tracker.presence(started).items()})
+            watcher.update(started, jpeg, [b for b in tracked if b.cls == "dog"])
+        time.sleep(max(0.0, 1 / DETECT_FPS - (time.monotonic() - started)))
+
+
+def detector(candidates):
+    """Keep the detector alive: a crash costs boxes for a few seconds, never the stream."""
+    while True:
+        try:
+            detect_loop(candidates)
+        except Exception as e:  # noqa: BLE001 — anything from the model/runtime
+            print(f"detect: crashed ({e!r}) — restarting in 5s", flush=True)
+            time.sleep(5)
+
+
+def send_candidates(candidates):
+    """POST each pee/poop candidate to the API; it asks Claude and logs the verdict."""
+    api = None
+    while True:
+        cand = candidates.get()
+        if api is None:
+            if not (API_URL and os.path.exists(TOKEN_FILE)):
+                print("watch: candidate dropped — camera not paired", flush=True)
+                continue
+            with open(TOKEN_FILE) as f:
+                api = Api(API_URL, f.read().strip())
+        try:
+            status, body = api.call("POST", "/ingest/cam/candidate", json.dumps(cand).encode())
+            print(f"watch: still {cand['stillSeconds']}s → {status} {body.get('label', body.get('error', ''))}"
+                  f" {body.get('confidence', '')} {'(logged)' if body.get('logged') else ''}", flush=True)
+            if status == 401:
+                api = None  # re-read the token next time (re-paired?)
+        except (OSError, http.client.HTTPException) as e:
+            print(f"watch: candidate failed ({e!r})", flush=True)
+
+
 def claim(code):
     """Trade a Family-page pairing code for this camera's device token."""
     if not API_URL:
@@ -263,6 +329,10 @@ def main():
     print(f"birucam: http://{socket.gethostname()}.local:{PORT}/  ({WIDTH}x{HEIGHT} @ {FPS} fps)", flush=True)
     if API_URL:
         threading.Thread(target=relay, daemon=True).start()
+    if DETECT:
+        candidates = queue.Queue()  # ≤ watch.MAX_PER_HOUR an hour, so unbounded is fine
+        threading.Thread(target=detector, args=(candidates,), daemon=True).start()
+        threading.Thread(target=send_candidates, args=(candidates,), daemon=True).start()
     try:
         StreamServer(("", PORT), Handler).serve_forever()
     finally:

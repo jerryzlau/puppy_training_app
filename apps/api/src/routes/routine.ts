@@ -10,8 +10,9 @@ import {
   type RoutinePatternDto,
 } from "@biru/shared";
 import { requireMember } from "../auth.js";
-import { db } from "../supabase.js";
+import { db, PHOTO_BUCKET, SIGNED_URL_TTL } from "../supabase.js";
 import { publish } from "../events.js";
+import { friendHouseholdIds } from "../friendships.js";
 
 const PATTERN_DAYS = 21;
 const MAX_ITEMS_PER_DAY = 40;
@@ -25,7 +26,13 @@ interface Row {
   happened_at: string;
   created_by: string;
   device_id?: string | null;
+  confirmed?: boolean;
+  snapshot_path?: string | null;
+  confidence?: number | null;
 }
+
+export const ROUTINE_COLS =
+  "id, day, kind, kind_key, note, happened_at, created_by, device_id, confirmed, snapshot_path, confidence";
 
 async function membersMap(householdId: string): Promise<Map<string, string>> {
   const { data } = await db
@@ -35,7 +42,7 @@ async function membersMap(householdId: string): Promise<Map<string, string>> {
   return new Map((data ?? []).map((m) => [m.user_id, m.display_name]));
 }
 
-const toDto = (r: Row, names: Map<string, string>): RoutineItemDto => ({
+const toDto = (r: Row, names: Map<string, string>, urls: Map<string, string>): RoutineItemDto => ({
   id: r.id,
   day: r.day,
   kind: r.kind,
@@ -44,7 +51,22 @@ const toDto = (r: Row, names: Map<string, string>): RoutineItemDto => ({
   createdBy: r.created_by,
   viaDevice: Boolean(r.device_id),
   createdByName: names.get(r.created_by) ?? "someone",
+  confirmed: r.confirmed ?? true,
+  snapshotUrl: r.snapshot_path ? (urls.get(r.snapshot_path) ?? null) : null,
+  confidence: r.confidence ?? null,
 });
+
+/** Rows → DTOs, with member names and signed snapshot URLs (the bucket is private). */
+export async function routineDtos(rows: Row[], householdId: string): Promise<RoutineItemDto[]> {
+  const paths = rows.map((r) => r.snapshot_path).filter((p): p is string => Boolean(p));
+  const [names, signed] = await Promise.all([
+    membersMap(householdId),
+    paths.length ? db.storage.from(PHOTO_BUCKET).createSignedUrls(paths, SIGNED_URL_TTL) : Promise.resolve({ data: [] }),
+  ]);
+  const urls = new Map<string, string>();
+  for (const s of signed.data ?? []) if (s.path && s.signedUrl) urls.set(s.path, s.signedUrl);
+  return rows.map((r) => toDto(r, names, urls));
+}
 
 export function routineRoutes(app: FastifyInstance) {
   /** One day's items, earliest first. */
@@ -57,13 +79,12 @@ export function routineRoutes(app: FastifyInstance) {
     }
     const { data, error } = await db
       .from("routine_items")
-      .select("id, day, kind, kind_key, note, happened_at, created_by, device_id")
+      .select(ROUTINE_COLS)
       .eq("household_id", caller.householdId)
       .eq("day", q.day)
       .order("happened_at", { ascending: true });
     if (error) return reply.code(500).send({ error: error.message });
-    const names = await membersMap(caller.householdId);
-    return reply.send({ day: q.day, items: (data ?? []).map((r) => toDto(r as Row, names)) });
+    return reply.send({ day: q.day, items: await routineDtos((data ?? []) as Row[], caller.householdId) });
   });
 
   /** Per-day activity for one month — feeds the history calendar. */
@@ -80,6 +101,7 @@ export function routineRoutes(app: FastifyInstance) {
       .from("routine_items")
       .select("day, kind")
       .eq("household_id", caller.householdId)
+      .eq("confirmed", true)
       .gte("day", `${q.month}-01`)
       .lt("day", next);
     if (error) return reply.code(500).send({ error: error.message });
@@ -107,6 +129,7 @@ export function routineRoutes(app: FastifyInstance) {
       .from("routine_items")
       .select("kind_key, happened_at")
       .eq("household_id", caller.householdId)
+      .eq("confirmed", true) // a camera guess waits for ✓ before it shapes the forecast
       .or("kind_key.ilike.%pee%,kind_key.ilike.%poop%")
       .gte("happened_at", since)
       .order("happened_at", { ascending: true });
@@ -128,6 +151,7 @@ export function routineRoutes(app: FastifyInstance) {
       .from("routine_items")
       .select("kind, kind_key, happened_at")
       .eq("household_id", caller.householdId)
+      .eq("confirmed", true)
       .order("happened_at", { ascending: false })
       .limit(1000);
     if (error) return reply.code(500).send({ error: error.message });
@@ -159,6 +183,7 @@ export function routineRoutes(app: FastifyInstance) {
       .from("routine_items")
       .select("kind, kind_key, happened_at")
       .eq("household_id", caller.householdId)
+      .eq("confirmed", true)
       .gte("day", since)
       .order("happened_at", { ascending: false });
     if (error) return reply.code(500).send({ error: error.message });
@@ -204,11 +229,10 @@ export function routineRoutes(app: FastifyInstance) {
         happened_at: happenedAt,
         created_by: caller.userId,
       })
-      .select("id, day, kind, kind_key, note, happened_at, created_by, device_id")
+      .select(ROUTINE_COLS)
       .single();
     if (error || !data) return reply.code(500).send({ error: error?.message ?? "insert failed" });
-    const names = await membersMap(caller.householdId);
-    const item = toDto(data as Row, names);
+    const [item] = await routineDtos([data as Row], caller.householdId);
     publish(caller.householdId, { type: "routine.added", item, source: "member" });
     return reply.code(201).send(item);
   });
@@ -234,14 +258,35 @@ export function routineRoutes(app: FastifyInstance) {
       .update(patch)
       .eq("id", id)
       .eq("household_id", caller.householdId)
-      .select("id, day, kind, kind_key, note, happened_at, created_by, device_id")
+      .select(ROUTINE_COLS)
       .maybeSingle();
     if (error) return reply.code(500).send({ error: error.message });
     if (!data) return reply.code(404).send({ error: "not found" });
-    const names = await membersMap(caller.householdId);
-    const item = toDto(data as Row, names);
+    const [item] = await routineDtos([data as Row], caller.householdId);
     publish(caller.householdId, { type: "routine.updated", item });
     return reply.send(item);
+  });
+
+  // ✓ on a camera-detected entry: it now counts everywhere, and friends' bells ring.
+  app.post("/routine/:id/confirm", async (req, reply) => {
+    const caller = await requireMember(req, reply);
+    if (!caller) return;
+    const { id } = req.params as { id: string };
+    const { data, error } = await db
+      .from("routine_items")
+      .update({ confirmed: true })
+      .eq("id", id)
+      .eq("household_id", caller.householdId)
+      .select(ROUTINE_COLS)
+      .maybeSingle();
+    if (error) return reply.code(500).send({ error: error.message });
+    if (!data) return reply.code(404).send({ error: "not found" });
+    const [item] = await routineDtos([data as Row], caller.householdId);
+    reply.send(item);
+    publish(caller.householdId, { type: "routine.updated", item });
+    if (/pee|poop/.test((data as Row).kind_key))
+      for (const h of await friendHouseholdIds(caller.householdId))
+        publish(h, { type: "bulletin", householdId: caller.householdId, kind: item.kind, happenedAt: item.happenedAt });
   });
 
   app.delete("/routine/:id", async (req, reply) => {
@@ -253,9 +298,10 @@ export function routineRoutes(app: FastifyInstance) {
       .delete()
       .eq("id", id)
       .eq("household_id", caller.householdId)
-      .select("id, day")
+      .select("id, day, snapshot_path")
       .maybeSingle();
     if (error) return reply.code(500).send({ error: error.message });
+    if (data?.snapshot_path) void db.storage.from(PHOTO_BUCKET).remove([data.snapshot_path]).then(() => {});
     if (data) publish(caller.householdId, { type: "routine.removed", id: data.id, day: data.day });
     return reply.send({ ok: true });
   });

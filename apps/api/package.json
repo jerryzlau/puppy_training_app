@@ -10,6 +10,7 @@
     "test": "echo 'no api unit tests (logic lives in @biru/shared)'"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.135.0",
     "@biru/shared": "workspace:*",
     "@fastify/cors": "^10.0.1",
     "@supabase/supabase-js": "^2.45.4",

@@ -8,7 +8,8 @@ Wants=network-online.target
 User=@USER@
 Group=video
 EnvironmentFile=-/etc/default/birucam
-ExecStart=/usr/bin/python3 /opt/birucam/stream.py
+# venv with system site-packages: apt's picamera2 + pip's ncnn
+ExecStart=/opt/birucam/venv/bin/python /opt/birucam/stream.py
 Restart=always
 RestartSec=3
 

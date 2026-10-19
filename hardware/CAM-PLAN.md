@@ -5,6 +5,8 @@ the book by itself — the same `routine_items` row a button press makes, plus a
 snapshot, marked **unconfirmed** until someone taps ✓ in the app.
 
 Companion to [PLAN.md](PLAN.md) (the buttons). Plan only; nothing built yet.
+Live object detection on the Pi (the dog gate, shown as boxes on the 📷 live
+tab): [VISION-PLAN.md](VISION-PLAN.md).
 
 ---
 
