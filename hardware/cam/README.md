@@ -39,7 +39,9 @@ systemd unit (starts on boot, restarts on crash) and writes settings to
 The Routine page's **📷 live** tab shows this camera to logged-in household
 members, from anywhere. The Pi relays frames through the Biru API on
 Railway, outbound only. It long-polls `GET /ingest/cam/wait` and POSTs JPEGs to
-`/ingest/cam/frame` at `BIRUCAM_RELAY_FPS` (default 5), **only while
+`/ingest/cam/frame` at `BIRUCAM_RELAY_FPS` (default 10), with
+`BIRUCAM_RELAY_IN_FLIGHT` (default 3) uploads in parallel so a far-away API
+doesn't cap the rate at one frame per round trip. It does this **only while
 someone has the tab open**. Nothing is recorded.
 
 Pair it once:

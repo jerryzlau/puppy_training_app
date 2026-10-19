@@ -18,7 +18,7 @@ POSTs frames to it only while a household member has the 📷 live tab open
 
 Settings come from the environment (the service reads /etc/default/birucam):
 BIRUCAM_PORT, BIRUCAM_WIDTH, BIRUCAM_HEIGHT, BIRUCAM_FPS, BIRUCAM_ROTATE (0|180),
-BIRUCAM_API_URL, BIRUCAM_RELAY_FPS, BIRUCAM_TOKEN_FILE.
+BIRUCAM_API_URL, BIRUCAM_RELAY_FPS, BIRUCAM_RELAY_IN_FLIGHT, BIRUCAM_TOKEN_FILE.
 The default size is 16:9 so the Wide module keeps its full 120° view —
 a 4:3 size would crop the sides.
 """
@@ -49,7 +49,8 @@ HEIGHT = int(os.environ.get("BIRUCAM_HEIGHT", 432))
 FPS = int(os.environ.get("BIRUCAM_FPS", 10))
 ROTATE = int(os.environ.get("BIRUCAM_ROTATE", 0))  # the ISP flips only; 90° isn't possible here
 API_URL = os.environ.get("BIRUCAM_API_URL", "")  # empty: LAN stream only, no relay
-RELAY_FPS = float(os.environ.get("BIRUCAM_RELAY_FPS", 5))
+RELAY_FPS = float(os.environ.get("BIRUCAM_RELAY_FPS", 10))
+RELAY_IN_FLIGHT = int(os.environ.get("BIRUCAM_RELAY_IN_FLIGHT", 3))  # parallel frame uploads
 TOKEN_FILE = os.environ.get("BIRUCAM_TOKEN_FILE", "/var/lib/birucam/device_token")
 
 PAGE = f"""<!doctype html><html><head><meta charset="utf-8">
@@ -133,10 +134,11 @@ class Api:
         self.token = token
         self.conn = None
 
-    def call(self, method, path, body=None, ctype="application/json"):
+    def call(self, method, path, body=None, ctype="application/json", extra=None):
         if self.conn is None:
             self.conn = self.cls(self.host, self.port, timeout=40)  # > the API's 25 s long-poll
         headers = {"Content-Type": ctype} if body is not None else {}
+        headers.update(extra or {})
         if self.token:
             headers["Authorization"] = f"Device {self.token}"
         try:
@@ -153,12 +155,57 @@ class Api:
             return res.status, {}
 
 
+def send_frames(apis):
+    """POST the newest frame at RELAY_FPS until nobody watches.
+
+    One request at a time caps the rate at 1 / round-trip (≈4 fps to a far
+    region), so each connection in `apis` keeps a frame in flight. Frames are
+    numbered per session; the API drops one that arrives after a newer one.
+    """
+    lock = threading.Lock()
+    stop = threading.Event()
+    state = {"next": time.monotonic(), "seq": 0, "last": None}
+    session = os.urandom(6).hex()
+
+    def sender(api):
+        try:
+            while not stop.is_set():
+                with lock:  # hand out evenly spaced send slots across the senders
+                    slot = max(time.monotonic(), state["next"])
+                    state["next"] = slot + 1 / RELAY_FPS
+                time.sleep(max(0.0, slot - time.monotonic()))
+                with frames.cond:
+                    frames.cond.wait_for(lambda: frames.frame is not None, timeout=5)
+                    frame = frames.frame
+                with lock:
+                    if frame is None or frame is state["last"]:
+                        continue  # the camera hasn't produced a new frame yet
+                    state["last"] = frame
+                    state["seq"] += 1
+                    seq = state["seq"]
+                status, body = api.call("POST", "/ingest/cam/frame", frame, "image/jpeg",
+                                        {"X-Frame-Session": session, "X-Frame-Seq": str(seq)})
+                if status != 200 or not body.get("watching"):
+                    stop.set()
+        except (OSError, http.client.HTTPException) as e:
+            print(f"relay: {e!r}", flush=True)
+            stop.set()
+
+    threads = [threading.Thread(target=sender, args=(a,), daemon=True) for a in apis]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+
+
 def relay():
     """Long-poll the API; while someone watches, POST the newest frame at RELAY_FPS."""
     while not os.path.exists(TOKEN_FILE):
         time.sleep(10)  # not paired yet — `stream.py claim <code>` writes the token
     with open(TOKEN_FILE) as f:
-        api = Api(API_URL, f.read().strip())
+        token = f.read().strip()
+    api = Api(API_URL, token)
+    senders = [Api(API_URL, token) for _ in range(RELAY_IN_FLIGHT)]
     print(f"relay: paired, waiting for viewers on {API_URL}", flush=True)
     backoff = 2
     while True:
@@ -172,19 +219,7 @@ def relay():
             if not body.get("watching"):
                 continue
             print("relay: someone's watching — sending", flush=True)
-            last = None
-            while True:
-                started = time.monotonic()
-                with frames.cond:
-                    frames.cond.wait_for(lambda: frames.frame is not last, timeout=5)
-                    frame = frames.frame
-                if frame is None or frame is last:
-                    continue
-                last = frame
-                status, body = api.call("POST", "/ingest/cam/frame", frame, "image/jpeg")
-                if status != 200 or not body.get("watching"):
-                    break
-                time.sleep(max(0.0, 1 / RELAY_FPS - (time.monotonic() - started)))
+            send_frames(senders)
             print("relay: nobody watching — idle", flush=True)
         except (OSError, http.client.HTTPException) as e:
             print(f"relay: {e!r} — retrying in {backoff}s", flush=True)

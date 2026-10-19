@@ -25,7 +25,7 @@ fi
 grep -q '^BIRUCAM_API_URL=' /etc/default/birucam ||
   echo 'BIRUCAM_API_URL=https://api-production-3d76.up.railway.app' | sudo tee -a /etc/default/birucam >/dev/null
 grep -q '^BIRUCAM_RELAY_FPS=' /etc/default/birucam ||
-  echo 'BIRUCAM_RELAY_FPS=5' | sudo tee -a /etc/default/birucam >/dev/null
+  echo 'BIRUCAM_RELAY_FPS=10' | sudo tee -a /etc/default/birucam >/dev/null
 sudo systemctl daemon-reload
 sudo systemctl enable --now birucam
 sudo systemctl restart birucam

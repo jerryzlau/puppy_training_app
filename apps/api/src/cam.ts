@@ -27,12 +27,15 @@ interface Cam {
   frame: Buffer | null;
   frameAt: number;
   seenAt: number;
+  /** The Pi uploads several frames at once; drop one that lands after a newer one. */
+  session: string;
+  seq: number;
 }
 const cams = new Map<string, Cam>();
 
 function cam(id: string): Cam {
   let c = cams.get(id);
-  if (!c) cams.set(id, (c = { viewers: new Set(), waiters: new Set(), frame: null, frameAt: 0, seenAt: 0 }));
+  if (!c) cams.set(id, (c = { viewers: new Set(), waiters: new Set(), frame: null, frameAt: 0, seenAt: 0, session: "", seq: 0 }));
   return c;
 }
 
@@ -95,6 +98,11 @@ export function camRoutes(app: FastifyInstance) {
     if (!Buffer.isBuffer(frame) || frame.length < 4 || frame[0] !== 0xff || frame[1] !== 0xd8)
       return reply.code(400).send({ error: "expected one image/jpeg frame" });
     const c = cam(device.id);
+    const session = String(req.headers["x-frame-session"] ?? "");
+    const seq = Number(req.headers["x-frame-seq"] ?? 0);
+    if (session && session === c.session && seq <= c.seq) return reply.send({ watching: c.viewers.size > 0 });
+    c.session = session;
+    c.seq = seq;
     c.frame = frame;
     c.frameAt = Date.now();
     for (const res of c.viewers) if (res.writableLength < SLOW_VIEWER_BYTES) writeFrame(res, frame);
