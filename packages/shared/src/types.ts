@@ -236,7 +236,28 @@ export const CamCandidateSchema = z.object({
   stillSeconds: z.number().min(0).max(600),
   crops: z.array(z.string().min(100).max(400_000)).min(1).max(6),
   snapshot: z.string().min(100).max(600_000),
+  /** a visit to the marked pee pad (not just a still spell somewhere) */
+  onPad: z.boolean().optional(),
+  visitSeconds: z.number().min(0).max(3600).optional(),
+  /** the pad just before the dog stepped on, and just after it left */
+  padBefore: z.string().min(100).max(400_000).optional(),
+  padAfter: z.string().min(100).max(400_000).optional(),
+  /** share of the pad that looks different afterwards, 0–1 (the Pi's pixel diff) */
+  padChange: z.number().min(0).max(1).optional(),
 });
+
+/** Where the pee pad sits in the camera's picture, as fractions of the frame (0–1). */
+export const CamPadSchema = z
+  .object({
+    x: z.number().min(0).max(1),
+    y: z.number().min(0).max(1),
+    w: z.number().min(0.02).max(1),
+    h: z.number().min(0.02).max(1),
+  })
+  .refine((p) => p.x + p.w <= 1.001 && p.y + p.h <= 1.001, "pad must fit inside the frame");
+export type CamPad = z.infer<typeof CamPadSchema>;
+
+export const SetCamPadSchema = z.object({ pad: CamPadSchema.nullable() });
 export type CamCandidateInput = z.infer<typeof CamCandidateSchema>;
 
 /** What a device is: a button pad logs presses, a camera streams a live view (CAM-PLAN.md). */
@@ -285,6 +306,8 @@ export interface DeviceDto {
   claimedAt: string | null;
   lastSeenAt: string | null;
   createdAt: string;
+  /** cameras only: the marked pee pad, or null */
+  pad?: CamPad | null;
 }
 
 /* ── live events (SSE from GET /events) ──────────────────────────────────── */

@@ -26,7 +26,7 @@ const FRESH_MS = 2_000; // a new viewer gets the last frame at once if it's this
 const SLOW_VIEWER_BYTES = 1024 * 1024; // skip frames for a viewer this far behind
 const SEEN_EVERY_MS = 30_000;
 
-// pee/poop detection (CAM-PLAN.md §4): the Pi sends still spells, Claude judges
+// pee/poop detection (CAM-PLAN.md §4): the Pi sends pad visits and still spells, Claude judges
 const MIN_CONFIDENCE = 0.6; // below this a "pee"/"poop" verdict isn't logged
 const SAME_EVENT_MS = 2 * 60_000; // same kind already in the book this close → same event
 const MAX_CANDIDATES_PER_HOUR = 60;
@@ -111,7 +111,7 @@ export function camRoutes(app: FastifyInstance) {
     const device = await requireCamera(req, reply);
     if (!device) return;
     const c = cam(device.id);
-    if (c.viewers.size) return reply.send({ watching: true });
+    if (c.viewers.size) return reply.send({ watching: true, pad: device.pad });
     const watching = await new Promise<boolean>((resolve) => {
       const wake = () => finish(true);
       const timer = setTimeout(() => finish(false), WAIT_MS);
@@ -123,7 +123,7 @@ export function camRoutes(app: FastifyInstance) {
       c.waiters.add(wake);
       reply.raw.on("close", () => finish(false)); // the Pi went away mid-poll
     });
-    return reply.send({ watching });
+    return reply.send({ watching, pad: device.pad });
   });
 
   app.post("/ingest/cam/frame", async (req, reply) => {
@@ -135,14 +135,16 @@ export function camRoutes(app: FastifyInstance) {
     const c = cam(device.id);
     const session = String(req.headers["x-frame-session"] ?? "");
     const seq = Number(req.headers["x-frame-seq"] ?? 0);
-    if (session && session === c.session && seq <= c.seq) return reply.send({ watching: c.viewers.size > 0 });
+    if (session && session === c.session && seq <= c.seq)
+      return reply.send({ watching: c.viewers.size > 0, pad: device.pad });
     c.session = session;
     c.seq = seq;
     c.frame = frame;
     c.boxes = parseBoxes(req.headers["x-detections"]);
     c.frameAt = Date.now();
     for (const res of c.viewers) if (res.writableLength < SLOW_VIEWER_BYTES) writeFrame(res, frame, c.boxes);
-    return reply.send({ watching: c.viewers.size > 0 });
+    // the pad rides along so a fresh mark on the live tab reaches the Pi within a frame
+    return reply.send({ watching: c.viewers.size > 0, pad: device.pad });
   });
 
   // A still spell from the Pi → "pee, poop, or neither?" → maybe an unconfirmed entry.
@@ -157,59 +159,72 @@ export function camRoutes(app: FastifyInstance) {
     candidateTimes.set(device.id, [...recent, now]);
     if (!classifierReady()) return reply.code(503).send({ error: "classifier not configured (ANTHROPIC_API_KEY)" });
 
+    const cand = parsed.data;
+    const padEvidence = cand.onPad && cand.padBefore && cand.padAfter ? { before: cand.padBefore, after: cand.padAfter } : undefined;
     let verdict;
     try {
-      verdict = await classifyStrip(parsed.data.crops);
+      verdict = await classifyStrip(cand.crops, padEvidence);
     } catch (err) {
       req.log.error({ err }, "cam classify failed");
       return reply.code(502).send({ error: "classifier unavailable" });
     }
-    req.log.info({ device: device.id, verdict, still: parsed.data.stillSeconds }, "cam verdict");
+    req.log.info(
+      { device: device.id, verdict, still: cand.stillSeconds, onPad: cand.onPad ?? false, padChange: cand.padChange },
+      "cam verdict"
+    );
     if (!verdict || verdict.label === "neither" || verdict.confidence < MIN_CONFIDENCE)
       return reply.send({ label: verdict?.label ?? "unknown", confidence: verdict?.confidence ?? null, logged: false });
 
     // when the dog settled, if the Pi's clock is plausible
-    let happened = new Date(parsed.data.startedAt * 1000);
+    let happened = new Date(cand.startedAt * 1000);
     if (Math.abs(now - happened.getTime()) > 10 * 60_000) happened = new Date(now);
-    const label = DEVICE_KIND_LABEL[verdict.label];
-    const { data: dupe } = await db
-      .from("routine_items")
-      .select("id")
-      .eq("household_id", device.household_id)
-      .eq("kind_key", routineKindKey(label))
-      .gte("happened_at", new Date(happened.getTime() - SAME_EVENT_MS).toISOString())
-      .lte("happened_at", new Date(happened.getTime() + SAME_EVENT_MS).toISOString())
-      .limit(1)
-      .maybeSingle();
-    if (dupe) return reply.send({ ...verdict, logged: false, duplicate: true });
+    const kinds = verdict.label === "both" ? (["pee", "poop"] as const) : ([verdict.label] as const);
+    const logged: string[] = [];
+    for (const kind of kinds) {
+      const label = DEVICE_KIND_LABEL[kind];
+      const { data: dupe } = await db
+        .from("routine_items")
+        .select("id")
+        .eq("household_id", device.household_id)
+        .eq("kind_key", routineKindKey(label))
+        .gte("happened_at", new Date(happened.getTime() - SAME_EVENT_MS).toISOString())
+        .lte("happened_at", new Date(happened.getTime() + SAME_EVENT_MS).toISOString())
+        .limit(1)
+        .maybeSingle();
+      if (dupe) continue;
 
-    const id = crypto.randomUUID();
-    const path = `${device.household_id}/routine/${id}.jpg`;
-    const { error: upErr } = await db.storage
-      .from(PHOTO_BUCKET)
-      .upload(path, Buffer.from(parsed.data.snapshot, "base64"), { contentType: "image/jpeg" });
-    const { data: row, error } = await db
-      .from("routine_items")
-      .insert({
-        id,
-        household_id: device.household_id,
-        day: localDay(happened, HOUSEHOLD_TZ),
-        kind: label,
-        kind_key: routineKindKey(label),
-        note: verdict.posture.slice(0, 200),
-        happened_at: happened.toISOString(),
-        created_by: device.created_by,
-        device_id: device.id,
-        confirmed: false,
-        snapshot_path: upErr ? null : path,
-        confidence: verdict.confidence,
-      })
-      .select(ROUTINE_COLS)
-      .single();
-    if (error || !row) return reply.code(500).send({ error: error?.message ?? "insert failed" });
-    const [item] = await routineDtos([row], device.household_id);
-    publish(device.household_id, { type: "routine.added", item, source: "camera" });
-    return reply.code(201).send({ ...verdict, logged: true, id });
+      const id = crypto.randomUUID();
+      const path = `${device.household_id}/routine/${id}.jpg`;
+      // a pad visit's best photo is the pad afterwards — that's what a member checks before ✓
+      const photo = padEvidence && cand.padChange && cand.padChange > 0 ? padEvidence.after : cand.snapshot;
+      const { error: upErr } = await db.storage
+        .from(PHOTO_BUCKET)
+        .upload(path, Buffer.from(photo, "base64"), { contentType: "image/jpeg" });
+      const { data: row, error } = await db
+        .from("routine_items")
+        .insert({
+          id,
+          household_id: device.household_id,
+          day: localDay(happened, HOUSEHOLD_TZ),
+          kind: label,
+          kind_key: routineKindKey(label),
+          note: `${cand.onPad ? "on the pad · " : ""}${verdict.posture}`.slice(0, 200),
+          happened_at: happened.toISOString(),
+          created_by: device.created_by,
+          device_id: device.id,
+          confirmed: false,
+          snapshot_path: upErr ? null : path,
+          confidence: verdict.confidence,
+        })
+        .select(ROUTINE_COLS)
+        .single();
+      if (error || !row) return reply.code(500).send({ error: error?.message ?? "insert failed" });
+      const [item] = await routineDtos([row], device.household_id);
+      publish(device.household_id, { type: "routine.added", item, source: "camera" });
+      logged.push(id);
+    }
+    if (!logged.length) return reply.send({ ...verdict, logged: false, duplicate: true });
+    return reply.code(201).send({ ...verdict, logged: true, ids: logged });
   });
 
   app.get("/cam/:id/stream", async (req, reply) => {

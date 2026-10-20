@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import {
   CreateDeviceSchema,
   ClaimDeviceSchema,
+  SetCamPadSchema,
   IngestRoutineSchema,
   DEVICE_KIND_LABEL,
   routineKindKey,
@@ -11,6 +12,7 @@ import {
   type DeviceDto,
   type DeviceTodayDto,
   type DeviceType,
+  type CamPad,
 } from "@biru/shared";
 import { requireMember } from "../auth.js";
 import { db } from "../supabase.js";
@@ -43,10 +45,13 @@ export interface DeviceRow {
   last_seen_at: string | null;
   revoked_at: string | null;
   created_at: string;
+  pad: CamPad | null;
 }
 
 const DEVICE_COLS =
-  "id, household_id, name, type, claim_code, claim_expires_at, claimed_at, created_by, last_seen_at, revoked_at, created_at";
+  "id, household_id, name, type, claim_code, claim_expires_at, claimed_at, created_by, last_seen_at, revoked_at, created_at, pad";
+
+const round4 = (v: number) => Math.round(v * 1e4) / 1e4;
 
 const hashToken = (token: string) => crypto.createHash("sha256").update(token).digest("hex");
 
@@ -68,6 +73,7 @@ const toDto = (r: DeviceRow): DeviceDto => {
     claimedAt: r.claimed_at,
     lastSeenAt: r.last_seen_at,
     createdAt: r.created_at,
+    ...(r.type === "camera" ? { pad: r.pad } : {}),
   };
 };
 
@@ -164,6 +170,34 @@ export function deviceRoutes(app: FastifyInstance) {
       .eq("household_id", caller.householdId);
     if (error) return reply.code(500).send({ error: error.message });
     return reply.send({ ok: true });
+  });
+
+  // Mark (or clear) where the pee pad is in a camera's picture. The Pi picks
+  // it up from its next relay reply (cam.ts), within ~25 s.
+  app.put("/devices/:id/pad", async (req, reply) => {
+    const caller = await requireMember(req, reply);
+    if (!caller) return;
+    const { id } = req.params as { id: string };
+    const parsed = SetCamPadSchema.safeParse(req.body);
+    if (!parsed.success) return reply.code(400).send({ error: parsed.error.flatten() });
+    const pad = parsed.data.pad && {
+      x: round4(parsed.data.pad.x),
+      y: round4(parsed.data.pad.y),
+      w: round4(parsed.data.pad.w),
+      h: round4(parsed.data.pad.h),
+    };
+    const { data, error } = await db
+      .from("devices")
+      .update({ pad })
+      .eq("id", id)
+      .eq("household_id", caller.householdId)
+      .eq("type", "camera")
+      .is("revoked_at", null)
+      .select(DEVICE_COLS)
+      .maybeSingle();
+    if (error) return reply.code(500).send({ error: error.message });
+    if (!data) return reply.code(404).send({ error: "no such camera" });
+    return reply.send(toDto(data as DeviceRow));
   });
 
   // Public, code-gated: the device trades a one-time claim code for its token.

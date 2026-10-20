@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { CamPad, DeviceDto } from "@biru/shared";
 import { supabase } from "@/lib/supabase";
+import { api } from "@/lib/api";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 const OFFLINE_MS = 10_000;
@@ -25,6 +27,8 @@ const BOX_STYLE: Record<CamBox["cls"], { color: string; label: string }> = {
   cat: { color: "#B57BFF", label: "🐱 cat" },
 };
 const BOXES_PREF = "biru.cam.boxes";
+const PAD_COLOR = "#3FB37F";
+const MIN_PAD = 0.03; // a drag smaller than this (fraction of the frame) is a stray tap
 
 const enc = new TextEncoder();
 const HEADER_END = enc.encode("\r\n\r\n");
@@ -81,8 +85,65 @@ async function readFrames(body: ReadableStream<Uint8Array>, onFrame: (jpeg: Blob
 /**
  * The live view from a Biru Cam, relayed through the API. The Pi only sends
  * frames while this is open, so it disconnects whenever the tab is hidden.
+ *
+ * It's also where the pee pad gets marked: drag a box around it on the
+ * picture. The Pi watches visits to that spot (hardware/cam/watch.py).
  */
-export function CamLive({ deviceId }: { deviceId: string }) {
+export function CamLive({
+  deviceId,
+  pad,
+  onPadSaved,
+}: {
+  deviceId: string;
+  pad: CamPad | null;
+  onPadSaved: (device: DeviceDto) => void;
+}) {
+  const [marking, setMarking] = useState(false);
+  const [draft, setDraft] = useState<CamPad | null>(null);
+  const [padBusy, setPadBusy] = useState(false);
+  const [padError, setPadError] = useState<string | null>(null);
+  const dragFrom = useRef<{ x: number; y: number } | null>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
+
+  function pointAt(e: React.PointerEvent) {
+    const r = frameRef.current!.getBoundingClientRect();
+    const clamp = (v: number) => Math.min(1, Math.max(0, v));
+    return { x: clamp((e.clientX - r.left) / r.width), y: clamp((e.clientY - r.top) / r.height) };
+  }
+  function onPadDown(e: React.PointerEvent) {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    dragFrom.current = pointAt(e);
+    setDraft(null);
+  }
+  function onPadMove(e: React.PointerEvent) {
+    const from = dragFrom.current;
+    if (!from) return;
+    const to = pointAt(e);
+    setDraft({
+      x: Math.min(from.x, to.x),
+      y: Math.min(from.y, to.y),
+      w: Math.abs(to.x - from.x),
+      h: Math.abs(to.y - from.y),
+    });
+  }
+  function onPadUp() {
+    dragFrom.current = null;
+    setDraft((d) => (d && d.w >= MIN_PAD && d.h >= MIN_PAD ? d : null));
+  }
+  async function savePad(next: CamPad | null) {
+    setPadBusy(true);
+    setPadError(null);
+    try {
+      onPadSaved(await api<DeviceDto>(`/devices/${deviceId}/pad`, { method: "PUT", body: { pad: next } }));
+      setMarking(false);
+      setDraft(null);
+    } catch (e) {
+      setPadError(e instanceof Error ? e.message : "couldn't save the pad");
+    } finally {
+      setPadBusy(false);
+    }
+  }
+
   const [src, setSrc] = useState<string | null>(null);
   const [boxes, setBoxes] = useState<CamBox[]>([]);
   const [showBoxes, setShowBoxes] = useState(true);
@@ -171,7 +232,7 @@ export function CamLive({ deviceId }: { deviceId: string }) {
 
   return (
     <div className="mt-3 rounded-lg border-2 border-ink bg-white shadow-sketchSoft overflow-hidden md:max-w-[640px]">
-      <div className="relative aspect-video bg-ink/90">
+      <div ref={frameRef} className="relative aspect-video bg-ink/90 select-none">
         {src && (
           // eslint-disable-next-line @next/next/no-img-element -- blob: frames, not an optimisable image
           <img src={src} alt="live view from the camera" className="w-full h-full object-contain" />
@@ -204,17 +265,77 @@ export function CamLive({ deviceId }: { deviceId: string }) {
               </div>
             );
           })}
-        {status !== "live" && (
+        {(marking ? draft : showBoxes ? pad : null) && (
+          <PadOutline pad={(marking ? draft : pad)!} label={marking ? "🧻 pee pad?" : "🧻 pee pad"} />
+        )}
+        {marking && (
+          <div
+            className="absolute inset-0 cursor-crosshair touch-none"
+            onPointerDown={onPadDown}
+            onPointerMove={onPadMove}
+            onPointerUp={onPadUp}
+            onPointerCancel={onPadUp}
+          >
+            {!draft && (
+              <span className="absolute top-2 left-1/2 -translate-x-1/2 rounded bg-ink/70 px-2 py-1 text-[12px] font-bold text-cream">
+                drag a box around the pee pad
+              </span>
+            )}
+          </div>
+        )}
+        {status !== "live" && !marking && (
           <div className="absolute inset-0 flex items-center justify-center text-cream text-sm font-bold">
             {status === "connecting" ? "waking the camera…" : "camera offline — is it plugged in?"}
           </div>
         )}
       </div>
-      <div className="flex items-center justify-between px-3 py-2 text-[11px] font-bold">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-[11px] font-bold">
         <span className={status === "live" ? "text-accent" : "text-inkFaint"}>
           {status === "live" ? "● live" : status === "offline" ? "○ offline" : "○ connecting"}
         </span>
-        <span className="flex items-center gap-3">
+        <span className="flex flex-wrap items-center gap-2">
+          {marking ? (
+            <>
+              {pad && (
+                <button
+                  type="button"
+                  disabled={padBusy}
+                  onClick={() => savePad(null)}
+                  className="min-h-[32px] px-2 rounded border border-ruled text-inkFaint"
+                >
+                  remove pad
+                </button>
+              )}
+              <button
+                type="button"
+                disabled={padBusy}
+                onClick={() => {
+                  setMarking(false);
+                  setDraft(null);
+                  setPadError(null);
+                }}
+                className="min-h-[32px] px-2 rounded border border-ruled text-inkFaint"
+              >
+                cancel
+              </button>
+              <button
+                type="button"
+                disabled={!draft || padBusy}
+                onClick={() => draft && savePad(draft)}
+                className="min-h-[32px] px-2 rounded border border-ink bg-ink text-cream disabled:opacity-40"
+              >
+                {padBusy ? "saving…" : "save pad"}
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setMarking(true)}
+              className="min-h-[32px] px-2 rounded border border-ink text-ink"
+            >
+              {pad ? "🧻 move pad" : "🧻 mark pee pad"}
+            </button>
+          )}
           <button
             type="button"
             onClick={toggleBoxes}
@@ -223,9 +344,39 @@ export function CamLive({ deviceId }: { deviceId: string }) {
           >
             {showBoxes ? "▣ boxes on" : "▢ boxes off"}
           </button>
-          <span className="text-inkFaint hidden sm:inline">only your household can see this · nothing is recorded</span>
         </span>
       </div>
+      <p className="px-3 pb-2 text-[11px] text-inkFaint">
+        {padError
+          ? `⚠ ${padError}`
+          : pad
+            ? "the camera watches Biru's visits to the pad and asks you to ✓ anything it thinks was a pee or poop · "
+            : "mark the pee pad so the camera can tell when Biru uses it · "}
+        only your household can see this · nothing is recorded
+      </p>
+    </div>
+  );
+}
+
+function PadOutline({ pad, label }: { pad: CamPad; label: string }) {
+  return (
+    <div
+      className="absolute rounded-sm pointer-events-none"
+      style={{
+        left: `${pad.x * 100}%`,
+        top: `${pad.y * 100}%`,
+        width: `${pad.w * 100}%`,
+        height: `${pad.h * 100}%`,
+        border: `2px dashed ${PAD_COLOR}`,
+        background: "rgba(63,179,127,.12)",
+      }}
+    >
+      <span
+        className="absolute left-0 top-0 whitespace-nowrap px-1.5 py-[1px] text-[11px] font-bold text-white rounded-sm"
+        style={{ background: PAD_COLOR }}
+      >
+        {label}
+      </span>
     </div>
   );
 }

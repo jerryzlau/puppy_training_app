@@ -64,13 +64,28 @@ sending" / "nobody watching — idle").
    On a Pi 5 that takes about 40 ms a pass on 2 cores, roughly 20% of one
    core in practice. It tracks dog/cat/person boxes, which `GET /detections`
    shows on the LAN.
-2. **`watch.py`** flags a **candidate** when a dog track holds still for
-   4.5 s. It sends 4 crops of the dog plus one full frame to
-   `POST /ingest/cam/candidate`, at most 30 an hour. The same still spell
-   never fires twice, so a sleeping puppy costs one call.
-3. **The API** asks Claude (`claude-haiku-5-5`) "pee, poop, or neither?". A
-   confident pee or poop becomes an **unconfirmed** routine entry with the
-   snapshot, shown in the app as "🐕 looks like a pee? ✓ / ✗". Pressing the
+2. **`watch.py`** flags **candidates**, at most 30 an hour, and sends them to
+   `POST /ingest/cam/candidate`. There are two kinds:
+   - **Pee-pad visits.** Mark the pad on the 📷 live tab ("🧻 mark pee pad",
+     drag a box around it). The Pi gets the box with its next relay reply.
+     - **Before:** while nothing covers the pad, the Pi keeps a fresh
+       picture of it.
+     - **The visit:** it runs from the dog's paws (the bottom of its box)
+       landing on the pad until they've been off it for 3 s.
+     - **After:** once the pad is clear again, the Pi photographs it and
+       measures how much changed. A new wet patch or lump shows up;
+       lighting shifts don't.
+     - **What's sent:** visits with a pause of at least 2 s, or with a
+       changed pad, go with 4 crops of the stillest stretch plus the pad
+       before and after. Quick walk-overs aren't sent.
+   - **Still spells off the pad** (accidents). A dog track holds still for
+     4.5 s, and 4 crops of the dog plus one full frame are sent. The same
+     still spell never fires twice, so a sleeping puppy costs one call.
+3. **The API** asks Claude (`claude-haiku-5-5`) "pee, poop, both, or
+   neither?". For pad visits it compares the pad before and after. A
+   confident answer becomes an **unconfirmed** routine entry (two for
+   "both") with a photo: the pad afterwards for pad visits, the dog
+   otherwise. The app shows it as "🐕 looks like a pee? ✓ / ✗". Pressing the
    matching Biru Button within a minute also counts as ✓. Unconfirmed
    entries stay out of the forecast, calendar, tally and friends' bells.
    The API needs `ANTHROPIC_API_KEY` set on Railway; without it, candidates

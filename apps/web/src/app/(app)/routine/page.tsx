@@ -275,7 +275,9 @@ export default function RoutinePage() {
 
       {view === "forecast" && <RoutineForecast />}
 
-      {view === "live" && camera && <CamLive deviceId={camera.id} />}
+      {view === "live" && camera && (
+        <CamLive deviceId={camera.id} pad={camera.pad ?? null} onPadSaved={setCamera} />
+      )}
 
       {view === "calendar" && (
         <div className="mt-3">
