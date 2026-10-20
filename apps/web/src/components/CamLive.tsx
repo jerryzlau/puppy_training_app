@@ -8,6 +8,24 @@ const OFFLINE_MS = 10_000;
 
 type CamStatus = "connecting" | "live" | "offline";
 
+/** One detection from the Pi, coords as fractions of the frame (VISION-PLAN.md). */
+interface CamBox {
+  cls: "dog" | "cat" | "person";
+  conf: number;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  track: number;
+}
+
+const BOX_STYLE: Record<CamBox["cls"], { color: string; label: string }> = {
+  dog: { color: "#F2A33A", label: "🐶 dog" },
+  person: { color: "#4FA3FF", label: "🧍 person" },
+  cat: { color: "#B57BFF", label: "🐱 cat" },
+};
+const BOXES_PREF = "biru.cam.boxes";
+
 const enc = new TextEncoder();
 const HEADER_END = enc.encode("\r\n\r\n");
 
@@ -24,7 +42,7 @@ function indexOf(buf: Uint8Array, needle: Uint8Array, from = 0): number {
  * so it can carry the Bearer token — an <img src> can't. Each part's
  * Content-Length says where the JPEG ends.
  */
-async function readFrames(body: ReadableStream<Uint8Array>, onFrame: (jpeg: Blob) => void) {
+async function readFrames(body: ReadableStream<Uint8Array>, onFrame: (jpeg: Blob, boxes: CamBox[]) => void) {
   const reader = body.getReader();
   let buf: Uint8Array = new Uint8Array(0);
   for (;;) {
@@ -45,7 +63,16 @@ async function readFrames(body: ReadableStream<Uint8Array>, onFrame: (jpeg: Blob
         continue;
       }
       if (buf.length < start + len) break; // wait for the rest of this frame
-      onFrame(new Blob([buf.slice(start, start + len)], { type: "image/jpeg" }));
+      let boxes: CamBox[] = [];
+      const det = /x-detections:\s*(.*)/i.exec(headers)?.[1];
+      if (det) {
+        try {
+          boxes = JSON.parse(det) as CamBox[];
+        } catch {
+          /* a frame without boxes is still a frame */
+        }
+      }
+      onFrame(new Blob([buf.slice(start, start + len)], { type: "image/jpeg" }), boxes);
       buf = buf.slice(start + len);
     }
   }
@@ -57,6 +84,25 @@ async function readFrames(body: ReadableStream<Uint8Array>, onFrame: (jpeg: Blob
  */
 export function CamLive({ deviceId }: { deviceId: string }) {
   const [src, setSrc] = useState<string | null>(null);
+  const [boxes, setBoxes] = useState<CamBox[]>([]);
+  const [showBoxes, setShowBoxes] = useState(true);
+  useEffect(() => {
+    try {
+      setShowBoxes(localStorage.getItem(BOXES_PREF) !== "off");
+    } catch {
+      /* storage unavailable — boxes stay on */
+    }
+  }, []);
+  function toggleBoxes() {
+    setShowBoxes((on) => {
+      try {
+        localStorage.setItem(BOXES_PREF, on ? "off" : "on");
+      } catch {
+        /* not remembered, still toggled */
+      }
+      return !on;
+    });
+  }
   const [status, setStatus] = useState<CamStatus>("connecting");
   const [visible, setVisible] = useState(true);
 
@@ -97,9 +143,10 @@ export function CamLive({ deviceId }: { deviceId: string }) {
           cache: "no-store",
         });
         if (!res.ok || !res.body) throw new Error(`cam: ${res.status}`);
-        await readFrames(res.body, (jpeg) => {
+        await readFrames(res.body, (jpeg, frameBoxes) => {
           const url = URL.createObjectURL(jpeg);
           setSrc(url);
+          setBoxes(frameBoxes);
           if (lastUrl) URL.revokeObjectURL(lastUrl);
           lastUrl = url;
           lastFrameAt = Date.now();
@@ -129,6 +176,34 @@ export function CamLive({ deviceId }: { deviceId: string }) {
           // eslint-disable-next-line @next/next/no-img-element -- blob: frames, not an optimisable image
           <img src={src} alt="live view from the camera" className="w-full h-full object-contain" />
         )}
+        {status === "live" &&
+          showBoxes &&
+          boxes.map((b) => {
+            const style = BOX_STYLE[b.cls];
+            if (!style) return null;
+            return (
+              <div
+                key={`${b.cls}-${b.track}`}
+                className="absolute rounded-sm pointer-events-none transition-all duration-100 ease-linear"
+                style={{
+                  left: `${b.x * 100}%`,
+                  top: `${b.y * 100}%`,
+                  width: `${b.w * 100}%`,
+                  height: `${b.h * 100}%`,
+                  border: `2.5px solid ${style.color}`,
+                  boxShadow: "0 0 0 1px rgba(0,0,0,.35)",
+                }}
+              >
+                <span
+                  className="absolute left-[-2.5px] whitespace-nowrap px-1.5 py-[1px] text-[11px] font-bold text-white rounded-sm"
+                  // label above the box, or tucked inside when the box touches the top edge
+                  style={{ background: style.color, ...(b.y < 0.06 ? { top: 0 } : { bottom: "100%" }) }}
+                >
+                  {style.label} {Math.round(b.conf * 100)}%
+                </span>
+              </div>
+            );
+          })}
         {status !== "live" && (
           <div className="absolute inset-0 flex items-center justify-center text-cream text-sm font-bold">
             {status === "connecting" ? "waking the camera…" : "camera offline — is it plugged in?"}
@@ -139,7 +214,17 @@ export function CamLive({ deviceId }: { deviceId: string }) {
         <span className={status === "live" ? "text-accent" : "text-inkFaint"}>
           {status === "live" ? "● live" : status === "offline" ? "○ offline" : "○ connecting"}
         </span>
-        <span className="text-inkFaint">only your household can see this · nothing is recorded</span>
+        <span className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={toggleBoxes}
+            aria-pressed={showBoxes}
+            className={`min-h-[32px] px-2 rounded border ${showBoxes ? "border-ink text-ink" : "border-ruled text-inkFaint"}`}
+          >
+            {showBoxes ? "▣ boxes on" : "▢ boxes off"}
+          </button>
+          <span className="text-inkFaint hidden sm:inline">only your household can see this · nothing is recorded</span>
+        </span>
       </div>
     </div>
   );

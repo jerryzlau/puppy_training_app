@@ -36,6 +36,8 @@ interface Cam {
   viewers: Set<ServerResponse>;
   waiters: Set<() => void>;
   frame: Buffer | null;
+  /** the Pi's detections for `frame`, re-serialised JSON (VISION-PLAN.md) — "" when none */
+  boxes: string;
   frameAt: number;
   seenAt: number;
   /** The Pi uploads several frames at once; drop one that lands after a newer one. */
@@ -46,7 +48,7 @@ const cams = new Map<string, Cam>();
 
 function cam(id: string): Cam {
   let c = cams.get(id);
-  if (!c) cams.set(id, (c = { viewers: new Set(), waiters: new Set(), frame: null, frameAt: 0, seenAt: 0, session: "", seq: 0 }));
+  if (!c) cams.set(id, (c = { viewers: new Set(), waiters: new Set(), frame: null, boxes: "", frameAt: 0, seenAt: 0, session: "", seq: 0 }));
   return c;
 }
 
@@ -57,8 +59,30 @@ export function liveCamCount(): number {
   return n;
 }
 
-function writeFrame(res: ServerResponse, frame: Buffer) {
-  res.write(`--FRAME\r\nContent-Type: image/jpeg\r\nContent-Length: ${frame.length}\r\n\r\n`);
+const BOX_CLASSES = new Set(["dog", "cat", "person"]);
+const MAX_BOXES_HEADER = 4096;
+
+/** Validate the Pi's X-Detections header and re-serialise it — it goes into viewers' part headers. */
+function parseBoxes(raw: unknown): string {
+  if (typeof raw !== "string" || raw.length > MAX_BOXES_HEADER) return "";
+  let list: unknown;
+  try {
+    list = JSON.parse(raw);
+  } catch {
+    return "";
+  }
+  if (!Array.isArray(list)) return "";
+  const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? Math.round(v * 1e4) / 1e4 : 0);
+  const boxes = list
+    .filter((b): b is Record<string, unknown> => typeof b === "object" && b !== null && BOX_CLASSES.has(String(b.cls)))
+    .slice(0, 20)
+    .map((b) => ({ cls: String(b.cls), conf: num(b.conf), x: num(b.x), y: num(b.y), w: num(b.w), h: num(b.h), track: num(b.track) }));
+  return JSON.stringify(boxes);
+}
+
+function writeFrame(res: ServerResponse, frame: Buffer, boxes: string) {
+  const extra = boxes ? `X-Detections: ${boxes}\r\n` : "";
+  res.write(`--FRAME\r\nContent-Type: image/jpeg\r\n${extra}Content-Length: ${frame.length}\r\n\r\n`);
   res.write(frame);
   res.write("\r\n");
 }
@@ -115,8 +139,9 @@ export function camRoutes(app: FastifyInstance) {
     c.session = session;
     c.seq = seq;
     c.frame = frame;
+    c.boxes = parseBoxes(req.headers["x-detections"]);
     c.frameAt = Date.now();
-    for (const res of c.viewers) if (res.writableLength < SLOW_VIEWER_BYTES) writeFrame(res, frame);
+    for (const res of c.viewers) if (res.writableLength < SLOW_VIEWER_BYTES) writeFrame(res, frame, c.boxes);
     return reply.send({ watching: c.viewers.size > 0 });
   });
 
@@ -216,7 +241,7 @@ export function camRoutes(app: FastifyInstance) {
         ? { "Access-Control-Allow-Origin": req.headers.origin, "Access-Control-Allow-Credentials": "true", Vary: "Origin" }
         : {}),
     });
-    if (c.frame && Date.now() - c.frameAt < FRESH_MS) writeFrame(res, c.frame);
+    if (c.frame && Date.now() - c.frameAt < FRESH_MS) writeFrame(res, c.frame, c.boxes);
     c.viewers.add(res);
     for (const wake of [...c.waiters]) wake(); // tell the Pi to start sending
 

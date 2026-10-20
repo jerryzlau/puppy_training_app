@@ -56,11 +56,17 @@ RELAY_IN_FLIGHT = int(os.environ.get("BIRUCAM_RELAY_IN_FLIGHT", 3))  # parallel 
 # still spells to the API, which asks Claude "pee, poop, or neither?".
 DETECT = os.environ.get("BIRUCAM_DETECT", "on") == "on"
 DETECT_FPS = float(os.environ.get("BIRUCAM_DETECT_FPS", 5))
+# while someone has the 📷 live tab open, detect on every relayed frame so the boxes move with the video
+DETECT_FPS_LIVE = float(os.environ.get("BIRUCAM_DETECT_FPS_LIVE", 10))
 DETECT_SIZE = int(os.environ.get("BIRUCAM_DETECT_SIZE", 416))
 DETECT_MIN_CONF = float(os.environ.get("BIRUCAM_DETECT_MIN_CONF", 0.35))
 DETECT_CLASSES = tuple(os.environ.get("BIRUCAM_DETECT_CLASSES", "dog,cat,person").split(","))
 
 detections = {"t": 0, "boxes": [], "presence": {}}  # latest pass, served at /detections
+# The frame the detector last ran on + its boxes as compact JSON. While someone
+# watches, the relay sends exactly these frames, so the overlay can't lag the video.
+detected = {"jpeg": None, "at": 0.0, "boxes": "[]"}
+watching = threading.Event()  # set by the relay while a viewer is attached
 TOKEN_FILE = os.environ.get("BIRUCAM_TOKEN_FILE", "/var/lib/birucam/device_token")
 
 PAGE = f"""<!doctype html><html><head><meta charset="utf-8">
@@ -186,17 +192,24 @@ def send_frames(apis):
                     slot = max(time.monotonic(), state["next"])
                     state["next"] = slot + 1 / RELAY_FPS
                 time.sleep(max(0.0, slot - time.monotonic()))
-                with frames.cond:
-                    frames.cond.wait_for(lambda: frames.frame is not None, timeout=5)
-                    frame = frames.frame
+                frame, boxes = None, None
+                if DETECT and time.monotonic() - detected["at"] < 1.0:
+                    frame, boxes = detected["jpeg"], detected["boxes"]  # frame + its own boxes
+                else:  # detector off or stalled: plain video
+                    with frames.cond:
+                        frames.cond.wait_for(lambda: frames.frame is not None, timeout=5)
+                        frame = frames.frame
                 with lock:
                     if frame is None or frame is state["last"]:
-                        continue  # the camera hasn't produced a new frame yet
+                        time.sleep(0.02)
+                        continue  # no new frame yet
                     state["last"] = frame
                     state["seq"] += 1
                     seq = state["seq"]
-                status, body = api.call("POST", "/ingest/cam/frame", frame, "image/jpeg",
-                                        {"X-Frame-Session": session, "X-Frame-Seq": str(seq)})
+                headers = {"X-Frame-Session": session, "X-Frame-Seq": str(seq)}
+                if boxes is not None:
+                    headers["X-Detections"] = boxes
+                status, body = api.call("POST", "/ingest/cam/frame", frame, "image/jpeg", headers)
                 if status != 200 or not body.get("watching"):
                     stop.set()
         except (OSError, http.client.HTTPException) as e:
@@ -204,10 +217,14 @@ def send_frames(apis):
             stop.set()
 
     threads = [threading.Thread(target=sender, args=(a,), daemon=True) for a in apis]
-    for t in threads:
-        t.start()
-    for t in threads:
-        t.join()
+    watching.set()
+    try:
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+    finally:
+        watching.clear()
 
 
 def relay():
@@ -256,10 +273,13 @@ def detect_loop(candidates):
             # DCT-scaled decode: half size straight out of the JPEG, nearly free
             rgb = simplejpeg.decode_jpeg(jpeg, colorspace="RGB", min_width=WIDTH // 2, min_height=HEIGHT // 2)
             tracked = tracker.update(det(rgb), started)
-            detections.update(t=time.time(), boxes=[b.json() for b in tracked],
+            boxes = [b.json() for b in tracked]
+            detections.update(t=time.time(), boxes=boxes,
                               presence={k: round(v) for k, v in tracker.presence(started).items()})
+            detected.update(jpeg=jpeg, at=time.monotonic(), boxes=json.dumps(boxes, separators=(",", ":")))
             watcher.update(started, jpeg, [b for b in tracked if b.cls == "dog"])
-        time.sleep(max(0.0, 1 / DETECT_FPS - (time.monotonic() - started)))
+        fps = DETECT_FPS_LIVE if watching.is_set() else DETECT_FPS
+        time.sleep(max(0.0, 1 / fps - (time.monotonic() - started)))
 
 
 def detector(candidates):
